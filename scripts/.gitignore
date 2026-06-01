@@ -1,3 +1,3 @@
 # Mantener carpeta en Git
-*
-!.gitignore
+__pycache__/
+*.pyc
