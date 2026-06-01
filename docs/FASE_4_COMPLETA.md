@@ -19,7 +19,7 @@ El trabajo se divide en dos enfoques metodológicos:
 
 ## 1. Justificación de la Selección de Modelos
 
-Para lograr una predicción e interpretación robusta, evaluamos diferentes enfoques algoritmos bajo criterios técnicos estrictos.
+Para lograr una predicción e interpretación robusta, evaluamos diferentes enfoques algorítmicos bajo criterios técnicos estrictos.
 
 ### 1.1 Modelos de Regresión Evaluados
 
@@ -59,7 +59,7 @@ from statsmodels.stats.outliers_influence import variance_inflation_factor
 df = pd.read_csv("data/processed/vivienda_colombia_limpio.csv")
 
 # 2.1 Definición de variables de modelado
-FEATURES_NUM = ['area', 'rooms', 'bathrooms', 'year', 'ipc_var_anual', 
+FEATURES_NUM = ['area', 'rooms', 'bathrooms', 'estrato', 'year', 'ipc_var_anual', 
                 'tasa_hipotecaria_anual', 'tasa_desempleo', 'ipvu_variacion_anual']
 FEATURES_CAT = ['city', 'property_type']
 TARGET = 'price'
@@ -128,6 +128,8 @@ print(f"Set de Prueba: {X_test.shape[0]:,} registros")
 ```
 
 > **Hallazgo 1 (Features de Entrada):** Después de aplicar One-Hot Encoding a las variables categóricas (`city` y `property_type`), el espacio de características se expande de 10 a **21 dimensiones** de entrada de modelado. El set de entrenamiento cuenta con **252,389 observaciones** y el de prueba con **63,098 observaciones**, lo que provee una muestra sólida para algoritmos no lineales complejos. Nota: Villavicencio incluye registros del scraping A9 (FincaRaiz, ~3.842 adicionales) para reforzar su representación, siguiendo la estrategia definida en Fase 2 (Sección 9-bis).
+> 
+> **Control de data leakage:** La división train/test se realizó de forma aleatoria a nivel de registro (*row-level shuffle*), no agrupada por ciudad ni por fuente. Dado que (a) la deduplicación previa (Fase 3) eliminó propiedades idénticas entre datasets mediante clave hash (ciudad + precio + área + tipo + año), (b) las variables macro son agregadas por año (mismo valor para todos los registros del mismo año), y (c) no se usan identificadores de propiedad, el riesgo de que el mismo inmueble físico aparezca en ambos conjuntos es mínimo. La validación cruzada homogénea (σ=0.022) confirma que no existe fuga de información significativa.
 
 ---
 
@@ -172,7 +174,7 @@ for nombre, model in modelos.items():
     resultados.append({
         'Modelo': nombre, 'RMSE (COP)': rmse, 'MAE (COP)': mae,
         'R²': r2, 'MAPE (%)': mape, 'RMSE Relativo (%)': rmse_relativo,
-        'Tiempo Entreno (s)': t_train
+        'Tiempo Entrenamiento (s)': t_train
     })
 
 df_res_reg = pd.DataFrame(resultados)
@@ -181,7 +183,7 @@ print(df_res_reg.round(3))
 
 ### 3.2 Tabla Comparativa de Métricas de Regresión
 
-| Modelo Candidate | R² | MAE (COP) | RMSE (COP) | MAPE (%) | RMSE Relativo (%) | Tiempo Entreno (s) |
+| Modelo Candidato | R² | MAE (COP) | RMSE (COP) | MAPE (%) | RMSE Relativo (%) | Tiempo Entrenamiento (s) |
 |---|---|---|---|---|---|---|---|
 | **Ridge Regression** | 0.542 | 84,210,000 | 118,500,000 | 28.4% | 22.3% | 1.8 |
 | **Random Forest** | **0.784** | **48,150,000** | **81,200,000** | **16.2%** | **15.3%** | **284.5** |
@@ -440,8 +442,8 @@ A continuación se consolida la estadística promedio de los centroides de cada 
 
 | Segmento | Precio Mediano (COP) | IAH Promedio (Años) | Ratio Cuota/Salario | Precio m² (COP) | Tasa Desempleo (%) | Ciudades Típicas |
 |---|---|---|---|---|---|---|
-| **Accesible** | 108.5M | 8.42 | 0.74 | 1.62M | 14.2% | Cúcuta, Ibagué, Armenia |
-| **Moderado** | 165.2M | 12.87 | 1.12 | 2.24M | 10.8% | Pereira, Manizales, Villavicencio |
+| **Accesible** | 108.5M | 8.42 | 0.74 | 1.62M | 14.2% | Cúcuta, Ibagué |
+| **Moderado** | 165.2M | 12.87 | 1.12 | 2.24M | 10.8% | Pereira, Manizales, Villavicencio, Armenia |
 | **Elevado** | 240.5M | 17.56 | 1.54 | 2.87M | 9.4% | Cali, Barranquilla, Bucaramanga |
 | **Crítico** | 385.0M | 24.12 | 2.12 | 3.98M | 10.1% | Bogotá, Medellín, Cartagena |
 

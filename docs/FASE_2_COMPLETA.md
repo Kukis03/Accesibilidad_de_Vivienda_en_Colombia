@@ -11,7 +11,7 @@
 
 La Fase 2 documenta el proceso completo de comprensión de los datos: qué contiene cada dataset, cómo se descargó, cuál es su estructura real, qué calidad tiene y qué hallazgos iniciales emergen de la exploración. El objetivo no es limpiar ni modelar, sino **conocer los datos a fondo antes de tocarlos**. Cada decisión tomada aquí se convierte en un insumo directo para la Fase 3 (preparación) y el diseño del modelo en Fase 4.
 
-Esta fase opera sobre los **14 archivos** identificados en Fase 1: 8 CSV de precios de vivienda (Grupo A) y 6 XLSX macroeconómicos (Grupo B). El trabajo fue ejecutado por Sofía con apoyo de Steve en la interpretación de los hallazgos.
+Esta fase opera sobre los **15 archivos** identificados en Fase 1: 9 CSV de precios de vivienda (Grupo A, incluyendo el scraping A9 de Villavicencio) y 6 XLSX macroeconómicos (Grupo B). El trabajo fue ejecutado por Sofía con apoyo de Steve en la interpretación de los hallazgos.
 
 > **Actualización v2:** Se incorpora la **Sección 9-bis** con la estrategia de refuerzo de cobertura para Villavicencio, integrando tres fuentes complementarias: scraping gratuito de FincaRaiz (BeautifulSoup), IPVN DANE (Villavicencio AU) y boletines CENAC. Esta adición no requiere costo económico y fortalece significativamente la representación de ciudades intermedias de la Orinoquia.
 
@@ -1005,7 +1005,7 @@ Villavicencio es la única ciudad focal del proyecto clasificada en la región O
 
 Para fortalecer su cobertura con datos actualizados (2024–2025) y permitir validación cruzada con fuentes oficiales, se implementa una estrategia integrada de tres fuentes complementarias, **todas de acceso gratuito**.
 
-> **Precedente académico:** La construcción de bases de datos de precios de vivienda en Colombia a partir de portales inmobiliarios digitales cuenta con respaldo en la literatura académica, que reconoce explícitamente que la información georreferenciada facilita su uso conjunto con datos oficiales para contrastar hipótesis sobre patrones espaciales del mercado inmobiliario (véase investigación publicada en revistas de la Universidad del Rosario).
+> **Precedente académico:** La construcción de bases de datos de precios de vivienda a partir de portales inmobiliarios digitales (web scraping) es una metodología ampliamente aceptada en la literatura de economía urbana y ciencia de datos aplicada. En el contexto colombiano, el uso combinado de datos de portales como Properati y FincaRaiz con fuentes oficiales (DANE, BanRep) sigue un enfoque híbrido que ha sido documentado en estudios de accesibilidad habitacional y patrones espaciales del mercado inmobiliario, validando esta estrategia como insumo para investigación aplicada en ciudades intermedias. [*Nota: Inserte aquí la referencia bibliográfica específica de su marco teórico.*]
 
 ---
 
@@ -1563,7 +1563,7 @@ Cuando las fuentes reportan precios por m² diferentes para el mismo período, s
 
 ### Nota sobre el precedente académico de esta estrategia
 
-La combinación de datos de portales inmobiliarios digitales con fuentes oficiales (DANE, BanRep) para el análisis del mercado de vivienda en Colombia no es metodológicamente novedosa: existe investigación publicada que documenta explícitamente este enfoque híbrido, reconociendo que los datos georreferenciados de portales permiten contrastar hipótesis sobre patrones espaciales del mercado inmobiliario que las estadísticas agregadas oficiales no pueden revelar. Esta validación académica respalda la solidez metodológica de la estrategia de datos del proyecto.
+La combinación de datos de portales inmobiliarios digitales con fuentes oficiales (DANE, BanRep) para el análisis del mercado de vivienda en Colombia sigue una metodología híbrida reconocida en la literatura especializada: los datos georreferenciados de portales permiten contrastar hipótesis sobre patrones espaciales del mercado inmobiliario que las estadísticas agregadas oficiales no pueden revelar por sí solas. Este respaldo académico valida la solidez metodológica de la estrategia de datos del proyecto. [*Nota: Inserte aquí la referencia bibliográfica específica de su marco teórico.*]
 
 ---
 

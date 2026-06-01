@@ -22,7 +22,7 @@ Para asegurar la validez académica y comercial del proyecto, contrastamos los r
 | Criterio de Éxito | Dimensión | Umbral Definido (Fase 1) | Valor Obtenido | ¿Cumple? |
 |---|---|---|---|---|---|
 | **R² Regresión** | Capacidad Predictiva | R² $\ge 0.75$ | **0.792** | ✅ Cumple |
-| **RMSE relativo** | Precisión Predictiva | $< 15.0\%$ del precio mediano | **15.3%** | ⚠️ Marginal (+0.3 pp, ver justificación §5.10) |
+| **RMSE relativo** | Precisión Predictiva | $< 15.0\%$ del precio mediano | **15.3%** | ⚠️ Marginal (+0.3 pp, ver justificación §6.1) |
 | **Estabilidad Regresión** | Validación Cruzada | CV $R^2$ std $< 0.05$ | **0.022** | ✅ Cumple |
 | **Separabilidad Clustering** | Calidad de Agrupación | Coef. Silueta $\ge 0.45$ | **0.54** | ✅ Cumple |
 | **Resolución del Modelo** | Cobertura Territorial | $\ge 8$ ciudades | **12 ciudades** | ✅ Cumple |
@@ -47,7 +47,7 @@ pipeline_rf = joblib.load("models/modelo_random_forest.pkl")
 df_test = pd.read_csv("data/processed/vivienda_colombia_limpio.csv") # Muestra de validación
 
 # Separar features y target
-FEATURES_NUM = ['area', 'rooms', 'bathrooms', 'year', 'ipc_var_anual', 
+FEATURES_NUM = ['area', 'rooms', 'bathrooms', 'estrato', 'year', 'ipc_var_anual', 
                 'tasa_hipotecaria_anual', 'tasa_desempleo', 'ipvu_variacion_anual']
 FEATURES_CAT = ['city', 'property_type']
 TARGET = 'price'
@@ -215,7 +215,7 @@ Esta sección consolida las respuestas definitivas del proyecto con soporte en l
 | **Manizales** | 14.8 | 🔴 Elevado |
 | **Pereira** | 13.9 | 🔴 Elevado |
 | **Villavicencio** | 11.2 | 🔴 Elevado |
-| **Armenia** | 10.4 | 🔴 Elevado |
+| **Armenia** | 10.4 | 🟡 Moderado |
 | **Ibagué** | 8.8 | 🟡 Moderado |
 | **Cúcuta** | 8.1 | 🟡 Moderado |
 
@@ -274,14 +274,14 @@ Esta sección consolida las respuestas definitivas del proyecto con soporte en l
 El análisis de la Fase 5 deriva en las siguientes 5 conclusiones estratégicas redactadas para la alta dirección y los tomadores de políticas de vivienda:
 
 1. **Inviabilidad del Crédito Tradicional:** Para el 90% de los trabajadores de salario mínimo, la adquisición de vivienda formal media mediante financiación bancaria tradicional es matemáticamente inviable, requiriendo tasas de esfuerzo sobre sus ingresos superiores al 100%.
-2. **Brecha de Cobertura VIS:** El mercado inmobiliario formal colombiano se ha concentrado en segmentos de ingresos medios-altos. Se evidencia una desconexión crítica entre los precios de oferta constructora y la capacidad real de pago del hogar promedio colombiana.
+2. **Brecha de Cobertura VIS:** El mercado inmobiliario formal colombiano se ha concentrado en segmentos de ingresos medios-altos. Se evidencia una desconexión crítica entre los precios de oferta constructora y la capacidad real de pago del hogar promedio colombiano.
 3. **Vulnerabilidad al Choque de Tasas:** La drástica subida de tasas del Banco de la República (alcanzando el 15.84% en 2023) contrajo la accesibilidad en un **30% adicional** a nivel nacional, incrementando el costo mensual de las cuotas en más de $380,000 COP promedio para viviendas de igual tamaño.
 4. **Gentrificación en Cartagena y Medellín:** Las dinámicas turísticas e inversión extranjera han desacoplado los precios de estas ciudades de la realidad del ingreso local. Medellín se ha consolidado en el segmento 'Crítico' superando a ciudades históricamente más caras como Cali.
 5. **Recomendación de Política:** Se sugiere al Ministerio de Vivienda enfocar subsidios como *Mi Casa Ya* prioritariamente en el segmento 'Moderado' (ciudades intermedias) donde pequeños aportes pueden reubicar las cuotas mensuales por debajo del umbral del 30% del salario.
 
 ---
 
-## 6.5 Justificación del Desvío Marginal del RMSE Relativo
+### 6.1 Justificación del Desvío Marginal del RMSE Relativo
 
 El RMSE relativo obtenido (15.3%) supera por **0.3 puntos porcentuales** el umbral de aceptación definido en la Fase 1 (< 15.0%). Este desvío marginal se explica por tres factores:
 

@@ -580,6 +580,8 @@ Donde:
 - $r = (1 + \text{tasa\_hipotecaria\_anual})^{1/12} - 1$ (Tasa mensual efectiva)
 - $n = 180$ (Meses)
 
+> **Nota sobre el tipo de tasa de interés:** La fuente B3 del proyecto (Banco de la República) reporta la tasa hipotecaria como **tasa efectiva anual (EA)** para créditos No VIS. Por lo tanto, la conversión a tasa mensual mediante la fórmula $r = (1 + EA)^{1/12} - 1$ es la metodología correcta. Si la fuente hubiera reportado tasas nominales mensuales vencidas (NMV), la conversión sería $r = \text{NMV} / 12 / 100$, pero este no es el caso del presente proyecto.
+
 ### 6.6 Ratio Cuota/Salario
 Mide el porcentaje del salario mínimo mensual requerido para cubrir la cuota mensual del crédito hipotecario:
 $$\text{ratio\_cuota\_salario} = \frac{\text{cuota\_mensual}}{\text{salario\_mensual}}$$
@@ -593,6 +595,8 @@ Categorización cualitativa basada en los umbrales estándar del PIR de la ONU y
 - **Crítica:** IAH $> 20$ (Más de 20 años de salario mínimo)
 
 ```python
+# La tasa BanRep es efectiva anual (EA), no nominal. Por tanto se usa
+# conversión geométrica: tasa_mensual = (1 + EA)^(1/12) - 1
 def calcular_cuota_mensual(precio, tasa_anual, meses=180, financia=0.70):
     if pd.isna(precio) or pd.isna(tasa_anual) or tasa_anual <= 0:
         return np.nan
@@ -774,7 +778,7 @@ A continuación se resumen los 6 hallazgos clave documentados en esta fase y su 
 - [x] Código fuente en `notebooks/02_preparacion_datos.ipynb`.
 - [x] Dataset exportado a `data/processed/vivienda_colombia_limpio.csv`.
 - [x] Documento de metadatos `data/processed/README.md`.
-- [x] Documento conceptual e informe final `docs/FASE_3_COMPLETA_v2.md`.
+- [x] Documento conceptual e informe final `docs/FASE_3_COMPLETA.md`.
 
 ### Transición a Fase 4 (Modelado)
 - [x] Variables de entrada (`FEATURES_NUM`, `FEATURES_CAT`) validadas y listas para preprocesamiento.

@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+
+# Datos
+data/raw/
+data/processed/
+
+# Modelos (generados por Fase 4)
+models/*.pkl
+!models/.gitkeep
+
+# Entorno
+.env
+venv/
+.venv/
+
+# IDE
+.vscode/
+.idea/
+
+# Streamlit
+.streamlit/secrets.toml
+
+# OS
+Thumbs.db
+.DS_Store

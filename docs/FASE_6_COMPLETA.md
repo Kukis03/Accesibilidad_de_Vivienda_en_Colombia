@@ -95,7 +95,7 @@ st.markdown("<h1 class='main-title'>Accesibilidad de Vivienda en Colombia · CRI
 # Lógica de carga de datos optimizada con caché
 @st.cache_data
 def cargar_datos():
-    ruta = "data/processed/vivienda_colombia_limpio.csv"
+    ruta = "../data/processed/vivienda_colombia_limpio.csv"
     if os.path.exists(ruta):
         return pd.read_csv(ruta)
     else:
@@ -172,7 +172,7 @@ import os
 st.set_page_config(page_title="Análisis Nacional", page_icon="🇨🇴", layout="wide")
 st.title("🇨🇴 Comportamiento Macroeconómico Nacional")
 
-ruta = "data/processed/vivienda_colombia_limpio.csv"
+ruta = "../data/processed/vivienda_colombia_limpio.csv"
 if os.path.exists(ruta):
     df = pd.read_csv(ruta)
     
@@ -220,7 +220,7 @@ import os
 st.set_page_config(page_title="Comparador", page_icon="📊", layout="wide")
 st.title("📊 Comparador Inmobiliario de Ciudades")
 
-ruta = "data/processed/vivienda_colombia_limpio.csv"
+ruta = "../data/processed/vivienda_colombia_limpio.csv"
 if os.path.exists(ruta):
     df = pd.read_csv(ruta)
     
@@ -274,7 +274,7 @@ st.markdown("""
 # Cargar Modelo Guardado en Fase 4
 @st.cache_resource
 def cargar_modelo():
-    ruta = "models/modelo_random_forest.pkl"
+    ruta = "../models/modelo_random_forest.pkl"
     if os.path.exists(ruta):
         return joblib.load(ruta)
     return None
@@ -306,7 +306,7 @@ if modelo is not None:
     
     # Crear dataframe para la predicción
     df_predict = pd.DataFrame([{
-        'area': area, 'rooms': rooms, 'bathrooms': bathrooms, 'year': year,
+        'area': area, 'rooms': rooms, 'bathrooms': bathrooms, 'estrato': estrato, 'year': year,
         'ipc_var_anual': ipc_var_anual, 'tasa_hipotecaria_anual': tasa_hipotecaria_anual,
         'tasa_desempleo': tasa_desempleo, 'ipvu_variacion_anual': ipvu_variacion_anual,
         'city': city, 'property_type': property_type
@@ -360,7 +360,7 @@ import os
 st.set_page_config(page_title="Segmentos de Mercado", page_icon="📌", layout="wide")
 st.title("📌 Segmentación de Mercados Inmobiliarios (Clustering)")
 
-ruta = "data/processed/segmentos_mercado.csv"
+ruta = "../data/processed/segmentos_mercado.csv"
 if os.path.exists(ruta):
     df_sub = pd.read_csv(ruta)
     
@@ -472,12 +472,12 @@ proyecto-vivienda-colombia/
 │       ├── vivienda_colombia_limpio.csv
 │       └── segmentos_mercado.csv
 ├── docs/
-│   ├── FASE_1_COMPLETA_v2.md
-│   ├── FASE_2_COMPLETA_v2.md
-│   ├── FASE_3_COMPLETA_v2.md
-│   ├── FASE_4_COMPLETA_v2.md
-│   ├── FASE_5_COMPLETA_v2.md
-│   ├── FASE_6_COMPLETA_v2.md
+│   ├── FASE_1_COMPLETA.md
+│   ├── FASE_2_COMPLETA.md
+│   ├── FASE_3_COMPLETA.md
+│   ├── FASE_4_COMPLETA.md
+│   ├── FASE_5_COMPLETA.md
+│   ├── FASE_6_COMPLETA.md
 │   ├── tabla_metricas_finales.csv
 │   └── figures/
 │       ├── 07_feature_importance.png

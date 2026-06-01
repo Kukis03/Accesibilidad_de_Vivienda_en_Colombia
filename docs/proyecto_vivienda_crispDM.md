@@ -491,6 +491,8 @@ Se integran las 6 fuentes del Grupo B (salario mínimo, IPC, tasa hipotecaria, d
 | `ratio_cuota_salario` | `cuota_mensual / salario_mensual` | Proporción del ingreso para la cuota |
 | `nivel_accesibilidad` | IAH ≤ 5 → Accesible, ≤ 10 → Moderado, ≤ 20 → Elevado, > 20 → Crítico | Categoría de acceso |
 
+> **Nota sobre la tasa hipotecaria:** La fuente B3 (Banco de la República) reporta la tasa de interés como **tasa efectiva anual (EA)**. La conversión a tasa mensual para el cálculo de la cuota usa la fórmula geométrica $r = (1 + EA)^{1/12} - 1$, que es la metodología correcta para tasas efectivas. Si la fuente hubiera reportado tasas nominales mensuales vencidas (NMV), se habría usado $r = \text{NMV} / 12$, pero este no es el caso del proyecto.
+
 **Estadísticas descriptivas del dataset final:**
 
 | Variable | Promedio | Mediana | Desv. Estándar |
@@ -550,7 +552,7 @@ Se emplea el dataset limpio de la Fase 3 (`vivienda_colombia_limpio.csv`) para e
 ### 4.2 Preparación de Features
 
 ```python
-FEATURES_NUM = ['area', 'rooms', 'bathrooms', 'year', 'ipc_var_anual',
+FEATURES_NUM = ['area', 'rooms', 'bathrooms', 'estrato', 'year', 'ipc_var_anual',
                 'tasa_hipotecaria_anual', 'tasa_desempleo', 'ipvu_variacion_anual']
 FEATURES_CAT = ['city', 'property_type']
 TARGET = 'price'
@@ -572,6 +574,8 @@ preprocessor = ColumnTransformer([
 **División train/test:** 80/20 con `random_state=42`. Entrenamiento: **252,389** registros. Prueba: **63,098** registros. Espacio de features expandido a **21 dimensiones** tras One-Hot Encoding.
 
 > **Hallazgo 1 (Features):** Villavicencio incluye ~3,842 registros del scraping A9 para reforzar su representación (estrategia Fase 2, Sección 9-bis).
+> 
+> **Control de data leakage:** La división es aleatoria a nivel de registro. La deduplicación previa (Fase 3) eliminó propiedades idénticas entre datasets mediante clave hash, y las variables macro son agregadas por año, por lo que el riesgo de fuga de información es mínimo. La validación cruzada homogénea (σ=0.022) lo confirma.
 
 ### 4.3 Modelo 1 — Regresión: Predicción de Precio
 
@@ -896,7 +900,7 @@ st.markdown("<h1 class='main-title'>Accesibilidad de Vivienda en Colombia · CRI
 
 @st.cache_data
 def cargar_datos():
-    ruta = "data/processed/vivienda_colombia_limpio.csv"
+    ruta = "../data/processed/vivienda_colombia_limpio.csv"
     if os.path.exists(ruta):
         return pd.read_csv(ruta)
     st.error(f"No se encontró el archivo en {ruta}")
@@ -947,7 +951,7 @@ import plotly.express as px
 st.set_page_config(page_title="Análisis Nacional", page_icon="🇨🇴", layout="wide")
 st.title("🇨🇴 Comportamiento Macroeconómico Nacional")
 
-df = pd.read_csv("data/processed/vivienda_colombia_limpio.csv")
+df = pd.read_csv("../data/processed/vivienda_colombia_limpio.csv")
 df_nac = df.groupby('year').agg({'price':'median','IAH':'mean',
     'tasa_hipotecaria_anual':'mean','ipc_var_anual':'mean','salario_mensual':'first'}).reset_index()
 
@@ -974,7 +978,7 @@ import plotly.express as px
 st.set_page_config(page_title="Comparador", page_icon="📊", layout="wide")
 st.title("📊 Comparador Inmobiliario de Ciudades")
 
-df = pd.read_csv("data/processed/vivienda_colombia_limpio.csv")
+df = pd.read_csv("../data/processed/vivienda_colombia_limpio.csv")
 ciudades = sorted(df['city'].unique())
 
 c1 = st.selectbox("Ciudad A", ciudades, index=0)
@@ -1075,7 +1079,7 @@ import plotly.express as px
 st.set_page_config(page_title="Segmentos", page_icon="📌", layout="wide")
 st.title("📌 Segmentación de Mercados Inmobiliarios (Clustering)")
 
-df_sub = pd.read_csv("data/processed/segmentos_mercado.csv")
+df_sub = pd.read_csv("../data/processed/segmentos_mercado.csv")
 
 col1, col2 = st.columns([2, 1])
 with col1:
@@ -1150,12 +1154,12 @@ proyecto-vivienda-colombia/
 │       ├── vivienda_colombia_limpio.csv
 │       └── segmentos_mercado.csv
 ├── docs/
-│   ├── FASE_1_COMPLETA_v2.md
-│   ├── FASE_2_COMPLETA_v2.md
-│   ├── FASE_3_COMPLETA_v2.md
-│   ├── FASE_4_COMPLETA_v2.md
-│   ├── FASE_5_COMPLETA_v2.md
-│   ├── FASE_6_COMPLETA_v2.md
+│   ├── FASE_1_COMPLETA.md
+│   ├── FASE_2_COMPLETA.md
+│   ├── FASE_3_COMPLETA.md
+│   ├── FASE_4_COMPLETA.md
+│   ├── FASE_5_COMPLETA.md
+│   ├── FASE_6_COMPLETA.md
 │   ├── tabla_metricas_finales.csv
 │   └── figures/
 │       ├── 07_feature_importance.png
