@@ -1,6 +1,6 @@
 # Fase 2 — Comprensión de los Datos
 ## Proyecto: Accesibilidad de Vivienda en Colombia · CRISP-DM 2025-I
-**Responsable principal:** Steve · **Apoyo:** Sofía  
+**Responsable principal:** Sofía · **Apoyo:** Steve  
 **Estado:** ✅ Completa y lista para revisión del jurado  
 **Notebook asociado:** `notebooks/01_EDA.ipynb`  
 **Semanas:** 3 – 4
@@ -11,7 +11,7 @@
 
 La Fase 2 documenta el proceso completo de comprensión de los datos: qué contiene cada dataset, cómo se descargó, cuál es su estructura real, qué calidad tiene y qué hallazgos iniciales emergen de la exploración. El objetivo no es limpiar ni modelar, sino **conocer los datos a fondo antes de tocarlos**. Cada decisión tomada aquí se convierte en un insumo directo para la Fase 3 (preparación) y el diseño del modelo en Fase 4.
 
-Esta fase opera sobre los **14 archivos** identificados en Fase 1: 8 CSV de precios de vivienda (Grupo A) y 6 XLSX macroeconómicos (Grupo B). El trabajo fue ejecutado por Steve con apoyo de Sofía en la interpretación de los hallazgos.
+Esta fase opera sobre los **14 archivos** identificados en Fase 1: 8 CSV de precios de vivienda (Grupo A) y 6 XLSX macroeconómicos (Grupo B). El trabajo fue ejecutado por Sofía con apoyo de Steve en la interpretación de los hallazgos.
 
 > **Actualización v2:** Se incorpora la **Sección 9-bis** con la estrategia de refuerzo de cobertura para Villavicencio, integrando tres fuentes complementarias: scraping gratuito de FincaRaiz (BeautifulSoup), IPVN DANE (Villavicencio AU) y boletines CENAC. Esta adición no requiere costo económico y fortalece significativamente la representación de ciudades intermedias de la Orinoquia.
 
@@ -37,7 +37,7 @@ Antes de cualquier análisis, se verificó que todos los archivos descargados co
 **Total registros brutos disponibles (Grupo A): ~1.819.229 filas**  
 **Total registros Colombia únicamente (Grupo A): ~629.197 filas** (tras filtro inicial de país en A4)
 
-> **Nota Steve:** El archivo de Properati (A4) contiene ~1.487.000 filas de toda Latinoamérica. La primera operación es siempre filtrar por `l1 == 'Colombia'`, lo que reduce el archivo a ~310.000 filas. Este filtro se aplica en la carga inicial (Fase 2) y se consolida en la limpieza (Fase 3).
+> **Nota Sofía:** El archivo de Properati (A4) contiene ~1.487.000 filas de toda Latinoamérica. La primera operación es siempre filtrar por `l1 == 'Colombia'`, lo que reduce el archivo a ~310.000 filas. Este filtro se aplica en la carga inicial (Fase 2) y se consolida en la limpieza (Fase 3).
 
 ### 1.2 Grupo B — Variables Macroeconómicas (DANE + BanRep)
 
@@ -279,7 +279,7 @@ plt.show()
 print("Figura guardada: docs/figures/02_distribucion_precios.png")
 ```
 
-**Hallazgo 1:** Los precios siguen una distribución log-normal clásica: fuertemente sesgada a la derecha en escala original (moda ~$200M COP, cola hasta $5.000M+), pero aproximadamente normal en escala logarítmica. Esto confirma que el modelo de regresión debe trabajar en log-escala o usar un modelo robusto a distribuciones asimétricas (como XGBoost), y que las métricas de error deben interpretarse como MAPE (porcentual) más que como MAE (absoluto).
+**Hallazgo 1:** Los precios siguen una distribución log-normal clásica: fuertemente sesgada a la derecha en escala original (moda ~$200M COP, cola hasta $5.000M+), pero aproximadamente normal en escala logarítmica. Esto confirma que el modelo de regresión debe trabajar en log-escala o usar un modelo robusto a distribuciones asimétricas (como Random Forest), y que las métricas de error deben interpretarse como MAPE (porcentual) más que como MAE (absoluto).
 
 ### 4.2 Distribución de precios por ciudad
 
@@ -530,7 +530,7 @@ for var, val in corr_precio.items():
     print(f"  {var:20s}: r = {val:+.3f}")
 ```
 
-**Hallazgo 7:** La variable con mayor correlación con el precio es `area` (r ≈ 0.62), seguida de `bathrooms` (r ≈ 0.54), `rooms` (r ≈ 0.47) y `parking` (r ≈ 0.38). El `estrato` socioeconómico (cuando está disponible) tiene una correlación moderada-alta con el precio (r ≈ 0.55), lo que es consistente con la segmentación del mercado colombiano. Hay multicolinealidad entre `rooms` y `bathrooms` (r ≈ 0.72), lo que deberá considerarse al interpretar los coeficientes del modelo lineal (aunque no afecta XGBoost).
+**Hallazgo 7:** La variable con mayor correlación con el precio es `area` (r ≈ 0.62), seguida de `bathrooms` (r ≈ 0.54), `rooms` (r ≈ 0.47) y `parking` (r ≈ 0.38). El `estrato` socioeconómico (cuando está disponible) tiene una correlación moderada-alta con el precio (r ≈ 0.55), lo que es consistente con la segmentación del mercado colombiano. Hay multicolinealidad entre `rooms` y `bathrooms` (r ≈ 0.72), lo que deberá considerarse al interpretar los coeficientes del modelo lineal (aunque Random Forest tolera la multicolinealidad sin problemas).
 
 ### 4.8 Mapa de valores nulos
 
@@ -916,13 +916,13 @@ A continuación se sintetizan los 13 hallazgos documentados durante la exploraci
 
 | # | Hallazgo | Relevancia para fases siguientes |
 |---|---|---|
-| H1 | Precios siguen distribución log-normal; cola derecha muy larga | Fase 4: usar log-transformación de `price` o métricas MAPE; XGBoost maneja bien esto |
+| H1 | Precios siguen distribución log-normal; cola derecha muy larga | Fase 4: usar log-transformación de `price` o métricas MAPE; Random Forest maneja bien esto |
 | H2 | Tres grupos de ciudades por precio mediano (alto, medio, accesible) | Fase 4: anticipa k=3 o k=4 clusters. Valida hipótesis de segmentación |
 | H3 | Precio mediano nacional creció ~68% en términos nominales (2018–2023) | Fase 5: base de la respuesta a Pregunta 2. Calcular crecimiento real (ajustado por IPC) |
 | H4 | Área mediana: apartamentos ~65 m², casas ~120 m². Distribución bimodal | Fase 3: imputar área por grupo ciudad-tipo-año; no imputación global |
 | H5 | Precio/m² varía 2x–3x entre ciudades (Bogotá vs ciudades intermedias) | Fase 4: incluir interacción city × area en modelo; city es variable crítica |
 | H6 | 73% apartamentos, 24% casas; cobertura temporal no uniforme | Fase 3: tratar tipos por separado; documentar quiebres temporales |
-| H7 | Multicolinealidad rooms-bathrooms (r≈0.72); area con mayor correlación con price | Fase 4: usar Ridge/Lasso para modelo lineal; XGBoost no requiere acción especial |
+| H7 | Multicolinealidad rooms-bathrooms (r≈0.72); area con mayor correlación con price | Fase 4: Ridge maneja multicolinealidad con regularización L2; Random Forest tolera bien la colinealidad |
 | H8 | Nulos en área son sistemáticos (varían por ciudad y período) | Fase 3: imputación por grupo ciudad-año-tipo, no global |
 | H9 | ~2,9% outliers en precio; ~1,4% en área | Fase 3: recorte P2.5–P97.5 dentro de grupo ciudad-tipo-año |
 | H10 | ~61% registros georreferenciados; cobertura mayor en Bogotá/Medellín | Fase 4: lat/lon usable solo para análisis de barrio en Bogotá (A3) |
@@ -1648,6 +1648,6 @@ La respuesta preliminar a las 4 preguntas de investigación:
 
 ---
 
-*Documento de Fase 2 · Versión 2 · Proyecto Accesibilidad Habitacional Colombia · CRISP-DM 2025-I*  
+*Documento de Fase 2 · CRISP-DM 2025-I · Proyecto Accesibilidad Habitacional Colombia*  
 *Steve (responsable) · Sofía (apoyo) — Repositorio: github.com/[usuario]/proyecto-vivienda-colombia*  
 *Semanas 3–4 del proyecto · Sección 9-bis agregada: estrategia refuerzo Villavicencio (scraping + IPVN DANE + CENAC)*
