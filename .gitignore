@@ -6,7 +6,7 @@ dist/
 build/
 
 # Datos
-data/raw/
+#data/raw/
 #data/processed/
 
 # Modelos (generados por Fase 4)
