@@ -1,34 +1,78 @@
 """
-scraping_fincaraiz_villavicencio.py
-Extrae listados de venta de FincaRaiz para Villavicencio (Meta) y los guarda
-en data/raw/fincaraiz_villavicencio_scraping.csv con el esquema canónico del proyecto.
+=============================================================
+SCRAPING FINCARAIZ — VILLAVICENCIO  (v4 — API directa)
+=============================================================
+Proyecto: Accesibilidad de Vivienda en Colombia
+Dataset:  A9 — Scraping propio
+Objetivo: 3.000–6.000 registros de Villavicencio
 
-Dependencias: requests, beautifulsoup4, pandas (todas en el requirements.txt del proyecto)
-Costo: $0 — acceso público sin autenticación
-Tiempo estimado: 30–60 minutos para 3.000–5.000 listados
+Por qué v4 (historial):
+  v1  — BeautifulSoup sobre HTML; la paginación se detenía en pág 1.
+  v2  — Buscaba __NEXT_DATA__ solamente; FincaRaíz reparte los datos
+        en varios <script>, no solo en __NEXT_DATA__.
+  v3  — Buscaba en TODOS los <script>, PERO usaba el parámetro de URL
+        ?pagina=N para iterar. **El servidor ignora ese parámetro**
+        (Next.js + Apollo Client hace la paginación client-side).
+        Por eso solo se obtenía la primera página de cada combinación.
+  v4  — Llama directo a la API interna del frontend:
+            POST https://search-service.fincaraiz.com.co/api/v1/listings/search
+        Body JSON con:
+            filter.locations.cities.id      = UUID de la ciudad
+            filter.property_type.slug       = apartment | house | studio | ...
+            filter.offer.slug                = sell | rent
+            fields.limit / fields.offset     = paginación real
+        Devuelve los items en hits.hits[]._source.listing
+        (formato Elasticsearch: {took, hits: {total, hits}}).
+
+        Hallazgos clave descubiertos en el diagnóstico:
+          - property_type.slug usa inglés: "apartment", "house", "studio",
+            "country-house", "lot", "project", ...
+          - offer.slug es "sell" o "rent"
+          - city.id es UUID ("ff817189-005a-4fa7-a8c5-6df23ff69881")
+          - Paginación: offset += limit, hasta que hits.hits esté vacío
+          - Límite recomendado: limit=50 (la API acepta más pero 50 evita timeouts)
 
 Uso:
-    python scripts/scraping_fincaraiz_villavicencio.py
-    python scripts/scraping_fincaraiz_villavicencio.py --max-paginas 50
+    py scraping_fincaraiz_villavicencio.py
+
+Salida:
+    ../data/raw/fincaraiz_villavicencio_scraping.csv
+=============================================================
 """
 
 import requests
-from bs4 import BeautifulSoup
 import pandas as pd
-import time
-import random
-import logging
-import argparse
-from datetime import date
-from pathlib import Path
+import time, random, os
+from datetime import datetime
 
-# ── Configuración ────────────────────────────────────────────────────────────
+# ── CONFIGURACIÓN ──────────────────────────────────────────
+OUTPUT_DIR  = "../../data/raw"
+OUTPUT_FILE = "fincaraiz_villavicencio_scraping.csv"
 
-BASE_URL = "https://www.fincaraiz.com.co/venta/apartamentos/villavicencio/"
-<<<<<<< HEAD
-=======
-# Para casas: cambiar 'apartamentos' por 'casas'
->>>>>>> 2711ad8c08d83362df73b02abfd236a5caf862f0
+# (slug_url, slug_api, etiqueta_legible)
+OPERACIONES = [
+    ("venta",    "sell", "Venta"),
+    ("arriendo", "rent", "Arriendo"),
+]
+TIPOS_INMUEBLE = [
+    ("apartamentos",      "apartment",     "Apartamento"),
+    ("casas",             "house",         "Casa"),
+    ("apartaestudios",    "studio",        "Apartaestudio"),
+    ("casas-campestres",  "country-house", "Casa Campestre"),
+    ("lotes",             "lot",           "Lote"),
+]
+
+# UUID de la ciudad Villavicencio (no cambia)
+CIUDAD_ID  = "ff817189-005a-4fa7-a8c5-6df23ff69881"
+CIUDAD     = "Villavicencio"
+DEPTO      = "Meta"
+BASE_URL   = "https://www.fincaraiz.com.co"
+SEARCH_API = "https://search-service.fincaraiz.com.co/api/v1/listings/search"
+
+PAGE_SIZE  = 50        # items por request (la API soporta 50 sin problema)
+MAX_PAGINAS = 40       # tope de seguridad: 40 * 50 = 2000 items por combo
+PAUSA_MIN  = 1.0       # segundos entre requests (la API es más permisiva que el HTML)
+PAUSA_MAX  = 2.5
 
 HEADERS = {
     "User-Agent": (
@@ -36,342 +80,264 @@ HEADERS = {
         "AppleWebKit/537.36 (KHTML, like Gecko) "
         "Chrome/124.0.0.0 Safari/537.36"
     ),
+    "Accept": "application/json, text/plain, */*",
     "Accept-Language": "es-CO,es;q=0.9,en;q=0.8",
-    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    "Content-Type": "application/json",
+    "Origin": BASE_URL,
+    "Referer": BASE_URL + "/",
+    "Connection": "keep-alive",
 }
 
-<<<<<<< HEAD
-DELAY_MIN = 2.0
-DELAY_MAX = 4.5
-MAX_PAGINAS_DEFAULT = 100
-=======
-DELAY_MIN = 2.0   # segundos mínimos entre requests (respetar el servidor)
-DELAY_MAX = 4.5   # segundos máximos entre requests
-MAX_PAGINAS_DEFAULT = 100  # límite de seguridad por defecto
 
-# ── Logging ───────────────────────────────────────────────────────────────────
->>>>>>> 2711ad8c08d83362df73b02abfd236a5caf862f0
+# ── UTILIDADES ─────────────────────────────────────────────
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(message)s",
-    datefmt="%H:%M:%S",
-)
-log = logging.getLogger(__name__)
+def _nid(v):
+    """Extrae un id numérico de un campo tipo {id: N, name: '...', slug: '...'}."""
+    if v is None:
+        return None
+    if isinstance(v, (int, float)):
+        return int(v)
+    if isinstance(v, dict):
+        x = v.get("id")
+        if x is not None:
+            return int(x) if str(x).isdigit() else None
+        # Fallback: primer entero en 'name'
+        if v.get("name"):
+            import re
+            m = re.search(r"\d+", str(v["name"]))
+            return int(m.group()) if m else None
+    return None
 
-<<<<<<< HEAD
 
-def obtener_pagina(url: str, session: requests.Session) -> BeautifulSoup | None:
-=======
-# ── Funciones de extracción ──────────────────────────────────────────────────
+def _num(v):
+    """Convierte a float/int si es numérico (string o número). None si no."""
+    if v is None or v == "":
+        return None
+    if isinstance(v, (int, float)):
+        return v
+    if isinstance(v, str):
+        try:
+            return float(v)
+        except ValueError:
+            return None
+    if isinstance(v, dict):
+        return _num(v.get("amount") or v.get("price") or v.get("value"))
+    return None
 
-def obtener_pagina(url: str, session: requests.Session) -> BeautifulSoup | None:
-    """Descarga una página y retorna el objeto BeautifulSoup, o None si falla."""
->>>>>>> 2711ad8c08d83362df73b02abfd236a5caf862f0
+
+def _first_loc(locs, *keys):
+    """Toma el primer elemento de cada key en locations."""
+    for k in keys:
+        arr = locs.get(k) or []
+        if arr:
+            return arr[0].get("name")
+    return ""
+
+
+def parsear_prop(item, op_label, tipo_label):
+    """Convierte un listing (dict) en una fila CSV."""
+    listing = item["_source"]["listing"]
+
+    locs = listing.get("locations") or {}
+    barrio = (_first_loc(locs, "neighbourhoods", "zones", "communes", "localities")
+              or "").strip()
+    ciudad_api  = _first_loc(locs, "cities")  or ""
+    depto_api   = _first_loc(locs, "states")  or ""
+    pais        = _first_loc(locs, "countries") or "Colombia"
+
+    admin = listing.get("administration") or {}
+    admin_precio = _num(admin.get("price"))
+
+    precio = _num(listing.get("price"))
+    if admin_precio and admin.get("is_included") is False and admin_precio > 0:
+        pass  # admin separado, lo guardamos en su columna
+
+    return {
+        "id_anuncio":      listing.get("fr_property_id") or item.get("_id"),
+        "uuid":            item.get("_id"),
+        "precio_cop":      int(precio) if precio is not None else None,
+        "admin_cop":       int(admin_precio) if admin_precio else None,
+        "admin_incluida":  admin.get("is_included"),
+        "tipo_inmueble":   tipo_label,
+        "tipo_operacion":  op_label,
+        "area_m2":         _num(listing.get("area")),
+        "area_construida_m2": _num(listing.get("living_area")),
+        "habitaciones":    _nid(listing.get("rooms")),
+        "banos":           _nid(listing.get("baths")),
+        "parqueaderos":    _nid(listing.get("garages")),
+        "estrato":         _nid(listing.get("stratum")),
+        "piso":            _nid(listing.get("floor")),
+        "antiguedad":      (listing.get("age") or {}).get("name"),
+        "estado":          (listing.get("condition") or {}).get("name"),
+        "es_nuevo":        listing.get("is_new"),
+        "barrio":          barrio,
+        "ciudad":          ciudad_api or CIUDAD,
+        "departamento":    depto_api or DEPTO,
+        "pais":            pais,
+        "titulo":          (listing.get("title") or "")[:150].strip(),
+        "url_anuncio":     f"{BASE_URL}/inmueble/{item.get('_id')}",
+        "fecha_scraping":  datetime.now().strftime("%Y-%m-%d"),
+    }
+
+
+# ── REQUEST ────────────────────────────────────────────────
+
+def build_body(op_slug, tipo_slug, offset, limit=PAGE_SIZE):
+    """Cuerpo del POST al search-service."""
+    return {
+        "filter": {
+            "locations":    {"cities": {"id": [CIUDAD_ID]}},
+            "property_type": {"slug": [tipo_slug]},
+            "offer":        {"slug": [op_slug]},
+        },
+        "fields": {
+            "include": [],
+            "exclude": [],
+            "limit":  limit,
+            "offset": offset,
+        },
+    }
+
+
+def get_pagina(body, sesion, intento=1):
+    """POST al search-service con reintentos."""
+    time.sleep(random.uniform(PAUSA_MIN, PAUSA_MAX))
     try:
-        resp = session.get(url, headers=HEADERS, timeout=20)
-        resp.raise_for_status()
-        return BeautifulSoup(resp.text, "html.parser")
-    except requests.RequestException as e:
-        log.warning(f"Error al obtener {url}: {e}")
+        r = sesion.post(SEARCH_API, headers=HEADERS, json=body, timeout=25)
+        if r.status_code == 200:
+            return r.json()
+        if r.status_code == 429 or r.status_code == 403:
+            espera = 30 if r.status_code == 429 else 60
+            print(f"    ⚠️  HTTP {r.status_code} — esperando {espera}s...", end=" ", flush=True)
+            time.sleep(espera)
+            if intento < 3:
+                return get_pagina(body, sesion, intento + 1)
+        print(f"    HTTP {r.status_code}: {r.text[:200]}")
+        return None
+    except requests.exceptions.Timeout:
+        if intento < 3:
+            time.sleep(10)
+            return get_pagina(body, sesion, intento + 1)
+        print("    Timeout.")
+        return None
+    except Exception as e:
+        print(f"    Error: {e}")
         return None
 
 
-def extraer_listados(soup: BeautifulSoup) -> list[dict]:
-<<<<<<< HEAD
-    propiedades = []
+# ── MAIN ───────────────────────────────────────────────────
 
-    tarjetas = soup.select("div.listing-card, article.card-property, div[data-testid='listing-card']")
+def scrape_combo(sesion, op_slug, op_label, tipo_slug, tipo_label):
+    """Scrapea una combinación operación×tipo. Devuelve lista de filas."""
+    filas = []
+    offset = 0
+    pagina = 0
+    total = None
 
-    if not tarjetas:
-=======
-    """
-    Extrae los listados de una página de resultados de FincaRaiz.
-    
-    FincaRaiz usa tarjetas de propiedad con clase 'listing-card' o similar.
-    Ajustar los selectores CSS si el portal cambia su estructura HTML.
-    """
-    propiedades = []
+    while pagina < MAX_PAGINAS:
+        pagina += 1
+        body = build_body(op_slug, tipo_slug, offset)
+        print(f"  → Pág {pagina:02d} (offset {offset:>4}): ", end="", flush=True)
 
-    # Selector principal de tarjetas (verificado en estructura de mayo 2025)
-    tarjetas = soup.select("div.listing-card, article.card-property, div[data-testid='listing-card']")
+        data = get_pagina(body, sesion)
+        if data is None:
+            print("sin respuesta.")
+            break
 
-    if not tarjetas:
-        # Fallback: buscar por atributos data-* comunes en SPAs
->>>>>>> 2711ad8c08d83362df73b02abfd236a5caf862f0
-        tarjetas = soup.select("[data-id]")
+        hits_block = data.get("hits") or {}
+        hits = hits_block.get("hits") or []
+        if total is None:
+            total = (hits_block.get("total") or {}).get("value", "?")
 
-    for tarjeta in tarjetas:
-        prop = {}
-        try:
-<<<<<<< HEAD
-=======
-            # Precio
->>>>>>> 2711ad8c08d83362df73b02abfd236a5caf862f0
-            precio_tag = tarjeta.select_one(
-                ".price, .listing-price, [data-testid='price'], span.valor"
-            )
-            if precio_tag:
-                precio_texto = precio_tag.get_text(strip=True)
-<<<<<<< HEAD
-                precio_num = precio_texto.replace("$", "").replace(".", "").replace(",", "").strip()
-=======
-                # Limpiar: "$450.000.000" → 450000000
-                precio_num = precio_texto.replace("$", "").replace(".", "").replace(",", "").strip()
-                # Manejar precios en millones: "450 M" → 450000000
->>>>>>> 2711ad8c08d83362df73b02abfd236a5caf862f0
-                if "M" in precio_num.upper():
-                    precio_num = precio_num.upper().replace("M", "").strip()
-                    prop["price"] = float(precio_num) * 1_000_000
-                else:
-                    prop["price"] = float(precio_num) if precio_num.isdigit() else None
+        if not hits:
+            print("sin datos — fin.")
+            break
 
-<<<<<<< HEAD
-=======
-            # Área (m²)
->>>>>>> 2711ad8c08d83362df73b02abfd236a5caf862f0
-            area_tag = tarjeta.select_one(
-                ".area, .surface, [data-testid='area'], span.m2, li.area"
-            )
-            if area_tag:
-                area_texto = area_tag.get_text(strip=True)
-                area_num = "".join(c for c in area_texto if c.isdigit() or c == ".")
-                prop["area"] = float(area_num) if area_num else None
+        for item in hits:
+            filas.append(parsear_prop(item, op_label, tipo_label))
 
-<<<<<<< HEAD
-=======
-            # Habitaciones
->>>>>>> 2711ad8c08d83362df73b02abfd236a5caf862f0
-            hab_tag = tarjeta.select_one(
-                ".rooms, .bedrooms, [data-testid='rooms'], li.hab, span.habitaciones"
-            )
-            if hab_tag:
-                hab_texto = "".join(c for c in hab_tag.get_text() if c.isdigit())
-                prop["rooms"] = int(hab_texto) if hab_texto else None
+        print(f"{len(hits)} items  (acum: {len(filas)}/{total})")
 
-<<<<<<< HEAD
-=======
-            # Baños
->>>>>>> 2711ad8c08d83362df73b02abfd236a5caf862f0
-            banos_tag = tarjeta.select_one(
-                ".bathrooms, .baths, [data-testid='bathrooms'], li.bano, span.banos"
-            )
-            if banos_tag:
-                banos_texto = "".join(c for c in banos_tag.get_text() if c.isdigit())
-                prop["bathrooms"] = int(banos_texto) if banos_texto else None
+        # Si recibimos menos del tamaño de página, no hay más
+        if len(hits) < PAGE_SIZE:
+            print(f"  ℹ️  Página incompleta — última página.")
+            break
 
-<<<<<<< HEAD
-=======
-            # Barrio / zona
->>>>>>> 2711ad8c08d83362df73b02abfd236a5caf862f0
-            barrio_tag = tarjeta.select_one(
-                ".location, .neighborhood, [data-testid='location'], span.barrio, p.ubicacion"
-            )
-            prop["barrio"] = barrio_tag.get_text(strip=True) if barrio_tag else None
+        offset += PAGE_SIZE
 
-<<<<<<< HEAD
-            prop["property_type"] = None
-
-            link_tag = tarjeta.select_one("a[href]")
-            prop["url_listado"] = "https://www.fincaraiz.com.co" + link_tag["href"] if link_tag else None
-
-=======
-            # Tipo de inmueble (viene implícito en la URL, se asigna después)
-            prop["property_type"] = None  # se asigna post-extracción
-
-            # URL del listado (para referencia y deduplicación)
-            link_tag = tarjeta.select_one("a[href]")
-            prop["url_listado"] = "https://www.fincaraiz.com.co" + link_tag["href"] if link_tag else None
-
-            # Campos fijos para todos los registros scrapeados
->>>>>>> 2711ad8c08d83362df73b02abfd236a5caf862f0
-            prop["city"] = "Villavicencio"
-            prop["operation_type"] = "Venta"
-            prop["currency"] = "COP"
-            prop["created_on"] = str(date.today())
-            prop["fuente"] = "scraping_fincaraiz"
-
-<<<<<<< HEAD
-=======
-            # Solo agregar si tiene precio válido
->>>>>>> 2711ad8c08d83362df73b02abfd236a5caf862f0
-            if prop.get("price") and prop["price"] > 0:
-                propiedades.append(prop)
-
-        except (ValueError, TypeError, AttributeError) as e:
-            log.debug(f"Error extrayendo tarjeta: {e}")
-            continue
-
-    return propiedades
+    return filas, total
 
 
-def hay_pagina_siguiente(soup: BeautifulSoup) -> bool:
-<<<<<<< HEAD
-=======
-    """Detecta si existe un botón/enlace de página siguiente."""
->>>>>>> 2711ad8c08d83362df73b02abfd236a5caf862f0
-    siguiente = soup.select_one(
-        "a[rel='next'], .pagination-next, button.next-page, a.siguiente"
-    )
-    return siguiente is not None
+def main():
+    print("=" * 60)
+    print("  SCRAPING FINCARAÍZ — VILLAVICENCIO  (v4 — API directa)")
+    print(f"  Inicio: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    print("=" * 60)
+
+    os.makedirs(OUTPUT_DIR, exist_ok=True)
+    todos  = []
+    sesion = requests.Session()
+
+    # Calentar la sesión (opcional, la API no lo exige, pero ayuda)
+    print("\nCalentando sesión...")
+    try:
+        sesion.get(BASE_URL, headers=HEADERS, timeout=15)
+    except Exception as e:
+        print(f"  Aviso: warm-up falló ({e}), continuando...")
+    time.sleep(2)
+
+    total_combos = len(OPERACIONES) * len(TIPOS_INMUEBLE)
+    n = 0
+
+    for op_slug, op_api, op_label in OPERACIONES:
+        for tipo_slug, tipo_api, tipo_label in TIPOS_INMUEBLE:
+            n += 1
+            print(f"\n[{n}/{total_combos}] {op_label.upper()} — {tipo_label}")
+            filas, total = scrape_combo(sesion, op_api, op_label, tipo_api, tipo_label)
+            print(f"  Subtotal: {len(filas)} de {total} disponibles")
+            todos.extend(filas)
+
+    # ── Guardar ────────────────────────────────────────────
+    if not todos:
+        print("\n⚠️  Sin registros. Revisa la conexión o espera 10 min.")
+        return
+
+    df = pd.DataFrame(todos)
+    for col in ("precio_cop", "admin_cop", "area_m2", "area_construida_m2"):
+        df[col] = pd.to_numeric(df[col], errors="coerce")
+
+    # Deduplicar por fr_property_id (que es estable)
+    antes = len(df)
+    df = df.drop_duplicates(subset=["id_anuncio"])
+    print(f"\n  Duplicados eliminados: {antes - len(df)}")
+
+    ruta = os.path.join(OUTPUT_DIR, OUTPUT_FILE)
+    df.to_csv(ruta, index=False, encoding="utf-8-sig")
+
+    # ── Reporte ────────────────────────────────────────────
+    print("\n" + "=" * 60)
+    print("  ✅  SCRAPING COMPLETADO")
+    print(f"  Registros únicos:     {len(df)}")
+    print(f"  Archivo:              {ruta}")
+    print("=" * 60)
+
+    print("\n── Distribución ──")
+    print(df.groupby(["tipo_operacion", "tipo_inmueble"]).size().to_string())
+
+    print("\n── Precios (COP) ──")
+    for op_label, _ in [(o[2], o) for o in OPERACIONES]:
+        sub = df[(df["tipo_operacion"] == op_label) & df["precio_cop"].notna()]
+        if not sub.empty:
+            print(f"  {op_label}: "
+                  f"min=${sub['precio_cop'].min():>14,.0f} "
+                  f"| med=${sub['precio_cop'].median():>14,.0f} "
+                  f"| max=${sub['precio_cop'].max():>14,.0f}")
+
+    print(f"\n  Con precio válido: {df['precio_cop'].notna().sum()}/{len(df)}")
+    print(f"  Con área válida:   {df['area_m2'].notna().sum()}/{len(df)}")
+    print(f"  Con barrio:        {df['barrio'].astype(bool).sum()}/{len(df)}")
+    print(f"  Con estrato:       {df['estrato'].notna().sum()}/{len(df)}")
 
 
-def construir_url_pagina(pagina: int, tipo_inmueble: str = "apartamentos") -> str:
-<<<<<<< HEAD
-=======
-    """Construye la URL paginada de FincaRaiz."""
->>>>>>> 2711ad8c08d83362df73b02abfd236a5caf862f0
-    base = f"https://www.fincaraiz.com.co/venta/{tipo_inmueble}/villavicencio/"
-    if pagina == 1:
-        return base
-    return f"{base}?pagina={pagina}"
-
-<<<<<<< HEAD
-=======
-# ── Función principal ─────────────────────────────────────────────────────────
->>>>>>> 2711ad8c08d83362df73b02abfd236a5caf862f0
-
-def scraping_villavicencio(
-    tipos: list[str] = None,
-    max_paginas: int = MAX_PAGINAS_DEFAULT,
-    output_path: str = "data/raw/fincaraiz_villavicencio_scraping.csv"
-) -> pd.DataFrame:
-<<<<<<< HEAD
-=======
-    """
-    Ejecuta el scraping para todos los tipos de inmueble indicados.
-    
-    Args:
-        tipos: lista de tipos a scrapear. Default: ['apartamentos', 'casas']
-        max_paginas: límite máximo de páginas por tipo (safety cap)
-        output_path: ruta de salida del CSV resultante
-    
-    Returns:
-        DataFrame con todos los listados extraídos
-    """
->>>>>>> 2711ad8c08d83362df73b02abfd236a5caf862f0
-    if tipos is None:
-        tipos = ["apartamentos", "casas"]
-
-    todos_los_registros = []
-    session = requests.Session()
-    session.headers.update(HEADERS)
-
-    for tipo in tipos:
-        log.info(f"=== Iniciando scraping: {tipo} en Villavicencio ===")
-        pagina = 1
-        registros_tipo = 0
-
-        while pagina <= max_paginas:
-            url = construir_url_pagina(pagina, tipo)
-            log.info(f"  Página {pagina}: {url}")
-
-            soup = obtener_pagina(url, session)
-            if soup is None:
-                log.warning(f"  No se pudo obtener la página {pagina}. Deteniendo para {tipo}.")
-                break
-
-            listados = extraer_listados(soup)
-
-            if not listados:
-                log.info(f"  Sin listados en página {pagina}. Fin del tipo '{tipo}'.")
-                break
-
-<<<<<<< HEAD
-            tipo_canónico = {
-=======
-            # Asignar tipo de propiedad según la URL consultada
-            tipo_canonico = {
->>>>>>> 2711ad8c08d83362df73b02abfd236a5caf862f0
-                "apartamentos": "Apartamento",
-                "casas": "Casa",
-                "lotes": "Lote/Terreno",
-            }.get(tipo, tipo.capitalize())
-
-            for r in listados:
-<<<<<<< HEAD
-                r["property_type"] = tipo_canónico
-=======
-                r["property_type"] = tipo_canonico
->>>>>>> 2711ad8c08d83362df73b02abfd236a5caf862f0
-
-            todos_los_registros.extend(listados)
-            registros_tipo += len(listados)
-            log.info(f"  +{len(listados)} registros (total {tipo}: {registros_tipo})")
-
-            if not hay_pagina_siguiente(soup):
-                log.info(f"  Última página alcanzada para '{tipo}'.")
-                break
-
-            pagina += 1
-<<<<<<< HEAD
-=======
-            # Pausa aleatoria para no sobrecargar el servidor
->>>>>>> 2711ad8c08d83362df73b02abfd236a5caf862f0
-            tiempo_espera = random.uniform(DELAY_MIN, DELAY_MAX)
-            time.sleep(tiempo_espera)
-
-        log.info(f"  Total extraído para {tipo}: {registros_tipo} registros")
-
-<<<<<<< HEAD
-=======
-    # ── Construir DataFrame y exportar ────────────────────────────────────────
->>>>>>> 2711ad8c08d83362df73b02abfd236a5caf862f0
-    df = pd.DataFrame(todos_los_registros)
-
-    if df.empty:
-        log.warning("No se extrajo ningún registro. Verificar selectores CSS.")
-        return df
-
-<<<<<<< HEAD
-=======
-    # Deduplicar por URL de listado (mismo anuncio puede aparecer en varias páginas)
->>>>>>> 2711ad8c08d83362df73b02abfd236a5caf862f0
-    n_antes = len(df)
-    df = df.drop_duplicates(subset=["url_listado"]).reset_index(drop=True)
-    log.info(f"Deduplicados por URL: {n_antes - len(df)} eliminados. Total final: {len(df)}")
-
-<<<<<<< HEAD
-=======
-    # Exportar
->>>>>>> 2711ad8c08d83362df73b02abfd236a5caf862f0
-    Path(output_path).parent.mkdir(parents=True, exist_ok=True)
-    df.to_csv(output_path, index=False, encoding="utf-8-sig")
-    log.info(f"CSV exportado: {output_path} ({len(df)} filas)")
-
-<<<<<<< HEAD
-=======
-    # Resumen de calidad
->>>>>>> 2711ad8c08d83362df73b02abfd236a5caf862f0
-    log.info("\n--- Resumen de calidad del scraping ---")
-    log.info(f"  Precio válido:  {df['price'].notna().sum()} / {len(df)} ({df['price'].notna().mean()*100:.1f}%)")
-    log.info(f"  Área válida:    {df['area'].notna().sum()} / {len(df)} ({df['area'].notna().mean()*100:.1f}%)")
-    log.info(f"  Habitaciones:   {df['rooms'].notna().sum()} / {len(df)} ({df['rooms'].notna().mean()*100:.1f}%)")
-    log.info(f"  Precio mediano: ${df['price'].median():,.0f} COP")
-    log.info(f"  Área mediana:   {df['area'].median():.0f} m²")
-
-    return df
-
-
-<<<<<<< HEAD
-=======
-# ── Punto de entrada ──────────────────────────────────────────────────────────
-
->>>>>>> 2711ad8c08d83362df73b02abfd236a5caf862f0
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Scraping FincaRaiz — Villavicencio")
-    parser.add_argument("--max-paginas", type=int, default=MAX_PAGINAS_DEFAULT,
-                        help=f"Máximo de páginas por tipo (default: {MAX_PAGINAS_DEFAULT})")
-    parser.add_argument("--tipos", nargs="+", default=["apartamentos", "casas"],
-                        choices=["apartamentos", "casas", "lotes"],
-                        help="Tipos de inmueble a scrapear")
-    parser.add_argument("--output", default="data/raw/fincaraiz_villavicencio_scraping.csv",
-                        help="Ruta del CSV de salida")
-    args = parser.parse_args()
-
-    df_resultado = scraping_villavicencio(
-        tipos=args.tipos,
-        max_paginas=args.max_paginas,
-        output_path=args.output
-    )
-    print(f"\n✅ Scraping completado: {len(df_resultado)} registros en {args.output}")
+    main()

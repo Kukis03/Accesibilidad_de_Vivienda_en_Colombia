@@ -13,24 +13,25 @@
 - [ ] Configurar logging para documentar operaciones
 
 **Celdas 6–10: Carga y verificación de datasets Grupo A**
-- [ ] Cargar A1 (colombia_housing_price.csv)
-- [ ] Cargar A2 (colombian_properties_2023.csv)
-- [ ] Cargar A3 (real_estate_bogota.csv)
-- [ ] Cargar A4 (properati_colombia.csv) y filtrar por país = 'Colombia'
-- [ ] Cargar A5 (fincaraiz_properties.csv)
-- [ ] Cargar A6 (real_estate_bogota_2023.csv)
-- [ ] Cargar A7 (medellin_properties_2023.csv)
-- [ ] Cargar A8 (colombia_house_prediction.csv)
-- [ ] Cargar A9 (villavicencio_scraping_fincaraiz.csv) — dataset generado por scraping
-- [ ] Registrar tamaño y número de registros de cada dataset (incluir A9)
+- [ ] Cargar A1 (A1_colombia_housing_properties.csv) — Properati Colombia (fuente principal, ~998K registros)
+- [ ] Cargar A2 (A2_fincaraiz_colombia.csv) — FincaRaiz Colombia 2023-2024
+- [ ] Cargar A3 (A3_colombia_house_prediction.csv) — Colombia House Prediction
+- [ ] Cargar A4 (A4_real_estate_bogota.csv) — Real Estate Bogotá por barrio
+- [ ] Cargar A5 (A5_medellin_properties_2023.csv) — Medellín Properties 2023
+- [ ] Cargar A6 (A6_real_estate_bogota_2023.csv) — Real Estate Bogotá 2023
+- [ ] Cargar A7 (A7_fincaraiz_villavicencio_scraping.csv) — Scraping FincaRaiz Villavicencio
+- [ ] Cargar A8 (A8_carac_pre_viv_nueva.csv) — Características precios vivienda nueva Bogotá UPZ
+- [ ] Registrar tamaño y número de registros de cada dataset (incluir A7)
 
 **Celdas 11–15: Carga y verificación de datasets Grupo B**
-- [ ] Cargar B1 (salario_minimo_historico.xlsx)
-- [ ] Cargar B2 (ipc_colombia_mensual.xlsx)
-- [ ] Cargar B3 (tasa_hipotecaria_mensual.xlsx)
-- [ ] Cargar B4 (desempleo_ciudades_trimestral.xlsx)
-- [ ] Cargar B5 (ipvu_trimestral.xlsx)
-- [ ] Cargar B6 (ipvn_trimestral.xlsx)
+- [ ] Cargar B1 (B1_indices_precios_vivienda.csv) — IPVN+IPVU unificado (BanRep + DANE)
+- [ ] Cargar B2 (B2_tasa_hipotecaria_semanal.csv) — Tasa hipotecaria semanal (BanRep)
+- [ ] Cargar B3 (B3_salario_minimo_historico.csv) — Salario mínimo histórico (DANE)
+- [ ] Cargar B4 (B4_ipc_colombia_anual.csv) — IPC anual (DANE)
+- [ ] Cargar B5 (B5_geih_empleo_colombia.csv) — GEIH empleo mensual (DANE)
+- [ ] Cargar B6 (B6_qcon_confianza_constructora.csv) — Confianza constructora (Fedesarollo)
+- [ ] Cargar B7 (B7_qcon_licencias_construccion.csv) — Licencias construcción (Fedesarollo)
+- [ ] Cargar B8 (B8_geo_estados_localidades.csv) — Estados/localidades geográficas
 - [ ] Crear tabla resumen de inventario (filas, columnas, período)
 - [ ] Guardar reporte de inventario en CSV
 
@@ -107,34 +108,34 @@
 
 ---
 
-## Sección 5-bis: Refuerzo de Cobertura — Villavicencio (Dataset A9)
+## Sección 5-bis: Refuerzo de Cobertura — Villavicencio (Dataset A7)
 **Celdas 56–58: Cargar y explorar datos de scraping de Villavicencio**
-- [ ] Cargar dataset A9 (villavicencio_scraping_fincaraiz.csv)
-- [ ] Explorar estructura de columnas de A9
-- [ ] Calcular volumen de registros en A9
+- [ ] Cargar dataset A7 (A7_fincaraiz_villavicencio_scraping.csv)
+- [ ] Explorar estructura de columnas de A7
+- [ ] Calcular volumen de registros en A7
 - [ ] Documentar período cubierto por scraping (fecha inicio-fin)
-- [ ] Comparar volumen A9 vs cobertura de Villavicencio en A1, A4
+- [ ] Comparar volumen A7 vs cobertura de Villavicencio en A1
 
 **Celdas 59–61: Integración de fuentes complementarias para Villavicencio**
 - [ ] Cargar IPVN DANE trimestral (incluye Villavicencio AU)
 - [ ] Cargar boletines CENAC si están disponibles
 - [ ] Convertir IPVN trimestral a anual
 - [ ] Relacionar precios de scraping con índices oficiales IPVN
-- [ ] Validar consistencia de precios A9 vs IPVN DANE
+- [ ] Validar consistencia de precios A7 vs IPVN DANE
 
 **Celdas 62–64: Análisis especial de Villavicencio**
-- [ ] Calcular estadísticas descriptivas de precio para Villavicencio (A1 + A4 + A9 consolidados)
+- [ ] Calcular estadísticas descriptivas de precio para Villavicencio (A1 + A7 consolidados)
 - [ ] Precio mediano de Villavicencio en cada año (2015–2024)
 - [ ] Comparar precio/m² de Villavicencio vs ciudades similares (Ibagué, Cúcuta)
 - [ ] Distribución de tipos de propiedad en Villavicencio
-- [ ] Documentar calidad de datos A9 (completitud, nulos, duplicados)
+- [ ] Documentar calidad de datos A7 (completitud, nulos, duplicados)
 - [ ] Crear visualización de Villavicencio en contexto nacional
 
-**Celdas 65–67: Documentación de estrategia A9**
-- [ ] Documentar que A9 es dataset generado internamente (scraping)
+**Celdas 65–67: Documentación de estrategia A7**
+- [ ] Documentar que A7 es dataset generado internamente (scraping)
 - [ ] Especificar fechas de scraping y fuente (FincaRaiz)
 - [ ] Documentar metodología de scraping (en notebook o linked script)
-- [ ] Explicar por qué Villavicencio requiere refuerzo (cobertura insuficiente en A1, A4)
+- [ ] Explicar por qué Villavicencio requiere refuerzo (cobertura insuficiente en A1)
 - [ ] Guardar subset de Villavicencio consolidado en `data/processed/villavicencio_consolidado.csv`
 
 ---
@@ -326,7 +327,7 @@
 - [ ] Actualizar tabla de fases en `README.md` (marcar Fase 2 como completada)
 - [ ] Agregar lista de outputs en `data/processed/README.md` (incluir villavicencio_consolidado.csv)
 - [ ] Agregar lista de figuras en `docs/figures/README.md`
-- [ ] Crear o actualizar `docs/FASE_2_COMPLETA.md` con hallazgos resumidos (incluir análisis A9 Villavicencio)
+- [ ] Crear o actualizar `docs/FASE_2_COMPLETA.md` con hallazgos resumidos (incluir análisis A7 Villavicencio)
 
 ---
 
@@ -340,7 +341,7 @@
 - [ ] Confirmar que `docs/figures/` NO está en gitignore (figuras generadas deben subirse)
 - [ ] Confirmar que `data/processed/` NO está en gitignore (outputs procesados deben subirse)
 - [ ] Cargar y limpiar datos de tasa hipotecaria mensual (1998–2025)
-- [ ] Cargar y limpiar datos de desempleo por ciudad (trimestral)
+- [ ] Cargar y limpiar datos de desempleo por ciudad (trimestral) — dataset GEIH DANE pendiente de re-descarga
 - [ ] Cargar y limpiar datos de IPVU trimestral
 - [ ] Cargar y limpiar datos de IPVN trimestral
 
@@ -366,7 +367,7 @@
 - [ ] Documentar ciudades con mayor volatilidad de empleo
 
 ## 16. Reporte Consolidado de Calidad de Datos
-- [ ] Generar reporte de calidad completo por dataset (A1–A8, B1–B6)
+- [ ] Generar reporte de calidad completo por dataset (A1–A8, B1–B8)
 - [ ] Documentar problemas identificados en cada dataset
 - [ ] Proponer acciones correctivas para Fase 3
 - [ ] Crear tabla de decisiones por dataset
@@ -379,8 +380,8 @@
 - [ ] Documentar períodos con mayor/menor volumen de datos
 
 ## 18. Estrategia de Integración de Datasets para Fase 3
-- [ ] Definir dataset base (probablemente A1 + A4)
-- [ ] Definir orden de concatenación con datasets complementarios (A2, A3, A5–A8)
+- [ ] Definir dataset base (probablemente A1)
+- [ ] Definir orden de concatenación con datasets complementarios (A2–A8)
 - [ ] Definir estrategia de deduplicación
 - [ ] Documentar cambios esperados en volumen de datos
 - [ ] Proponer cálculos de Fase 3 basados en hallazgos

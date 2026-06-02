@@ -16,7 +16,7 @@ Este repositorio contiene el código, los datos y la documentación del proyecto
 Adquirir una vivienda es la decisión financiera más importante para un hogar. Este estudio diseña y valida el **Índice de Accesibilidad Habitacional (IAH)** para Colombia, adaptando el indicador internacional *Price-to-Income Ratio (PIR)* de la OCDE y la ONU. Al utilizar el salario mínimo legal mensual como proxy del ingreso de referencia de los hogares, cuantificamos el desajuste estructural entre el costo de la vivienda formal y los ingresos reales de la población.
 
 El proyecto abarca:
-1. **Unificación masiva de datos:** Integración de **9 datasets de precios inmobiliarios** (más de 629K registros brutos) y **6 fuentes macroeconómicas** de entidades oficiales como el DANE y el Banco de la República.
+1. **Unificación masiva de datos:** Integración de **8 datasets de precios inmobiliarios** (más de 629K registros brutos) y **8 fuentes macroeconómicas** de entidades oficiales como el DANE y el Banco de la República.
 2. **Modelado Supervisado:** Un regresor basado en **Random Forest** (R² = 0.792, MAPE = 15.8%) para estimar el precio nominal de cualquier inmueble en tiempo real.
 3. **Modelado No Supervisado:** Agrupamiento de submercados locales mediante **KMeans** (K=4, Silueta = 0.54) para clasificar y mapear las ciudades de Colombia según su accesibilidad financiera.
 

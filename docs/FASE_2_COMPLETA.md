@@ -3,7 +3,8 @@
 **Responsable principal:** Sofía · **Apoyo:** Steve  
 **Estado:** ✅ Completa y lista para revisión del jurado  
 **Notebook asociado:** `notebooks/01_EDA.ipynb`  
-**Semanas:** 3 – 4
+**Semanas:** 3 – 4  
+*Nota: Este documento refleja el inventario actualizado a Junio 2026 con la nueva numeración de archivos (A1–A8, B1–B8).*
 
 ---
 
@@ -11,7 +12,7 @@
 
 La Fase 2 documenta el proceso completo de comprensión de los datos: qué contiene cada dataset, cómo se descargó, cuál es su estructura real, qué calidad tiene y qué hallazgos iniciales emergen de la exploración. El objetivo no es limpiar ni modelar, sino **conocer los datos a fondo antes de tocarlos**. Cada decisión tomada aquí se convierte en un insumo directo para la Fase 3 (preparación) y el diseño del modelo en Fase 4.
 
-Esta fase opera sobre los **15 archivos** identificados en Fase 1: 9 CSV de precios de vivienda (Grupo A, incluyendo el scraping A9 de Villavicencio) y 6 XLSX macroeconómicos (Grupo B). El trabajo fue ejecutado por Sofía con apoyo de Steve en la interpretación de los hallazgos.
+Esta fase opera sobre los **16 archivos** identificados en Fase 1: 8 CSV de precios de vivienda (Grupo A, incluyendo el scraping A7 de Villavicencio) y 8 CSV macroeconómicos (Grupo B). El trabajo fue ejecutado por Sofía con apoyo de Steve en la interpretación de los hallazgos.
 
 > **Actualización v2:** Se incorpora la **Sección 9-bis** con la estrategia de refuerzo de cobertura para Villavicencio, integrando tres fuentes complementarias: scraping gratuito de FincaRaiz (BeautifulSoup), IPVN DANE (Villavicencio AU) y boletines CENAC. Esta adición no requiere costo económico y fortalece significativamente la representación de ciudades intermedias de la Orinoquia.
 
@@ -21,34 +22,31 @@ Esta fase opera sobre los **15 archivos** identificados en Fase 1: 9 CSV de prec
 
 Antes de cualquier análisis, se verificó que todos los archivos descargados correspondieran a lo esperado. La siguiente tabla registra el estado real tras la descarga:
 
-### 1.1 Grupo A — Datasets de Precios de Vivienda (Kaggle)
+### 1.1 Grupo A — Datasets de Precios de Vivienda — estado actual (8 archivos)
 
 | ID | Archivo en `/data/raw/` | Tamaño real | Registros reales | Columnas | Período verificado | Estado |
 |---|---|---|---|---|---|---|
-| **A1** | `colombia_housing_price.csv` | ~45 MB | 118.742 filas | 12 cols | 2018–2022 | ✅ OK |
-| **A2** | `colombian_properties_2023.csv` | ~18 MB | 47.315 filas | 10 cols | 2023 | ✅ OK |
-| **A3** | `real_estate_bogota.csv` | ~14 MB | 29.847 filas | 15 cols | 2019–2022 | ✅ OK |
-| **A4** | `properati_colombia.csv` | ~890 MB | 1.487.032 filas (filtrado Colombia: ~310.000) | 24 cols | 2015–2021 | ✅ OK — requiere filtro `l1 == 'Colombia'` |
-| **A5** | `fincaraiz_properties.csv` | ~32 MB | 79.456 filas | 11 cols | 2023–2024 | ✅ OK |
-| **A6** | `real_estate_bogota_2023.csv` | ~8 MB | 19.234 filas | 13 cols | 2023 | ✅ OK |
-| **A7** | `medellin_properties_2023.csv` | ~6 MB | 14.891 filas | 10 cols | 2023 | ✅ OK |
-| **A8** | `colombia_house_prediction.csv` | ~4 MB | 9.712 filas | 9 cols | 2019–2020 | ✅ OK |
+| **A1** | `A1_colombia_housing_properties.csv` | 582 MB | ~997.623 | 17 | 2020–2021 | ✅ OK (Properati, limpio) |
+| **A2** | `A2_fincaraiz_colombia.csv` | 52 MB | ~52.000 | 28 | 2023–2024 | ✅ OK |
+| **A3** | `A3_colombia_house_prediction.csv` | 27 MB | ~45.000 | 37 | 2019–2020 | ✅ OK |
+| **A4** | `A4_real_estate_bogota.csv` | 892 KB | ~13.000 | 8 | 2019–2022 | ✅ OK |
+| **A5** | `A5_medellin_properties_2023.csv` | 879 KB | ~12.000 | 12 | 2023 | ✅ OK |
+| **A6** | `A6_real_estate_bogota_2023.csv` | 467 KB | ~6.500 | 8 | 2023 | ✅ OK |
+| **A7** | `A7_fincaraiz_villavicencio_scraping.csv` | 294 KB | ~2.500 | 24 | 2024–2025 | ✅ OK |
+| **A8** | `A8_carac_pre_viv_nueva.csv` | 4 KB | 32 | 14 | 2022 | ✅ OK |
 
-**Total registros brutos disponibles (Grupo A): ~1.819.229 filas**  
-**Total registros Colombia únicamente (Grupo A): ~629.197 filas** (tras filtro inicial de país en A4)
-
-> **Nota Sofía:** El archivo de Properati (A4) contiene ~1.487.000 filas de toda Latinoamérica. La primera operación es siempre filtrar por `l1 == 'Colombia'`, lo que reduce el archivo a ~310.000 filas. Este filtro se aplica en la carga inicial (Fase 2) y se consolida en la limpieza (Fase 3).
-
-### 1.2 Grupo B — Variables Macroeconómicas (DANE + BanRep)
+### 1.2 Grupo B — Variables Macroeconómicas (DANE + BanRep) — estado actual (8 archivos)
 
 | ID | Archivo en `/data/raw/` | Registros | Frecuencia | Período verificado | Estado |
 |---|---|---|---|---|---|
-| **B1** | `salario_minimo_historico.xlsx` | 42 filas | Anual | 1984–2025 | ✅ OK |
-| **B2** | `ipc_colombia_mensual.xlsx` | ~300 filas | Mensual | 2000–2025 | ✅ OK |
-| **B3** | `tasa_hipotecaria_mensual.xlsx` | ~324 filas | Mensual | 1998–2025 | ✅ OK |
-| **B4** | `desempleo_ciudades_trimestral.xlsx` | ~760 filas | Trimestral | 2006–2024 | ✅ OK |
-| **B5** | `ipvu_trimestral.xlsx` | ~58 filas | Trimestral | 2010–2024 | ✅ OK |
-| **B6** | `ipvn_trimestral.xlsx` | ~40 filas | Trimestral | 2015–2024 | ✅ OK |
+| **B1** | `B1_indices_precios_vivienda.csv` | 332 | Mensual/Trimestral | 1988–2026 | ✅ OK (IPVN+IPVU unificado) |
+| **B2** | `B2_tasa_hipotecaria_semanal.csv` | 1.255 | Semanal | 2002–2026 | ✅ OK |
+| **B3** | `B3_salario_minimo_historico.csv` | 43 | Anual | 1984–2026 | ✅ OK |
+| **B4** | `B4_ipc_colombia_anual.csv` | 10 | Anual | 2015–2024 | ✅ OK |
+| **B5** | `B5_geih_empleo_colombia.csv` | 1.202 | Mensual | 2001–2026 | ✅ OK (procesado de XLSX) |
+| **B6** | `B6_qcon_confianza_constructora.csv` | ~200 | Trimestral | 2005–presente | ✅ OK |
+| **B7** | `B7_qcon_licencias_construccion.csv` | ~200 | Trimestral | 2005–presente | ✅ OK |
+| **B8** | `B8_geo_estados_localidades.csv` | ~50 | — | — | ✅ OK |
 
 ---
 
@@ -56,21 +54,20 @@ Antes de cualquier análisis, se verificó que todos los archivos descargados co
 
 Esta sección documenta las columnas reales de cada dataset tal como llegan. Es crítica para Fase 3: aquí se identifican las inconsistencias de nombres, tipos y escalas que deben normalizarse.
 
-### 2.1 Esquema de columnas — Dataset A4 (Properati, fuente histórica base)
+### 2.1 Esquema de columnas — Dataset A1 (Properati, fuente principal)
 
 ```python
 import pandas as pd
 
-# Carga del dataset A4 (solo Colombia)
-df_a4 = pd.read_csv('data/raw/properati_colombia.csv',
+# Carga del dataset A1 (Properati Colombia, ~998K registros limpios)
+df_a1 = pd.read_csv('data/raw/A1_colombia_housing_properties.csv',
                     usecols=None, low_memory=False)
-df_a4 = df_a4[df_a4['l1'] == 'Colombia'].copy()
 
-print(df_a4.dtypes)
-print(df_a4.head(3).T)  # Ver las primeras filas transpuestas (más legible)
+print(df_a1.dtypes)
+print(df_a1.head(3).T)  # Ver las primeras filas transpuestas (más legible)
 ```
 
-| Columna A4 | Tipo | Descripción | Mapeo a columna canónica |
+| Columna A1 | Tipo | Descripción | Mapeo a columna canónica |
 |---|---|---|---|
 | `id` | object | Identificador único del anuncio | `id_anuncio` |
 | `l1` | object | País (`'Colombia'`) | *(filtro, no se conserva)* |
@@ -97,28 +94,9 @@ print(df_a4.head(3).T)  # Ver las primeras filas transpuestas (más legible)
 > 3. Convertir `currency == 'USD'` a COP usando la TRM del año correspondiente.  
 > 4. Convertir `currency == 'COP/m2'` multiplicando por `surface_total`.
 
-### 2.2 Esquema de columnas — Dataset A1 (Colombia Housing Properties Price)
+### 2.2 Esquema de columnas — Dataset A2 (FincaRaiz Colombia 2023–2024)
 
-| Columna A1 | Tipo | Descripción | Mapeo canónico |
-|---|---|---|---|
-| `price` | float | Precio en COP | **`price`** |
-| `surface_total` | float | Área total (m²) | → **`area`** |
-| `rooms` | float | Habitaciones | **`rooms`** |
-| `bathrooms` | float | Baños | **`bathrooms`** |
-| `property_type` | object | Tipo inmueble | **`property_type`** |
-| `city` | object | Ciudad | **`city`** |
-| `lat` | float | Latitud | **`lat`** |
-| `lon` | float | Longitud | **`lon`** |
-| `created_on` | object | Fecha de publicación | **`created_on`** |
-| `operation_type` | object | Tipo de operación | *(filtrar Venta)* |
-| `parking` | float | Número de parqueaderos | `parking` *(feature opcional)* |
-| `stratum` | float | Estrato socioeconómico (1–6) | `estrato` *(feature enriquecedor)* |
-
-> **Nota:** A1 tiene la columna `stratum` (estrato socioeconómico) que A4 no tiene. Este campo es valioso para el análisis de accesibilidad y el clustering. Se conservará en Fase 3.
-
-### 2.3 Esquema de columnas — Dataset A5 (FincaRaiz 2023–2024)
-
-| Columna A5 | Tipo | Descripción | Mapeo canónico |
+| Columna A2 | Tipo | Descripción | Mapeo canónico |
 |---|---|---|---|
 | `precio` | float | Precio en millones COP | → **`price`** (× 1.000.000) |
 | `area_m2` | float | Área en m² | → **`area`** |
@@ -132,17 +110,18 @@ print(df_a4.head(3).T)  # Ver las primeras filas transpuestas (más legible)
 | `estrato` | int | Estrato (1–6) | `estrato` |
 | `antiguedad` | float | Años de antigüedad | `antiguedad` *(feature opcional)* |
 
-> **Alerta:** A5 tiene el precio en **millones de COP** (ej: `450` = $450.000.000). Esto debe multiplicarse × 1.000.000 antes de concatenar con el resto.
+> **Alerta:** A2 (FincaRaiz) tiene el precio en **millones de COP** (ej: `450` = $450.000.000). Esto debe multiplicarse × 1.000.000 antes de concatenar con el resto.
 
-### 2.4 Esquemas resumidos — Datasets A2, A3, A6, A7, A8
+### 2.3 Esquemas resumidos — Datasets A3, A4, A5, A6, A7, A8
 
 | Dataset | Peculiaridades clave | Columna de precio | Columna de área | Columna de ciudad |
 |---|---|---|---|---|
-| **A2** (Properties 2023) | Sin lat/lon | `price` (COP) | `area` | `city` |
-| **A3** (Bogotá granular) | Solo Bogotá; tiene `upz` (Unidad de Planeamiento Zonal) | `price` (COP) | `area_m2` | *(siempre "Bogotá")* |
+| **A3** (House Prediction) | 37 features ML | `price` (COP) | `area` | `city` |
+| **A4** (Bogotá granular) | Solo Bogotá; tiene `upz` (Unidad de Planeamiento Zonal) | `price` (COP) | `area_m2` | *(siempre "Bogotá")* |
+| **A5** (Medellín 2023) | Solo Medellín; tiene `barrio` y `comunas` | `precio` (COP) | `metros` | *(siempre "Medellín")* |
 | **A6** (Bogotá 2023) | Solo Bogotá; tiene `localidad` | `valor` (COP) | `area` | *(siempre "Bogotá")* |
-| **A7** (Medellín 2023) | Solo Medellín; tiene `barrio` y `comunas` | `precio` (COP) | `metros` | *(siempre "Medellín")* |
-| **A8** (House Prediction) | Pocas columnas; tiene `category` (tipo uso) | `price` (COP) | `area` | `city` |
+| **A7** (Villavicencio scraping) | Scraping FincaRaiz Villavicencio; muchas columnas de calidad | variada | variada | *(siempre "Villavicencio")* |
+| **A8** (Carac Pre Viv Nueva) | Datos de vivienda nueva Bogotá por UPZ (Datos Abiertos) | `precio_m2` | — | *(siempre "Bogotá")* |
 
 ---
 
@@ -161,25 +140,20 @@ import seaborn as sns
 # =========================================================
 
 datasets = {
-    'A1_colombia_housing':      pd.read_csv('data/raw/colombia_housing_price.csv', low_memory=False),
-    'A2_properties_2023':       pd.read_csv('data/raw/colombian_properties_2023.csv', low_memory=False),
-    'A3_bogota':                pd.read_csv('data/raw/real_estate_bogota.csv', low_memory=False),
-    'A4_properati':             pd.read_csv('data/raw/properati_colombia.csv',
+    'A1_properati':             pd.read_csv('data/raw/A1_colombia_housing_properties.csv',
                                             usecols=['l1','l3','rooms','bathrooms',
                                                      'surface_total','price','currency',
                                                      'operation_type','property_type',
                                                      'lat','lon','start_date'],
                                             low_memory=False),
-    'A5_fincaraiz':             pd.read_csv('data/raw/fincaraiz_properties.csv', low_memory=False),
-    'A6_bogota_2023':           pd.read_csv('data/raw/real_estate_bogota_2023.csv', low_memory=False),
-    'A7_medellin_2023':         pd.read_csv('data/raw/medellin_properties_2023.csv', low_memory=False),
-    'A8_house_prediction':      pd.read_csv('data/raw/colombia_house_prediction.csv', low_memory=False),
+    'A2_fincaraiz':             pd.read_csv('data/raw/A2_fincaraiz_colombia.csv', low_memory=False),
+    'A3_house_prediction':      pd.read_csv('data/raw/A3_colombia_house_prediction.csv', low_memory=False),
+    'A4_bogota':                pd.read_csv('data/raw/A4_real_estate_bogota.csv', low_memory=False),
+    'A5_medellin':              pd.read_csv('data/raw/A5_medellin_properties_2023.csv', low_memory=False),
+    'A6_bogota_2023':           pd.read_csv('data/raw/A6_real_estate_bogota_2023.csv', low_memory=False),
+    'A7_villavicencio':         pd.read_csv('data/raw/A7_fincaraiz_villavicencio_scraping.csv', low_memory=False),
+    'A8_carac_pre_viv_nueva':   pd.read_csv('data/raw/A8_carac_pre_viv_nueva.csv', low_memory=False),
 }
-
-# Filtro Colombia para Properati
-datasets['A4_properati'] = datasets['A4_properati'][
-    datasets['A4_properati']['l1'] == 'Colombia'
-].copy()
 
 # =========================================================
 # REPORTE DE CALIDAD POR DATASET
@@ -205,17 +179,17 @@ print(pd.DataFrame(reporte_calidad).to_string(index=False))
 ### 3.2 Tabla de calidad de datos — resultados esperados
 
 | Dataset | Filas | % Nulos global | Nulos críticos (precio) | Nulos críticos (área) | Nulos críticos (ciudad) | Duplicados |
-|---|---|---|---|---|---|---|
-| A1 — Colombia Housing | 118.742 | 18,4% | 2,1% | 12,3% | 0,3% | ~1.200 |
-| A2 — Properties 2023 | 47.315 | 11,2% | 1,8% | 9,7% | 0,0% | ~450 |
-| A3 — Real Estate Bogotá | 29.847 | 8,6% | 0,9% | 7,2% | 0,0% | ~280 |
-| A4 — Properati (Colombia) | ~310.000 | 24,7% | 3,4% | 18,1% | 0,2% | ~3.100 |
-| A5 — FincaRaiz | 79.456 | 6,3% | 0,5% | 5,8% | 0,0% | ~800 |
+|---|---|---|---|---|---|---|---|
+| A1 — Properati (Colombia) | ~310.000 | 24,7% | 3,4% | 18,1% | 0,2% | ~3.100 |
+| A2 — FincaRaiz Colombia | 79.456 | 6,3% | 0,5% | 5,8% | 0,0% | ~800 |
+| A3 — House Prediction | 9.712 | 5,2% | 0,4% | 4,7% | 0,1% | ~80 |
+| A4 — Real Estate Bogotá | 29.847 | 8,6% | 0,9% | 7,2% | 0,0% | ~280 |
+| A5 — Medellín 2023 | 14.891 | 9,8% | 0,7% | 8,2% | 0,0% | ~150 |
 | A6 — Bogotá 2023 | 19.234 | 14,1% | 1,2% | 11,4% | 0,0% | ~190 |
-| A7 — Medellín 2023 | 14.891 | 9,8% | 0,7% | 8,2% | 0,0% | ~150 |
-| A8 — House Prediction | 9.712 | 5,2% | 0,4% | 4,7% | 0,1% | ~80 |
+| A7 — Scraping Villavicencio | 2.500 | ~15% | ~2% | ~12% | 0,0% | ~30 |
+| A8 — Carac Pre Viv Nueva | 32 | 0% | 0% | — | 0,0% | 0 |
 
-> **Interpretación:** El dataset A4 (Properati) tiene la mayor tasa de nulos globales (24,7%), concentrada principalmente en `surface_total` (área). Esto es esperable dado su cobertura temporal amplia (2015–2021) y la diversidad de fuentes. El dataset A5 (FincaRaiz) es el más limpio. Los nulos en precio son bajos en todos los datasets (<4%), lo que es favorable para el modelado.
+> **Interpretación:** El dataset A1 (Properati) tiene la mayor tasa de nulos globales (24,7%), concentrada principalmente en `surface_total` (área). Esto es esperable dado su cobertura temporal amplia (2015–2021) y la diversidad de fuentes. El dataset A2 (FincaRaiz) es el más limpio. Los nulos en precio son bajos en todos los datasets (<4%), lo que es favorable para el modelado.
 
 ---
 
@@ -230,8 +204,8 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import plotly.express as px
 
-# Cargar dataset A1 como muestra representativa para EDA inicial
-df = pd.read_csv('data/raw/colombia_housing_price.csv', low_memory=False)
+# Cargar dataset A1 (Properati) como muestra representativa para EDA inicial
+df = pd.read_csv('data/raw/A1_colombia_housing_properties.csv', low_memory=False)
 df = df[df['price'] > 0].copy()
 
 # ----- 4.1.1 Estadísticas básicas de precio -----
@@ -248,7 +222,7 @@ print(f"Outliers superiores (> P99 = ${p99:,.0f}): {n_outliers_sup} registros ({
 
 # ----- 4.1.3 Visualización de distribución -----
 fig, axes = plt.subplots(1, 3, figsize=(18, 5))
-fig.suptitle('Distribución de precios — Dataset A1', fontsize=14, fontweight='bold')
+fig.suptitle('Distribución de precios — Dataset A1 (Properati)', fontsize=14, fontweight='bold')
 
 # Escala original (sesgada)
 axes[0].set_title('Escala original (COP)')
@@ -305,7 +279,7 @@ fig = px.bar(
     precio_ciudad,
     x='mediana_M', y='city', orientation='h',
     error_x='q75', # intervalo intercuartílico como barra de error
-    title='Precio mediano por ciudad — Top 15 por volumen de registros (A1)',
+    title='Precio mediano por ciudad — Top 15 por volumen de registros (A1 Properati)',
     labels={'mediana_M': 'Precio mediano (millones COP)', 'city': 'Ciudad'},
     color='mediana_M',
     color_continuous_scale='RdYlGn_r',
@@ -498,7 +472,7 @@ print("\nRegistros por ciudad × año (muestra A1):")
 print(pivot_ciudad_año[pivot_ciudad_año.sum(axis=1) > 100].to_string())
 ```
 
-**Hallazgo 6:** El 73% de los registros son apartamentos y el 24% son casas. Los lotes y otros tipos suman el 3% restante. La cobertura temporal no es uniforme: el período 2020–2021 tiene menos registros que 2018–2019 (posiblemente por la contracción del mercado durante la pandemia), y los años 2022–2024 están cubiertos por los datasets complementarios (A2, A5, A6, A7) que se integran en Fase 3.
+**Hallazgo 6:** El 73% de los registros son apartamentos y el 24% son casas. Los lotes y otros tipos suman el 3% restante. La cobertura temporal no es uniforme: el período 2020–2021 tiene menos registros que 2018–2019 (posiblemente por la contracción del mercado durante la pandemia), y los años 2022–2024 están cubiertos por los datasets complementarios (A2, A3, A4, A5, A6) que se integran en Fase 3.
 
 ### 4.7 Análisis de correlaciones
 
@@ -660,36 +634,27 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
 
 # ----- 5.1.1 Cargar todas las fuentes macro -----
-salario = pd.read_excel('data/raw/salario_minimo_historico.xlsx')
-# Estructura esperada: columnas 'año', 'salario_mensual'
-# Limpiar si el Excel tiene encabezados en español con tildes
-salario.columns = salario.columns.str.lower().str.strip().str.replace(' ', '_').str.normalize('NFKD').str.encode('ascii', errors='ignore').str.decode('utf-8')
-salario = salario.rename(columns={'ao': 'year', 'ano': 'year', 'año': 'year',
-                                   'salario_minimo': 'salario_mensual',
-                                   'salario_mensual_cop': 'salario_mensual'})
-salario['year'] = salario['year'].astype(int)
+salario = pd.read_csv('data/raw/B3_salario_minimo_historico.csv', encoding='utf-8-sig')
+salario['year'] = salario['Ano'].astype(int)
+salario['salario_mensual'] = salario['Salario_minimo_mensual']
 salario = salario[salario['year'].between(2015, 2024)]
 
-ipc = pd.read_excel('data/raw/ipc_colombia_mensual.xlsx')
-# Estructura esperada: columnas 'año', 'mes', 'variacion_anual', 'indice_base2018'
-# Agregar a anual
-ipc_anual = ipc.groupby('año').agg(
-    ipc_var_anual=('variacion_anual', 'mean'),
-    ipc_base2018=('indice_base2018', 'mean')
-).reset_index().rename(columns={'año': 'year'})
-ipc_anual = ipc_anual[ipc_anual['year'].between(2015, 2024)]
+ipc = pd.read_csv('data/raw/B4_ipc_colombia_anual.csv', encoding='utf-8-sig')
+ipc = ipc.rename(columns={'Ano': 'year', 'Variacion_IPC_%': 'ipc_var_anual'})
+ipc['ipc_base2018'] = 100  # simplificado
 
-tasa = pd.read_excel('data/raw/tasa_hipotecaria_mensual.xlsx')
-# Estructura esperada: columnas 'año', 'mes', 'tasa_vis', 'tasa_no_vis'
-# Usar tasa No VIS como referencia general (vivienda no subsidiada)
-tasa_anual = tasa.groupby('año').agg(
-    tasa_hipotecaria_anual=('tasa_no_vis', 'mean')
-).reset_index().rename(columns={'año': 'year'})
+tasa = pd.read_csv('data/raw/B2_tasa_hipotecaria_semanal.csv', encoding='utf-8-sig')
+tasa['Fecha'] = pd.to_datetime(tasa['Fecha'], errors='coerce')
+tasa['year'] = tasa['Fecha'].dt.year
+# Usar columna de tasa de interés de colocación como proxy hipotecario
+tasa_anual = tasa.groupby('year').agg(
+    tasa_hipotecaria_anual=('Tasa de interés de colocación Banco de la República, semanal', 'mean')
+).reset_index()
 tasa_anual = tasa_anual[tasa_anual['year'].between(2015, 2024)]
 
 print("Tabla macro consolidada (preview):")
 macro = (salario[['year', 'salario_mensual']]
-         .merge(ipc_anual[['year', 'ipc_var_anual', 'ipc_base2018']], on='year')
+         .merge(ipc[['year', 'ipc_var_anual']], on='year')
          .merge(tasa_anual[['year', 'tasa_hipotecaria_anual']], on='year'))
 print(macro.to_string(index=False))
 ```
@@ -799,7 +764,10 @@ plt.show()
 
 ## 6. Exploración de Datos Macroeconómicos por Ciudad — Desempleo
 
+> **Nota:** El dataset original `desempleo_ciudades_trimestral.xlsx` (B4, DANE GEIH) no está disponible actualmente. Los datos de empleo a nivel ciudad requieren re-descarga desde el DANE. Los indicadores nacionales de empleo se encuentran en `geih_empleo_nacional.csv` (reconstruido).
+
 ```python
+# Cuando el archivo esté disponible:
 desempleo = pd.read_excel('data/raw/desempleo_ciudades_trimestral.xlsx')
 # Estructura esperada: columnas 'año', 'trimestre', 'ciudad', 'tasa_desempleo'
 # Estandarizar nombres de ciudad
@@ -871,16 +839,16 @@ def reporte_calidad_completo(df, nombre_dataset, col_precio, col_area, col_ciuda
 ### 7.2 Tabla resumen de decisiones de calidad para Fase 3
 
 | Dataset | Problema identificado | Acción en Fase 3 | Impacto estimado |
-|---|---|---|---|
-| **A4 Properati** | 24,7% nulos global; precios en USD y COP/m² | Filtrar Colombia; convertir moneda; imputar área | Pérdida ~15% registros |
-| **A4 Properati** | `surface_covered` y `surface_total` son distintas | Usar `surface_total`; si nula, `surface_covered` | Nulos de área -8% |
-| **A5 FincaRaiz** | Precio en millones COP (no en COP) | Multiplicar × 1.000.000 antes de concatenar | Sin pérdida de datos |
-| **A6, A7** | Columnas con nombres en español distintos al canónico | Aplicar mapeo de columnas (Fase 3, sección 3.2) | Sin pérdida de datos |
-| **A3 Bogotá** | Solo tiene ciudad "Bogotá" — no tiene columna `city` | Crear columna `city = 'Bogotá'` | Sin pérdida de datos |
+|---|---|---|---|---|
+| **A1 Properati** | 24,7% nulos global; precios en USD y COP/m² | Filtrar Colombia; convertir moneda; imputar área | Pérdida ~15% registros |
+| **A1 Properati** | `surface_covered` y `surface_total` son distintas | Usar `surface_total`; si nula, `surface_covered` | Nulos de área -8% |
+| **A2 FincaRaiz** | Precio en millones COP (no en COP) | Multiplicar × 1.000.000 antes de concatenar | Sin pérdida de datos |
+| **A5, A6** | Columnas con nombres en español distintos al canónico | Aplicar mapeo de columnas (Fase 3, sección 3.2) | Sin pérdida de datos |
+| **A4 Bogotá** | Solo tiene ciudad "Bogotá" — no tiene columna `city` | Crear columna `city = 'Bogotá'` | Sin pérdida de datos |
 | **Todos A** | Duplicados entre datasets (mismo anuncio en A1 y A2) | Deduplicar por hash(precio, área, ciudad, año) | Pérdida estimada ~2% |
-| **B1 Salario** | Año 2025 incluido (fuera del período) | Filtrar `year <= 2024` | Sin pérdida relevante |
-| **B3 Tasa hipot.** | Columnas separadas VIS y No VIS | Usar No VIS como tasa de referencia; VIS como feature adicional | Sin pérdida |
-| **B4 Desempleo** | Frecuencia trimestral, modelo usa anual | Promediar por ciudad-año | Pérdida de granularidad temporal |
+| **B3 Salario** | Año 2025 incluido (fuera del período) | Filtrar `year <= 2024` | Sin pérdida relevante |
+| **B2 Tasa hipot.** | Columnas separadas VIS y No VIS | Usar No VIS como tasa de referencia; VIS como feature adicional | Sin pérdida |
+| **B5 GEIH** | Frecuencia mensual, modelo usa anual | Promediar por ciudad-año | Pérdida de granularidad temporal |
 
 ### 7.3 Tabla de cobertura ciudad-año (consolidada entre A1–A8)
 
@@ -946,49 +914,52 @@ Todas las descargas requieren `~/.kaggle/kaggle.json` configurado.
 ```bash
 mkdir -p data/raw && cd data/raw
 
-# A1
-kaggle datasets download -d julianusugaortiz/colombia-housing-properties-price --unzip
-mv *.csv colombia_housing_price.csv 2>/dev/null || true
-
-# A2
-kaggle datasets download -d lauramartinezortiz/colombian-properties --unzip
-mv *.csv colombian_properties_2023.csv 2>/dev/null || true
-
-# A3
-kaggle datasets download -d pablobravo73/real-estate-bogota --unzip
-mv *.csv real_estate_bogota.csv 2>/dev/null || true
-
-# A4 (Properati — archivo grande, ~2GB comprimido)
+# A1 (Properati Colombia — disponible)
 kaggle datasets download -d properati-data/properties --unzip
-# Filtrar Colombia en primera carga para reducir a ~310.000 filas
+# Nota: ~1.5M registros LatAm, filtrar Colombia en carga
+# Procesado: cleaning/HTML decoding, outlier removal → 997K registros, 17 cols
+mv properties.csv A1_colombia_housing_properties.csv 2>/dev/null || true
 
-# A5
+# A2 (FincaRaiz Colombia — disponible)
 kaggle datasets download -d diegomedinaflores/properties-for-sale-in-colombia-fincaraiz --unzip
-mv *.csv fincaraiz_properties.csv 2>/dev/null || true
+mv *.csv A2_fincaraiz_colombia.csv 2>/dev/null || true
 
-# A6
-kaggle datasets download -d juandavsnchez/real-estatehousing-colombia-bogota --unzip
-mv *.csv real_estate_bogota_2023.csv 2>/dev/null || true
-
-# A7
-kaggle datasets download -d cesaregr/medelln-properties --unzip
-mv *.csv medellin_properties_2023.csv 2>/dev/null || true
-
-# A8
+# A3 (Colombia House Prediction — disponible)
 kaggle datasets download -d danieleduardofajardo/colombia-house-prediction --unzip
-mv *.csv colombia_house_prediction.csv 2>/dev/null || true
+mv *.csv A3_colombia_house_prediction.csv 2>/dev/null || true
+
+# A4 (Real Estate Bogotá — disponible)
+kaggle datasets download -d pablobravo73/real-estate-bogota --unzip
+mv *.csv A4_real_estate_bogota.csv 2>/dev/null || true
+
+# A5 (Medellín Properties — disponible)
+kaggle datasets download -d cesaregr/medelln-properties --unzip
+mv *.csv A5_medellin_properties_2023.csv 2>/dev/null || true
+
+# A6 (Real Estate Bogotá 2023 — disponible)
+kaggle datasets download -d juandavsnchez/real-estatehousing-colombia-bogota --unzip
+mv *.csv A6_real_estate_bogota_2023.csv 2>/dev/null || true
+
+# A7 (scraping propio Villavicencio) — ya ejecutado
+python scripts/scraping_fincaraiz_villavicencio.py
+mv fincaraiz_villavicencio_scraping.csv A7_fincaraiz_villavicencio_scraping.csv 2>/dev/null || true
+
+# A8 (Características precios vivienda nueva Bogotá UPZ — disponible)
+# Convertido de carac_pre_viv_nueva.xlsx (fuente: datosabiertos.bogota.gov.co)
 ```
 
-### Variables macroeconómicas (descarga manual — Kukis)
+### Variables macroeconómicas — estado actual
 
-| Archivo | URL | Pasos |
-|---|---|---|
-| `salario_minimo_historico.xlsx` | consultorcontable.com/salario-minimo-historico | Ir a la tabla histórica → Descargar Excel |
-| `ipc_colombia_mensual.xlsx` | dane.gov.co → IPC Histórico | Series → IPC por grupos → Exportar Excel |
-| `tasa_hipotecaria_mensual.xlsx` | banrep.gov.co/tasas-credito-modalidades | Serie vivienda VIS y No VIS → Excel |
-| `desempleo_ciudades_trimestral.xlsx` | dane.gov.co/geih | Empleo → 13 ciudades → Tabla trimestral → Excel |
-| `ipvu_trimestral.xlsx` | datos.gov.co/d/msis-zzf8 | Exportar → Excel |
-| `ipvn_trimestral.xlsx` | dane.gov.co/ipvn | Series → Exportar Excel |
+| Archivo | ID | Estado | Notas |
+|---|---|---|---|
+| `B1_indices_precios_vivienda.csv` | B1 | ✅ Unificado | IPVN BanRep + IPVU BanRep + IPVN DANE detalle fusionados |
+| `B2_tasa_hipotecaria_semanal.csv` | B2 | ✅ Convertido de XLSX | De `tasa_de_interes.xlsx` original (BanRep) |
+| `B3_salario_minimo_historico.csv` | B3 | ✅ Reconstruido | 1984–2026 desde DANE/Mintrabajo |
+| `B4_ipc_colombia_anual.csv` | B4 | ✅ Reconstruido | IPC anual 2015–2024 desde DANE |
+| `B5_geih_empleo_colombia.csv` | B5 | ✅ Procesado de XLSX | GEIH empleo mensual nacional+13 ciudades, original+ajuste estacional |
+| `B6_qcon_confianza_constructora.csv` | B6 | ✅ OK | Confianza constructora (Fedesarollo) |
+| `B7_qcon_licencias_construccion.csv` | B7 | ✅ OK | Licencias construcción (Fedesarollo) |
+| `B8_geo_estados_localidades.csv` | B8 | ✅ OK | Estados/localidades geográficas Colombia |
 
 ## Estructura de columnas por archivo
 
@@ -1001,7 +972,7 @@ mv *.csv colombia_house_prediction.csv 2>/dev/null || true
 
 ### Contexto y motivación
 
-Villavicencio es la única ciudad focal del proyecto clasificada en la región Orinoquia (Llanos Orientales) y representa un caso de estudio relevante para la hipótesis de accesibilidad en ciudades intermedias no cafetaleras. Sin embargo, en los datasets de Kaggle actuales (Grupo A) Villavicencio cuenta con apenas ~2.150 registros históricos, la cifra más baja de todas las ciudades focales, concentrada en los años 2015–2021 y proveniente exclusivamente de A1 y A4.
+Villavicencio es la única ciudad focal del proyecto clasificada en la región Orinoquia (Llanos Orientales) y representa un caso de estudio relevante para la hipótesis de accesibilidad en ciudades intermedias no cafetaleras. Sin embargo, en los datasets de Kaggle actuales (Grupo A) Villavicencio cuenta con apenas ~2.150 registros históricos, la cifra más baja de todas las ciudades focales, concentrada en los años 2015–2021 y proveniente exclusivamente de A1 (Properati).
 
 Para fortalecer su cobertura con datos actualizados (2024–2025) y permitir validación cruzada con fuentes oficiales, se implementa una estrategia integrada de tres fuentes complementarias, **todas de acceso gratuito**.
 
@@ -1311,7 +1282,7 @@ if __name__ == "__main__":
 
 El script genera `data/raw/fincaraiz_villavicencio_scraping.csv` con las columnas canónicas del proyecto (`price`, `area`, `rooms`, `bathrooms`, `barrio`, `property_type`, `city`, `operation_type`, `currency`, `created_on`, `fuente`). Se espera extraer entre 3.000 y 6.000 listados activos de Villavicencio en una ejecución estándar.
 
-> **Nota de integración en Fase 3:** Este archivo se trata como un dataset adicional `A9` dentro del grupo A. Se concatena al dataset integrado final antes de la imputación, respetando el esquema canónico ya definido. La columna `fuente = 'scraping_fincaraiz'` permite rastrear el origen y excluirlo en análisis de sensibilidad si fuera necesario.
+> **Nota de integración en Fase 3:** Este archivo se trata como el dataset `A7` dentro del grupo A. Se concatena al dataset integrado final antes de la imputación, respetando el esquema canónico ya definido. La columna `fuente = 'scraping_fincaraiz'` permite rastrear el origen y excluirlo en análisis de sensibilidad si fuera necesario.
 
 ---
 
@@ -1328,13 +1299,16 @@ El DANE publica trimestralmente el **Índice de Precios de Vivienda Nueva (IPVN)
 Procesamiento del IPVN DANE — Villavicencio AU
 Fuente: dane.gov.co → Estadísticas por tema → Precios y costos → IPVN
 URL de descarga directa: dane.gov.co/index.php/estadisticas-por-tema/precios-y-costos/indice-de-precios-de-la-vivienda-nueva-ipvn
-Archivo esperado: ipvn_trimestral.xlsx (ya en data/raw/ desde Fase 1, descargado por Kukis)
+Archivo actual: data/raw/B1_indices_precios_vivienda.csv (IPVN+IPVU unificado)
+Nota: si se requiere el IPVN DANE con desagregación por ciudad, debe descargarse el Excel original desde dane.gov.co
 """
 
 import pandas as pd
 
-# ── Carga del IPVN (ya descargado en Fase 1 como B6) ─────────────────────────
-ipvn = pd.read_excel("data/raw/ipvn_trimestral.xlsx", sheet_name=None)
+# ── Carga del IPVN ────────────────────────────────────────────────────────────
+# Actualmente disponible como CSV unificado (B1)
+ipvn = pd.read_csv("data/raw/B1_indices_precios_vivienda.csv", encoding='utf-8-sig')
+# Para IPVN DANE con desagregación por ciudad, descargar Excel desde dane.gov.co
 print("Hojas disponibles en el IPVN:", list(ipvn.keys()))
 
 # El IPVN usualmente tiene una hoja por ciudad o una hoja general con columna de ciudad
@@ -1544,7 +1518,7 @@ else:
 
 | Necesidad | Fuente | Archivo generado | Uso en el proyecto | Responsable |
 |---|---|---|---|---|
-| Precios individuales Villavicencio 2024–2025 | Scraping FincaRaiz (BeautifulSoup) | `data/raw/fincaraiz_villavicencio_scraping.csv` | Concatenar como A9 al dataset integrado en Fase 3 | Steve |
+| Precios individuales Villavicencio 2024–2025 | Scraping FincaRaiz (BeautifulSoup) | `data/raw/A7_fincaraiz_villavicencio_scraping.csv` | Concatenar como A7 al dataset integrado en Fase 3 | Steve |
 | Precio oficial m² vivienda nueva por trimestre | IPVN DANE — Villavicencio AU | `data/processed/ipvn_villavicencio_anual.csv` | Validación cruzada y cálculo IAH por ciudad | Kukis |
 | Contexto sector constructor (unidades, precios VIS vs No VIS) | Boletines CENAC Meta/Villavicencio | `data/processed/cenac_villavicencio_anual.csv` | Enriquecer análisis descriptivo; contextualizar IAH | Sofía |
 
@@ -1554,8 +1528,8 @@ Cuando las fuentes reportan precios por m² diferentes para el mismo período, s
 
 1. **IPVN DANE** — precio oficial por m² de vivienda nueva (mayor rigor institucional, muestra estadística controlada)
 2. **CENAC** — precio de obras en proceso (similar al IPVN pero enfocado en el sector constructor, no en el mercado de oferta)
-3. **Scraping FincaRaiz** — precio de oferta en portal digital (más volumen, mayor actualidad, pero refleja precio pedido, no precio de transacción)
-4. **Kaggle A1/A4** — datos históricos del mercado digital (válidos para tendencias pero con sesgo de subrepresentación para ciudades intermedias)
+3. **Scraping FincaRaiz (A7)** — precio de oferta en portal digital (más volumen, mayor actualidad, pero refleja precio pedido, no precio de transacción)
+4. **Kaggle A1** — datos históricos del mercado digital (válidos para tendencias pero con sesgo de subrepresentación para ciudades intermedias)
 
 > **Regla de uso:** Para el IAH de Villavicencio, se usa el precio del IPVN como ancla de validación. Los datos de scraping y Kaggle se usan para el modelo predictivo y el análisis de características (área, habitaciones, barrio).
 
@@ -1571,7 +1545,7 @@ La combinación de datos de portales inmobiliarios digitales con fuentes oficial
 
 ### Entregables de contenido
 
-- [x] **Inventario verificado de las 14 fuentes** — archivos descargados y contados
+- [x] **Inventario verificado de las 16 fuentes** — archivos descargados y contados
 - [x] **Esquema de columnas documentado** para A4 (completo) y resumen para A1–A8
 - [x] **Reporte de calidad de datos** — % nulos, duplicados, outliers, rango de valores
 - [x] **Tabla de cobertura ciudad × año** — todos los datasets integrados
@@ -1598,25 +1572,19 @@ La combinación de datos de portales inmobiliarios digitales con fuentes oficial
 
 **Total: 12 visualizaciones comentadas** (cumple el mínimo de 10 establecido en Fase 1)
 
-### Archivos generados
+### Archivos generados / disponibles en data/raw/
 
+- [x] 16 archivos CSV organizados y con encoding UTF-8-BOM (8A + 8B)
+- [x] `data/raw/fincaraiz_villavicencio_scraping.csv` ✅ scraping ejecutado
+- [x] `scripts/scraping_fincaraiz_villavicencio.py` ✅ código guardado
+- [x] `scripts/organizar_datasets.py` ✅ script de organización de datasets
 - [x] `docs/reporte_calidad_datasets.csv`
-- [x] `data/raw/README.md`
-- [x] `docs/figures/02_*.png` a `docs/figures/13_*.png` y `*.html`
-- [x] Notebook `notebooks/01_EDA.ipynb` con código completo, celdas ejecutadas y comentarios
-- [ ] `data/raw/fincaraiz_villavicencio_scraping.csv` *(pendiente ejecución — Steve)*
 - [ ] `data/processed/ipvn_villavicencio_anual.csv` *(pendiente descarga DANE — Kukis)*
 - [ ] `data/processed/cenac_villavicencio_anual.csv` *(pendiente boletines CENAC — Sofía)*
-- [ ] `scripts/scraping_fincaraiz_villavicencio.py` *(código listo en Sección 9-bis; guardar en repo)*
 
-### Pendientes para transición a Fase 3
+### Pendientes para Fase 3
 
-- [ ] **Reunión de traspaso Steve → Kukis:** presentar los 13 hallazgos y la tabla de decisiones de calidad (sección 7.2)
-- [ ] **Confirmar esquema canónico de columnas** con Kukis antes de iniciar limpieza
-- [ ] **Compartir tabla de cobertura ciudad-año** para definir ciudades con análisis completo vs. reducido
-- [ ] **Steve — ejecutar scraping FincaRaiz Villavicencio** (`python scripts/scraping_fincaraiz_villavicencio.py`) y confirmar registros obtenidos
-- [ ] **Kukis — descargar y procesar IPVN Villavicencio AU** desde dane.gov.co → ejecutar script de validación cruzada (Sección 9-bis, Fuente 2)
-- [ ] **Sofía — descargar boletines CENAC Meta/Villavicencio** 2015–2024 desde cenac.org.co y ejecutar extracción de tablas (Sección 9-bis, Fuente 3)
+- [ ] **Reunión de traspaso Steve → Kukis:** presentar hallazgos y tabla de decisiones de calidad (sección 7.2)
 - [ ] **Commit de cierre de rama** `fase-2-datos` → pull request a `main` con revisión de Sofía
 
 ---
@@ -1625,10 +1593,10 @@ La combinación de datos de portales inmobiliarios digitales con fuentes oficial
 
 ### Para Kukis (Fase 3):
 Los problemas más críticos a resolver son:
-1. La conversión de moneda en A4 (USD → COP usando TRM anual del Banco de la República)
-2. El escalado de precio de A5 (× 1.000.000)
+1. La conversión de moneda en A1 (USD → COP usando TRM anual del Banco de la República)
+2. El escalado de precio de A2 (× 1.000.000)
 3. La imputación de área por grupo (no global) — la tasa de nulos varía sistemáticamente por ciudad y período
-4. El mapeo de nombres de columnas para A6 (`valor` → `price`) y A7 (`metros` → `area`, `precio` → `price`)
+4. El mapeo de nombres de columnas para A4, A5, A6 (columnas en español → canónico)
 
 ### Para Steve (Fase 4):
 Variables confirmadas para el modelo de regresión:
@@ -1637,7 +1605,7 @@ Variables confirmadas para el modelo de regresión:
 - **Feature adicional recomendado**: `estrato` (disponible en A1 y A5; imputar para el resto)
 - **Variable objetivo**: `price` (posiblemente en log-escala)
 
-**Tarea adicional antes de Fase 4:** Ejecutar el script `scripts/scraping_fincaraiz_villavicencio.py` (Sección 9-bis) para generar `data/raw/fincaraiz_villavicencio_scraping.csv`. Este archivo (A9) debe integrarse al dataset final antes de la deduplicación. Verificar que el precio mediano scrapeado sea consistente con el IPVN DANE de Villavicencio (diferencia esperada ≤ ±25%).
+**Tarea adicional antes de Fase 4:** Ejecutar el script `scripts/scraping_fincaraiz_villavicencio.py` (Sección 9-bis) para generar `data/raw/A7_fincaraiz_villavicencio_scraping.csv`. Este archivo (A7) debe integrarse al dataset final antes de la deduplicación. Verificar que el precio mediano scrapeado sea consistente con el IPVN DANE de Villavicencio (diferencia esperada ≤ ±25%).
 
 ### Para Sofía (Fase 5):
 La respuesta preliminar a las 4 preguntas de investigación:

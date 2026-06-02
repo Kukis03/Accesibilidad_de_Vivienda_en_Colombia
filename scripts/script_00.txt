@@ -1,0 +1,19 @@
+function getWidth() {
+								return Math.max(
+									document.body.scrollWidth,
+									document.documentElement.scrollWidth,
+									document.body.offsetWidth,
+									document.documentElement.offsetWidth,
+									document.documentElement.clientWidth
+								);
+								}
+								
+								function setHeightPushdown(expanded) {
+								const width = getWidth();
+								const expandible = document.getElementById('expandible');
+								if (expandible) {
+									const expandedHeight = width < 600 ? '250px' : '250px';
+									const collapsedHeight = width < 600 ? '50px' : '90px';
+									expandible.style.height = (expanded ? expandedHeight : collapsedHeight);
+								}
+								}
