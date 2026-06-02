@@ -1,0 +1,21 @@
+{
+  "proyecto": "Accesibilidad de Vivienda en Colombia",
+  "fase": 2,
+  "fecha_ejecucion": "2026-06-02 05:38",
+  "notebooks": [
+    "01_EDA_esquema_canonico.ipynb",
+    "02_EDA_calidad_datos.ipynb",
+    "03_EDA_distribucion_precios.ipynb",
+    "04_EDA_analisis_geografico.ipynb",
+    "05_EDA_evolucion_temporal.ipynb",
+    "06_EDA_analisis_area.ipynb",
+    "07_EDA_variables_categoricas.ipynb",
+    "08_EDA_geoespacial_macrovariables.ipynb",
+    "09_EDA_IAH_preliminar.ipynb",
+    "10_EDA_validacion_oficial.ipynb",
+    "11_EDA_reporte_consolidado.ipynb"
+  ],
+  "total_hallazgos": 13,
+  "decisiones_fase_3": 9,
+  "acciones_correctivas": 8
+}

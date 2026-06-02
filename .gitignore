@@ -7,10 +7,10 @@ build/
 
 # Datos
 data/raw/
-data/processed/
+#data/processed/
 
 # Modelos (generados por Fase 4)
-models/*.pkl
+#models/*.pkl
 !models/.gitkeep
 
 # Entorno
