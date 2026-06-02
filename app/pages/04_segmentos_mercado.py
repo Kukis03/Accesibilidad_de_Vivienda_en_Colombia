@@ -6,10 +6,17 @@ import os
 st.set_page_config(page_title="Segmentos de Mercado", page_icon="📌", layout="wide")
 st.title("📌 Segmentación de Mercados Inmobiliarios (Clustering)")
 
+<<<<<<< HEAD
 ruta = "../data/processed/segmentos_mercado.csv"
 if os.path.exists(ruta):
     df_sub = pd.read_csv(ruta)
 
+=======
+ruta = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), '..', 'data', 'processed', 'segmentos_mercado.csv')
+if os.path.exists(ruta):
+    df_sub = pd.read_csv(ruta)
+    
+>>>>>>> 2711ad8c08d83362df73b02abfd236a5caf862f0
     col1, col2 = st.columns([2, 1])
     with col1:
         st.subheader("Mapa Conceptual de Segmentos Inmobiliarios")
@@ -17,14 +24,26 @@ if os.path.exists(ruta):
                                  hover_name='city', text='city',
                                  title="Visualización Bidimensional del Clustering (KMeans)")
         st.plotly_chart(fig_scatter, use_container_width=True)
+<<<<<<< HEAD
 
+=======
+        
+>>>>>>> 2711ad8c08d83362df73b02abfd236a5caf862f0
     with col2:
         st.subheader("Estadísticas del Segmento")
         resumen_seg = df_sub.groupby('segmento')[['precio_mediano', 'IAH_promedio', 'ratio_cuota_promedio']].mean()
         st.dataframe(resumen_seg.round(2))
+<<<<<<< HEAD
 
+=======
+        
+>>>>>>> 2711ad8c08d83362df73b02abfd236a5caf862f0
     st.subheader("Transición Histórica de Segmento por Ciudad (2015-2024)")
     pivot_seg = df_sub.pivot(index='city', columns='year', values='segmento')
     st.dataframe(pivot_seg)
 else:
     st.warning("El archivo de segmentos `segmentos_mercado.csv` no se encuentra disponible. Ejecute el clustering de la Fase 4.")
+<<<<<<< HEAD
+=======
+    st.info(f"Ruta esperada: `{ruta}`")
+>>>>>>> 2711ad8c08d83362df73b02abfd236a5caf862f0

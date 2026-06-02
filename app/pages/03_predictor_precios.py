@@ -7,6 +7,10 @@ import os
 st.set_page_config(page_title="Predictor de Precio", page_icon="🔮", layout="wide")
 st.title("🔮 Predicción del Precio y Accesibilidad en Tiempo Real")
 
+<<<<<<< HEAD
+=======
+# Estilos CSS
+>>>>>>> 2711ad8c08d83362df73b02abfd236a5caf862f0
 st.markdown("""
     <style>
     .result-card { border-radius: 10px; padding: 25px; margin-top: 20px; text-align: center; }
@@ -17,9 +21,16 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
+<<<<<<< HEAD
 @st.cache_resource
 def cargar_modelo():
     ruta = "../models/modelo_random_forest.pkl"
+=======
+# Cargar Modelo Guardado en Fase 4
+@st.cache_resource
+def cargar_modelo():
+    ruta = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), '..', 'models', 'modelo_random_forest.pkl')
+>>>>>>> 2711ad8c08d83362df73b02abfd236a5caf862f0
     if os.path.exists(ruta):
         return joblib.load(ruta)
     return None
@@ -28,7 +39,11 @@ modelo = cargar_modelo()
 
 if modelo is not None:
     st.subheader("Ingrese las Características del Inmueble a Valorar")
+<<<<<<< HEAD
 
+=======
+    
+>>>>>>> 2711ad8c08d83362df73b02abfd236a5caf862f0
     col1, col2, col3 = st.columns(3)
     with col1:
         area = st.number_input("Área Construida (m²)", min_value=15.0, max_value=800.0, value=70.0, step=1.0)
@@ -37,23 +52,38 @@ if modelo is not None:
         rooms = st.selectbox("Habitaciones", [1, 2, 3, 4, 5, 6], index=2)
         bathrooms = st.selectbox("Baños", [1, 2, 3, 4, 5, 6], index=1)
     with col3:
+<<<<<<< HEAD
         city = st.selectbox("Ciudad", ['Bogotá', 'Medellín', 'Cali', 'Barranquilla', 'Cartagena',
                                        'Bucaramanga', 'Pereira', 'Manizales', 'Armenia', 'Cúcuta',
                                        'Ibagué', 'Villavicencio'])
         estrato = st.slider("Estrato Socioeconómico", 1, 6, 3)
 
+=======
+        city = st.selectbox("Ciudad", ['Bogotá', 'Medellín', 'Cali', 'Barranquilla', 'Cartagena', 
+                                       'Bucaramanga', 'Pereira', 'Manizales', 'Armenia', 'Cúcuta', 
+                                       'Ibagué', 'Villavicencio'])
+        estrato = st.slider("Estrato Socioeconómico", 1, 6, 3)
+
+    # Variables macro fijadas para el año 2024
+>>>>>>> 2711ad8c08d83362df73b02abfd236a5caf862f0
     year = 2024
     ipc_var_anual = 6.80
     tasa_hipotecaria_anual = 12.50
     tasa_desempleo = 10.5
     ipvu_variacion_anual = 7.20
+<<<<<<< HEAD
 
+=======
+    
+    # Crear dataframe para la predicción
+>>>>>>> 2711ad8c08d83362df73b02abfd236a5caf862f0
     df_predict = pd.DataFrame([{
         'area': area, 'rooms': rooms, 'bathrooms': bathrooms, 'estrato': estrato, 'year': year,
         'ipc_var_anual': ipc_var_anual, 'tasa_hipotecaria_anual': tasa_hipotecaria_anual,
         'tasa_desempleo': tasa_desempleo, 'ipvu_variacion_anual': ipvu_variacion_anual,
         'city': city, 'property_type': property_type
     }])
+<<<<<<< HEAD
 
     if st.button("Calcular Precio Estimado"):
         precio_pred = modelo.predict(df_predict)[0]
@@ -62,11 +92,29 @@ if modelo is not None:
         salario_anual_2024 = salario_minimo_2024 * 12
         iah_estimado = precio_pred / salario_anual_2024
 
+=======
+    
+    if st.button("Calcular Precio Estimado"):
+        # Realizar predicción
+        precio_pred = modelo.predict(df_predict)[0]
+        
+        # Fórmulas de Variables Derivadas (Fase 3)
+        salario_minimo_2024 = 1300000
+        salario_anual_2024 = salario_minimo_2024 * 12
+        iah_estimado = precio_pred / salario_anual_2024
+        
+        # Calcular cuota mensual (15 años, 70% financiado)
+>>>>>>> 2711ad8c08d83362df73b02abfd236a5caf862f0
         monto_credito = precio_pred * 0.70
         tasa_mensual = (1 + (tasa_hipotecaria_anual / 100)) ** (1/12) - 1
         cuota_mensual = monto_credito * (tasa_mensual * (1 + tasa_mensual)**180) / ((1 + tasa_mensual)**180 - 1)
         ratio_cuota = cuota_mensual / salario_minimo_2024
+<<<<<<< HEAD
 
+=======
+        
+        # Determinar semáforo de asequibilidad
+>>>>>>> 2711ad8c08d83362df73b02abfd236a5caf862f0
         if iah_estimado <= 5 and ratio_cuota <= 0.30:
             estilo = "card-verde"
             mensaje = "Accesible (Cumple con los estándares OCDE)"
@@ -76,7 +124,11 @@ if modelo is not None:
         else:
             estilo = "card-rojo"
             mensaje = "🚨 Crítico / Financieramente Inviable para Salario Mínimo"
+<<<<<<< HEAD
 
+=======
+            
+>>>>>>> 2711ad8c08d83362df73b02abfd236a5caf862f0
         st.markdown(f"""
             <div class='result-card {estilo}'>
                 <h3>Precio Predicho Estimado:</h3>

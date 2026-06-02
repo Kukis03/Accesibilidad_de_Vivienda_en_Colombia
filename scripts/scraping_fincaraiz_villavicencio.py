@@ -25,6 +25,10 @@ from pathlib import Path
 # ── Configuración ────────────────────────────────────────────────────────────
 
 BASE_URL = "https://www.fincaraiz.com.co/venta/apartamentos/villavicencio/"
+<<<<<<< HEAD
+=======
+# Para casas: cambiar 'apartamentos' por 'casas'
+>>>>>>> 2711ad8c08d83362df73b02abfd236a5caf862f0
 
 HEADERS = {
     "User-Agent": (
@@ -36,9 +40,17 @@ HEADERS = {
     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 }
 
+<<<<<<< HEAD
 DELAY_MIN = 2.0
 DELAY_MAX = 4.5
 MAX_PAGINAS_DEFAULT = 100
+=======
+DELAY_MIN = 2.0   # segundos mínimos entre requests (respetar el servidor)
+DELAY_MAX = 4.5   # segundos máximos entre requests
+MAX_PAGINAS_DEFAULT = 100  # límite de seguridad por defecto
+
+# ── Logging ───────────────────────────────────────────────────────────────────
+>>>>>>> 2711ad8c08d83362df73b02abfd236a5caf862f0
 
 logging.basicConfig(
     level=logging.INFO,
@@ -47,8 +59,15 @@ logging.basicConfig(
 )
 log = logging.getLogger(__name__)
 
+<<<<<<< HEAD
 
 def obtener_pagina(url: str, session: requests.Session) -> BeautifulSoup | None:
+=======
+# ── Funciones de extracción ──────────────────────────────────────────────────
+
+def obtener_pagina(url: str, session: requests.Session) -> BeautifulSoup | None:
+    """Descarga una página y retorna el objeto BeautifulSoup, o None si falla."""
+>>>>>>> 2711ad8c08d83362df73b02abfd236a5caf862f0
     try:
         resp = session.get(url, headers=HEADERS, timeout=20)
         resp.raise_for_status()
@@ -59,28 +78,58 @@ def obtener_pagina(url: str, session: requests.Session) -> BeautifulSoup | None:
 
 
 def extraer_listados(soup: BeautifulSoup) -> list[dict]:
+<<<<<<< HEAD
     propiedades = []
 
     tarjetas = soup.select("div.listing-card, article.card-property, div[data-testid='listing-card']")
 
     if not tarjetas:
+=======
+    """
+    Extrae los listados de una página de resultados de FincaRaiz.
+    
+    FincaRaiz usa tarjetas de propiedad con clase 'listing-card' o similar.
+    Ajustar los selectores CSS si el portal cambia su estructura HTML.
+    """
+    propiedades = []
+
+    # Selector principal de tarjetas (verificado en estructura de mayo 2025)
+    tarjetas = soup.select("div.listing-card, article.card-property, div[data-testid='listing-card']")
+
+    if not tarjetas:
+        # Fallback: buscar por atributos data-* comunes en SPAs
+>>>>>>> 2711ad8c08d83362df73b02abfd236a5caf862f0
         tarjetas = soup.select("[data-id]")
 
     for tarjeta in tarjetas:
         prop = {}
         try:
+<<<<<<< HEAD
+=======
+            # Precio
+>>>>>>> 2711ad8c08d83362df73b02abfd236a5caf862f0
             precio_tag = tarjeta.select_one(
                 ".price, .listing-price, [data-testid='price'], span.valor"
             )
             if precio_tag:
                 precio_texto = precio_tag.get_text(strip=True)
+<<<<<<< HEAD
                 precio_num = precio_texto.replace("$", "").replace(".", "").replace(",", "").strip()
+=======
+                # Limpiar: "$450.000.000" → 450000000
+                precio_num = precio_texto.replace("$", "").replace(".", "").replace(",", "").strip()
+                # Manejar precios en millones: "450 M" → 450000000
+>>>>>>> 2711ad8c08d83362df73b02abfd236a5caf862f0
                 if "M" in precio_num.upper():
                     precio_num = precio_num.upper().replace("M", "").strip()
                     prop["price"] = float(precio_num) * 1_000_000
                 else:
                     prop["price"] = float(precio_num) if precio_num.isdigit() else None
 
+<<<<<<< HEAD
+=======
+            # Área (m²)
+>>>>>>> 2711ad8c08d83362df73b02abfd236a5caf862f0
             area_tag = tarjeta.select_one(
                 ".area, .surface, [data-testid='area'], span.m2, li.area"
             )
@@ -89,6 +138,10 @@ def extraer_listados(soup: BeautifulSoup) -> list[dict]:
                 area_num = "".join(c for c in area_texto if c.isdigit() or c == ".")
                 prop["area"] = float(area_num) if area_num else None
 
+<<<<<<< HEAD
+=======
+            # Habitaciones
+>>>>>>> 2711ad8c08d83362df73b02abfd236a5caf862f0
             hab_tag = tarjeta.select_one(
                 ".rooms, .bedrooms, [data-testid='rooms'], li.hab, span.habitaciones"
             )
@@ -96,6 +149,10 @@ def extraer_listados(soup: BeautifulSoup) -> list[dict]:
                 hab_texto = "".join(c for c in hab_tag.get_text() if c.isdigit())
                 prop["rooms"] = int(hab_texto) if hab_texto else None
 
+<<<<<<< HEAD
+=======
+            # Baños
+>>>>>>> 2711ad8c08d83362df73b02abfd236a5caf862f0
             banos_tag = tarjeta.select_one(
                 ".bathrooms, .baths, [data-testid='bathrooms'], li.bano, span.banos"
             )
@@ -103,22 +160,41 @@ def extraer_listados(soup: BeautifulSoup) -> list[dict]:
                 banos_texto = "".join(c for c in banos_tag.get_text() if c.isdigit())
                 prop["bathrooms"] = int(banos_texto) if banos_texto else None
 
+<<<<<<< HEAD
+=======
+            # Barrio / zona
+>>>>>>> 2711ad8c08d83362df73b02abfd236a5caf862f0
             barrio_tag = tarjeta.select_one(
                 ".location, .neighborhood, [data-testid='location'], span.barrio, p.ubicacion"
             )
             prop["barrio"] = barrio_tag.get_text(strip=True) if barrio_tag else None
 
+<<<<<<< HEAD
             prop["property_type"] = None
 
             link_tag = tarjeta.select_one("a[href]")
             prop["url_listado"] = "https://www.fincaraiz.com.co" + link_tag["href"] if link_tag else None
 
+=======
+            # Tipo de inmueble (viene implícito en la URL, se asigna después)
+            prop["property_type"] = None  # se asigna post-extracción
+
+            # URL del listado (para referencia y deduplicación)
+            link_tag = tarjeta.select_one("a[href]")
+            prop["url_listado"] = "https://www.fincaraiz.com.co" + link_tag["href"] if link_tag else None
+
+            # Campos fijos para todos los registros scrapeados
+>>>>>>> 2711ad8c08d83362df73b02abfd236a5caf862f0
             prop["city"] = "Villavicencio"
             prop["operation_type"] = "Venta"
             prop["currency"] = "COP"
             prop["created_on"] = str(date.today())
             prop["fuente"] = "scraping_fincaraiz"
 
+<<<<<<< HEAD
+=======
+            # Solo agregar si tiene precio válido
+>>>>>>> 2711ad8c08d83362df73b02abfd236a5caf862f0
             if prop.get("price") and prop["price"] > 0:
                 propiedades.append(prop)
 
@@ -130,6 +206,10 @@ def extraer_listados(soup: BeautifulSoup) -> list[dict]:
 
 
 def hay_pagina_siguiente(soup: BeautifulSoup) -> bool:
+<<<<<<< HEAD
+=======
+    """Detecta si existe un botón/enlace de página siguiente."""
+>>>>>>> 2711ad8c08d83362df73b02abfd236a5caf862f0
     siguiente = soup.select_one(
         "a[rel='next'], .pagination-next, button.next-page, a.siguiente"
     )
@@ -137,17 +217,39 @@ def hay_pagina_siguiente(soup: BeautifulSoup) -> bool:
 
 
 def construir_url_pagina(pagina: int, tipo_inmueble: str = "apartamentos") -> str:
+<<<<<<< HEAD
+=======
+    """Construye la URL paginada de FincaRaiz."""
+>>>>>>> 2711ad8c08d83362df73b02abfd236a5caf862f0
     base = f"https://www.fincaraiz.com.co/venta/{tipo_inmueble}/villavicencio/"
     if pagina == 1:
         return base
     return f"{base}?pagina={pagina}"
 
+<<<<<<< HEAD
+=======
+# ── Función principal ─────────────────────────────────────────────────────────
+>>>>>>> 2711ad8c08d83362df73b02abfd236a5caf862f0
 
 def scraping_villavicencio(
     tipos: list[str] = None,
     max_paginas: int = MAX_PAGINAS_DEFAULT,
     output_path: str = "data/raw/fincaraiz_villavicencio_scraping.csv"
 ) -> pd.DataFrame:
+<<<<<<< HEAD
+=======
+    """
+    Ejecuta el scraping para todos los tipos de inmueble indicados.
+    
+    Args:
+        tipos: lista de tipos a scrapear. Default: ['apartamentos', 'casas']
+        max_paginas: límite máximo de páginas por tipo (safety cap)
+        output_path: ruta de salida del CSV resultante
+    
+    Returns:
+        DataFrame con todos los listados extraídos
+    """
+>>>>>>> 2711ad8c08d83362df73b02abfd236a5caf862f0
     if tipos is None:
         tipos = ["apartamentos", "casas"]
 
@@ -175,14 +277,23 @@ def scraping_villavicencio(
                 log.info(f"  Sin listados en página {pagina}. Fin del tipo '{tipo}'.")
                 break
 
+<<<<<<< HEAD
             tipo_canónico = {
+=======
+            # Asignar tipo de propiedad según la URL consultada
+            tipo_canonico = {
+>>>>>>> 2711ad8c08d83362df73b02abfd236a5caf862f0
                 "apartamentos": "Apartamento",
                 "casas": "Casa",
                 "lotes": "Lote/Terreno",
             }.get(tipo, tipo.capitalize())
 
             for r in listados:
+<<<<<<< HEAD
                 r["property_type"] = tipo_canónico
+=======
+                r["property_type"] = tipo_canonico
+>>>>>>> 2711ad8c08d83362df73b02abfd236a5caf862f0
 
             todos_los_registros.extend(listados)
             registros_tipo += len(listados)
@@ -193,25 +304,45 @@ def scraping_villavicencio(
                 break
 
             pagina += 1
+<<<<<<< HEAD
+=======
+            # Pausa aleatoria para no sobrecargar el servidor
+>>>>>>> 2711ad8c08d83362df73b02abfd236a5caf862f0
             tiempo_espera = random.uniform(DELAY_MIN, DELAY_MAX)
             time.sleep(tiempo_espera)
 
         log.info(f"  Total extraído para {tipo}: {registros_tipo} registros")
 
+<<<<<<< HEAD
+=======
+    # ── Construir DataFrame y exportar ────────────────────────────────────────
+>>>>>>> 2711ad8c08d83362df73b02abfd236a5caf862f0
     df = pd.DataFrame(todos_los_registros)
 
     if df.empty:
         log.warning("No se extrajo ningún registro. Verificar selectores CSS.")
         return df
 
+<<<<<<< HEAD
+=======
+    # Deduplicar por URL de listado (mismo anuncio puede aparecer en varias páginas)
+>>>>>>> 2711ad8c08d83362df73b02abfd236a5caf862f0
     n_antes = len(df)
     df = df.drop_duplicates(subset=["url_listado"]).reset_index(drop=True)
     log.info(f"Deduplicados por URL: {n_antes - len(df)} eliminados. Total final: {len(df)}")
 
+<<<<<<< HEAD
+=======
+    # Exportar
+>>>>>>> 2711ad8c08d83362df73b02abfd236a5caf862f0
     Path(output_path).parent.mkdir(parents=True, exist_ok=True)
     df.to_csv(output_path, index=False, encoding="utf-8-sig")
     log.info(f"CSV exportado: {output_path} ({len(df)} filas)")
 
+<<<<<<< HEAD
+=======
+    # Resumen de calidad
+>>>>>>> 2711ad8c08d83362df73b02abfd236a5caf862f0
     log.info("\n--- Resumen de calidad del scraping ---")
     log.info(f"  Precio válido:  {df['price'].notna().sum()} / {len(df)} ({df['price'].notna().mean()*100:.1f}%)")
     log.info(f"  Área válida:    {df['area'].notna().sum()} / {len(df)} ({df['area'].notna().mean()*100:.1f}%)")
@@ -222,6 +353,11 @@ def scraping_villavicencio(
     return df
 
 
+<<<<<<< HEAD
+=======
+# ── Punto de entrada ──────────────────────────────────────────────────────────
+
+>>>>>>> 2711ad8c08d83362df73b02abfd236a5caf862f0
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Scraping FincaRaiz — Villavicencio")
     parser.add_argument("--max-paginas", type=int, default=MAX_PAGINAS_DEFAULT,
