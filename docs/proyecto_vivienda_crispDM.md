@@ -10,17 +10,17 @@
 
 ## Resumen Ejecutivo
 
-Este proyecto analiza la accesibilidad a la vivienda en Colombia entre 2018 y 2024, integrando datos de precios inmobiliarios con variables macroeconómicas (salario mínimo, inflación, tasas hipotecarias y desempleo). Se construye un índice propio de accesibilidad habitacional, se entrena un modelo predictivo de precios y se segmentan los mercados urbanos según su nivel de acceso real para hogares de ingreso mínimo. El resultado es un dashboard interactivo que permite explorar la evolución temporal de la brecha entre ingresos y precios de vivienda en las principales ciudades del país.
+Este proyecto analiza la accesibilidad a la vivienda en Colombia entre **2019 y 2024**, integrando datos de precios inmobiliarios con variables macroeconómicas (salario mínimo, inflación, tasas hipotecarias y desempleo). Se construye un índice propio de accesibilidad habitacional (IAH), se entrena un modelo predictivo de precios y se segmentan los mercados urbanos según su nivel de acceso real para hogares de ingreso mínimo. El resultado es un dashboard interactivo que permite explorar la evolución temporal de la brecha entre ingresos y precios de vivienda en las principales ciudades del país.
 
 ---
 
 ## Pregunta Central de Investigación
 
-> **¿Cómo ha evolucionado la accesibilidad económica a la vivienda en Colombia entre 2018 y 2024, y qué variables estructurales explican mejor las diferencias entre ciudades?**
+> **¿Cómo ha evolucionado la accesibilidad económica a la vivienda en Colombia entre 2019 y 2024, y qué variables estructurales explican mejor las diferencias entre ciudades?**
 
 ### Preguntas Derivadas
 
-1. ¿Cuántos años de salario mínimo equivale el precio mediano de vivienda en las principales ciudades colombianas, y cómo ha cambiado esa relación en los últimos 10 años?
+1. ¿Cuántos años de salario mínimo equivale el precio mediano de vivienda en las principales ciudades colombianas, y cómo ha cambiado esa relación en el período 2019–2024?
 2. ¿Qué variables (área, ciudad, inflación, tasa hipotecaria, desempleo) tienen mayor poder predictivo sobre el precio de una propiedad?
 3. ¿Es posible clasificar objetivamente los mercados de vivienda urbana en segmentos diferenciables de accesibilidad mediante técnicas de clustering?
 4. ¿En qué ciudades o zonas la cuota hipotecaria supera el umbral del 30% del ingreso mensual, comprometiendo la viabilidad financiera de los hogares?

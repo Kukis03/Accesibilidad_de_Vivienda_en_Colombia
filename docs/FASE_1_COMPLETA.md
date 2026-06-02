@@ -201,7 +201,101 @@ El análisis de precios, modelos predictivos y clustering se realizará sobre la
 
 ---
 
-## 10. Riesgos Identificados y Mitigaciones
+## 10. Glosario de Términos Técnicos
+
+Diccionario de los conceptos especializados que se usan a lo largo de este documento y los entregables del proyecto. Está dirigido al jurado y a cualquier lector externo al equipo.
+
+### Indicadores económicos y de accesibilidad
+
+| Término | Sigla / Acrónimo | Definición operativa en el proyecto |
+|---|:---:|---|
+| **Price-to-Income Ratio** | **PIR** | Cociente entre el precio mediano de la vivienda y el ingreso anual mediano del hogar. Indicador estándar OCDE / ONU-Hábitat. PIR ≤ 5 = mercado accesible; PIR ≥ 10 = seriamente inaccesible. |
+| **Índice de Accesibilidad Habitacional** | **IAH** | Versión adaptada del PIR construida en este proyecto. Numerador: precio mediano de vivienda. Denominador: salario mínimo anual (`SMLMV × 12`). Se expresa en *años de salario mínimo necesarios para comprar la vivienda mediana*. |
+| **Salario Mínimo Legal Mensual Vigente** | **SMLMV** | Ingreso mensual de referencia decretado por el Gobierno Nacional. Se usa como proxy del ingreso del hogar de bajos ingresos (no reemplaza al ingreso mediano real). |
+| **Ratio Cuota / Salario** | — | Porcentaje del salario mínimo mensual que se destina a la cuota hipotecaria estimada (70% financiación, 15 años, tasa anual del año). Umbral internacional de viabilidad: ≤ 30%. |
+| **Nivel de Accesibilidad** | — | Clasificación cualitativa basada en el IAH: *Accesible* (IAH ≤ 5), *Moderado* (5 < IAH ≤ 10), *Elevado* (10 < IAH ≤ 20), *Crítico* (IAH > 20). |
+
+### Variables macroeconómicas y fuentes oficiales
+
+| Término | Sigla / Acrónimo | Definición operativa en el proyecto |
+|---|:---:|---|
+| **Índice de Precios de Vivienda Nueva** | **IPVN** | Publicado trimestralmente por el DANE. Mide la variación de precios de vivienda nueva en las principales áreas urbanas. Usado como benchmark de validación cruzada. |
+| **Índice de Precios de Vivienda Usada** | **IPVU** | Publicado por el Banco de la República. Mide la variación de precios de vivienda usada por ciudad. Complementa al IPVN. |
+| **Índice de Precios al Consumidor** | **IPC** | Publicado por el DANE. Mide la inflación anual. Usado para deflactar precios nominales a precios reales (base 2018). |
+| **Tasa de interés efectiva anual** | **EA** | Tasa que reporta el BanRep para créditos hipotecarios No VIS. Conversión a tasa mensual: `r = (1 + EA)^(1/12) − 1`. |
+| **Vivienda de Interés Social** | **VIS** | Vivienda con valor ≤ 150 SMLMV cubierta por subsidio estatal. El modelo se centra en vivienda No VIS (mercado libre). |
+| **Tasa Representativa del Mercado** | **TRM** | Tipo de cambio peso/dólar publicado por el BanRep. Usado para convertir precios en USD del dataset A1 (Properati) a COP. |
+| **Tasa Global de Participación / Ocupación / Desempleo** | **TGP / TO / TD** | Indicadores del mercado laboral (GEIH del DANE). En este proyecto se usa **TD** (tasa de desempleo) por ciudad y año como feature predictora. |
+| **Gran Encuesta Integrada de Hogares** | **GEIH** | Encuesta del DANE que provee los indicadores de empleo y desempleo desagregados por ciudad. |
+
+### Métricas de evaluación de modelos
+
+| Término | Sigla | Definición operativa en el proyecto |
+|---|:---:|---|
+| **Coeficiente de determinación** | **R²** | Proporción de la varianza del precio explicada por el modelo. Umbral del proyecto: ≥ 0,75. |
+| **Error Absoluto Medio** | **MAE** | Promedio de la desviación absoluta entre predicción y valor real, en COP. |
+| **Raíz del Error Cuadrático Medio** | **RMSE** | Penaliza más los errores grandes. Se reporta también su versión relativa (% del precio mediano). Umbral: RMSE relativo < 15%. |
+| **Error Porcentual Absoluto Medio** | **MAPE** | Promedio de la desviación porcentual de la predicción respecto al valor real. Más interpretable que el MAE en distribuciones log-normales. |
+| **Coeficiente de Silueta** | — | Métrica de calidad del clustering. Rango [-1, 1]. Umbral del proyecto: ≥ 0,45. |
+| **Davies-Bouldin Index** | **DBI** | Métrica de separación entre clusters. Valores más bajos indican mejor separación. |
+| **Factor de Inflación de Varianza** | **VIF** | Diagnóstico de multicolinealidad entre features. VIF > 10 sugiere colinealidad problemática para modelos lineales. |
+| **Validación Cruzada k-fold** | **CV** | Técnica de validación que parte los datos en k=5 subconjuntos. Se reporta la media y la desviación estándar del R² entre folds. |
+
+### Procesamiento de datos y estadística
+
+| Término | Sigla | Definición operativa en el proyecto |
+|---|:---:|---|
+| **Rango Intercuartílico** | **IQR** | Diferencia entre el percentil 75 y el percentil 25. Usado para detectar outliers dentro de cada grupo `(ciudad, año, tipo_inmueble)`. |
+| **Tasa de Crecimiento Anual Compuesta** | **CAGR** | Tasa anual equivalente del crecimiento acumulado entre dos años. |
+| **One-Hot Encoding** | **OHE** | Codificación de variables categóricas como vectores binarios (una columna por categoría). Aplicado a `city` y `property_type`. |
+| **Unidad de Planeamiento Zonal** | **UPZ** | División administrativa intermedia de Bogotá entre localidad y barrio. Usada en el dataset A8. |
+
+---
+
+## 11. Análisis Costo-Beneficio
+
+CRISP-DM exige una evaluación explícita del costo del proyecto frente al valor que genera. Para un proyecto académico colaborativo como este, el análisis se enmarca en términos de **recursos consumidos** y **valor producido**, no en términos monetarios estrictos.
+
+### 11.1 Costos del proyecto
+
+| Categoría | Recurso | Costo monetario | Costo en horas |
+|---|---|:---:|:---:|
+| **Datos** | 8 datasets de Kaggle (A1–A6, A8) | $0 — descarga gratuita con `kaggle.json` | 4 h |
+| **Datos** | 8 series oficiales del DANE + BanRep + Fedesarrollo + IGAC (B1–B8) | $0 — datos públicos abiertos | 8 h |
+| **Datos** | Scraping FincaRaiz Villavicencio (A7) | $0 — BeautifulSoup + requests | 10 h (script + ejecución) |
+| **Cómputo** | Procesamiento local con Python + Jupyter | $0 — entorno local del equipo | — |
+| **Cómputo** | Streamlit Community Cloud (despliegue) | $0 — tier gratuito hasta 1 GB | — |
+| **Software** | pandas, numpy, scikit-learn, matplotlib, plotly, streamlit | $0 — todo open source | — |
+| **Repositorio** | GitHub público | $0 — cuenta gratuita | — |
+| **Recurso humano** | Equipo de 3 estudiantes durante 13 semanas | Tiempo académico | ~390 h totales (130 h/persona) |
+| **TOTAL MONETARIO** | | **$0 COP** | **~412 horas-persona** |
+
+### 11.2 Beneficios esperados
+
+| Beneficiario | Valor generado | Tipo de beneficio |
+|---|---|:---:|
+| **Equipo académico** | Aplicación práctica de CRISP-DM end-to-end con dataset real de 16 fuentes; portafolio público en GitHub + dashboard desplegado | Formativo |
+| **Jurado / Programa** | Caso pedagógico replicable de integración de datos heterogéneos (Kaggle + oficiales) con metodología trazable | Académico |
+| **Compradores potenciales de vivienda** | Predictor de precios libre y público; semáforo de accesibilidad que muestra cuántos años de salario costaría comprar | Social |
+| **Investigadores y formuladores de política pública** | Evidencia cuantitativa del deterioro del IAH (14,2 → 18,4 años en 2019–2024); identificación de ciudades en zona crítica | Social / Investigación |
+| **Sector inmobiliario y financiero** | Cuantificación del ratio cuota/salario por ciudad; identificación de mercados donde la cuota supera el 30% del SMLMV | Sectorial |
+
+### 11.3 Balance final
+
+El proyecto se ejecuta con **costo monetario nulo** apalancado en datos públicos, software libre y plataformas con tier gratuito. El único insumo de costo significativo es el tiempo del equipo (~412 horas-persona).
+
+A cambio se entrega:
+
+1. Un **dataset consolidado y limpio** (`vivienda_colombia_limpio.csv`, ~315 000 registros) reutilizable por otros proyectos académicos.
+2. Un **modelo predictivo serializado** (R² ≥ 0,75) accesible vía dashboard público.
+3. Una **segmentación de mercados** (4 clusters) que permite agrupar ciudades por nivel de accesibilidad.
+4. **Evidencia cuantitativa** de la crisis de accesibilidad colombiana en 2019–2024, con potencial de citación en discusiones de política habitacional.
+
+**Conclusión:** El retorno académico, social e investigativo supera ampliamente la inversión de tiempo, especialmente dado que la totalidad de los entregables queda disponible públicamente (repositorio + dashboard) sin costo recurrente de mantenimiento.
+
+---
+
+## 12. Riesgos Identificados y Mitigaciones
 
 | # | Riesgo | Probabilidad | Impacto | Mitigación |
 |:-:|---|:---:|:---:|---|
@@ -217,7 +311,7 @@ El análisis de precios, modelos predictivos y clustering se realizará sobre la
 
 ---
 
-## 11. Cronograma General del Proyecto
+## 13. Cronograma General del Proyecto
 
 | Semana | Actividad | Responsable |
 |:---:|---|:---:|
@@ -232,7 +326,7 @@ El análisis de precios, modelos predictivos y clustering se realizará sobre la
 
 ---
 
-## 12. Checklist de Cierre — Fase 1
+## 14. Checklist de Cierre — Fase 1
 
 ### Entregables de contenido
 

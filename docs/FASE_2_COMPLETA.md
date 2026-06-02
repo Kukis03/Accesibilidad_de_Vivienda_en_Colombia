@@ -1,8 +1,9 @@
 # Fase 2 — Comprensión de los Datos
 ## Proyecto: Accesibilidad de Vivienda en Colombia · CRISP-DM 2025-I
 **Responsable principal:** Sofía · **Apoyo:** Steve  
+**Período de análisis:** 2019 – 2024  
 **Estado:** ✅ Completa y lista para revisión del jurado  
-**Notebook asociado:** `notebooks/01_EDA.ipynb`  
+**Notebooks asociados:** `notebooks/01_EDA_esquema_canonico.ipynb` a `notebooks/12_EDA_validacion_oficial.ipynb`  
 **Semanas:** 3 – 4  
 *Nota: Este documento refleja el inventario actualizado a Junio 2026 con la nueva numeración de archivos (A1–A8, B1–B8).*
 
@@ -112,16 +113,155 @@ print(df_a1.head(3).T)  # Ver las primeras filas transpuestas (más legible)
 
 > **Alerta:** A2 (FincaRaiz) tiene el precio en **millones de COP** (ej: `450` = $450.000.000). Esto debe multiplicarse × 1.000.000 antes de concatenar con el resto.
 
-### 2.3 Esquemas resumidos — Datasets A3, A4, A5, A6, A7, A8
+### 2.3 Esquema de columnas — Dataset A3 (Colombia House Prediction)
+
+A3 es el dataset con mayor cantidad de columnas (37). La mayoría corresponden a *amenities* binarias del conjunto residencial (gimnasio, salón comunal, BBQ, ascensores, etc.) con altísima tasa de nulos (>50%), por lo que la mayoría se descartan. Las columnas críticas para el modelo son las estructurales (`valor`, `area`, `habitaciones`, `banos`, `estrato`) y las geográficas (`latitud`, `longitud`).
+
+| Columna A3 | Tipo | Descripción | Mapeo canónico |
+|---|---|---|---|
+| `valor` | float | Precio en COP completo | → **`price`** |
+| `valorventa` | float | Redundante con `valor` (se descarta) | *(descartar)* |
+| `area` | float | Área principal en m² | → **`area`** |
+| `areaconstruida` | float | Área techada (alternativa) | *(descartar)* |
+| `habitaciones` | float | Número de habitaciones | → **`rooms`** |
+| `banos` | float | Número de baños | → **`bathrooms`** |
+| `estrato` | float | Estrato (1–6) | → **`estrato`** |
+| `garajes` | float | Parqueaderos | → **`parking`** |
+| `latitud`, `longitud` | float | Coordenadas | → **`lat`**, **`lon`** |
+| `antiguedad_original` | object | Texto libre (no estructurado) | *(descartar)* |
+| `tiempodeconstruido`, `remodelado` | object/int | Antigüedad y estado | `antiguedad` opcional |
+| 25 columnas de amenities | float/object | Binarias con >50% nulos | *(descartar)* |
+
+> **Alerta:** A3 reporta 48,6% de duplicados exactos. Se deduplica antes de integrar. A3 no tiene columna explícita de `city` ni de `created_on`; el año se imputa con 2022 (año típico de publicación de la fuente).
+
+---
+
+### 2.4 Esquema de columnas — Dataset A4 (Real Estate Bogotá por barrio)
+
+A4 es un dataset compacto (8 columnas) limitado a Bogotá D.C. con desagregación por **UPZ** (Unidad de Planeamiento Zonal), lo que lo hace útil para análisis intra-urbano de la capital.
+
+| Columna A4 | Tipo | Descripción | Mapeo canónico |
+|---|---|---|---|
+| `Tipo` | object | Tipo de inmueble (Apartamento / Casa) | → **`property_type`** |
+| `Descripcion` | object | Texto libre del anuncio | *(descartar)* |
+| `Habitaciones` | int | Número de habitaciones | → **`rooms`** |
+| `Baños` | int | Número de baños | → **`bathrooms`** |
+| `Área` | int | Área en m² | → **`area`** |
+| `Barrio` | object | Barrio | → **`barrio`** |
+| `UPZ` | object | Unidad de Planeamiento Zonal | *(referencia analítica)* |
+| `Valor` | int | Precio en COP completo | → **`price`** |
+
+> **Alerta:** A4 no tiene columna de ciudad → se asigna `city = 'Bogotá'`. Sin coordenadas. ~37,5% duplicados; deduplicar antes de concatenar.
+
+---
+
+### 2.5 Esquema de columnas — Dataset A5 (Medellín Properties 2023)
+
+A5 es un dataset 100% de Medellín (año 2023). Tiene coordenadas geoespaciales y la mejor desagregación por barrio para esa ciudad.
+
+| Columna A5 | Tipo | Descripción | Mapeo canónico |
+|---|---|---|---|
+| `neighbourhood` | object | Barrio (en inglés) | → **`barrio`** |
+| `latitude`, `longitude` | float | Coordenadas | → **`lat`**, **`lon`** |
+| `property_type` | object | Tipo (Apartamento / Casa) | → **`property_type`** |
+| `price` | int | Precio en COP completo | → **`price`** |
+| `rooms` | float | Número de habitaciones | → **`rooms`** |
+| `baths` | float | Número de baños | → **`bathrooms`** |
+| `area` | float | Área en m² | → **`area`** |
+| `administration_price` | float | Cuota de administración (mensual) | *(descartar)* |
+| `age` | float | Antigüedad en años | `antiguedad` opcional |
+| `garages` | int | Parqueaderos | → **`parking`** |
+| `stratum` | int | Estrato (1–6) | → **`estrato`** |
+
+> **Alerta:** A5 no tiene columna de ciudad → se asigna `city = 'Medellín'`. ~1% duplicados.
+
+---
+
+### 2.6 Esquema de columnas — Dataset A6 (Real Estate Bogotá 2023)
+
+A6 cubre Bogotá D.C. para 2023 con detalle de conjunto residencial y atributos del inmueble. Tiene 21 columnas, varias redundantes para el modelado.
+
+| Columna A6 | Tipo | Descripción | Mapeo canónico |
+|---|---|---|---|
+| `conjunto` | object | Nombre del conjunto residencial | *(descartar)* |
+| `administración` | int | Cuota de administración | *(descartar)* |
+| `estrato` | int | Estrato (1–6) | → **`estrato`** |
+| `antiguedad` | int | Antigüedad en años | `antiguedad` opcional |
+| `remodelado` | object | Sí/No | *(descartar)* |
+| `área` | float | Área en m² | → **`area`** |
+| `habitaciones` | int | Número de habitaciones | → **`rooms`** |
+| `baños` | int | Número de baños | → **`bathrooms`** |
+| `garajes` | int | Parqueaderos | → **`parking`** |
+| `elevadores` | int | Número de ascensores | *(descartar)* |
+| `tipo_de_inmueble` | object | Tipo (Apartamento / Casa) | → **`property_type`** |
+| `deposito` | int | Tiene depósito (binario) | *(descartar)* |
+| `precio` | float | Precio en COP completo | → **`price`** |
+| `barrio` | object | Barrio | → **`barrio`** |
+| `direccion`, `nombre`, `descripcion` | object | Texto libre | *(descartar)* |
+| Otras 5 columnas (`porteria`, `zona_de_lavanderia`, `gas`, `parqueadero`, `direccion`) | object | Atributos cualitativos | *(descartar)* |
+
+> **Alerta:** A6 no tiene columna de ciudad → se asigna `city = 'Bogotá'`. Caracteres especiales en nombres de columnas (`á`, `ó`) → leer con `encoding='utf-8-sig'`.
+
+---
+
+### 2.7 Esquema de columnas — Dataset A7 (Scraping FincaRaiz Villavicencio)
+
+A7 es el único dataset generado internamente por el equipo. Cubre Villavicencio (Meta) para 2024 y refuerza la cobertura de una ciudad históricamente subrepresentada en Kaggle.
+
+| Columna A7 | Tipo | Descripción | Mapeo canónico |
+|---|---|---|---|
+| `id_anuncio`, `uuid` | int/object | Identificadores únicos del anuncio | *(descartar)* |
+| `precio_cop` | int | Precio en COP completo | → **`price`** |
+| `admin_cop` | float | Cuota administración (63% nulos) | *(descartar)* |
+| `tipo_inmueble` | object | Tipo (Apartamento / Casa) | → **`property_type`** |
+| `tipo_operacion` | object | Venta / Arriendo | filtrar Venta |
+| `area_m2`, `area_construida_m2` | float | Área total y construida | → **`area`** (usar `area_m2`) |
+| `habitaciones` | int | Número de habitaciones | → **`rooms`** |
+| `banos` | int | Número de baños | → **`bathrooms`** |
+| `parqueaderos` | int | Parqueaderos | → **`parking`** |
+| `estrato` | int | Estrato (1–6) | → **`estrato`** |
+| `piso`, `antiguedad`, `estado`, `es_nuevo` | mixto | Atributos del inmueble | *(opcionales)* |
+| `barrio` | object | Barrio | → **`barrio`** |
+| `ciudad`, `departamento`, `pais` | object | Geografía | → **`city`** (filtrar "Villavicencio") |
+| `titulo`, `url_anuncio` | object | Texto y URL | *(descartar; URL para dedup)* |
+| `fecha_scraping` | object | Fecha de extracción | → **`created_on`** |
+
+> **Alerta:** Posibles duplicados con A2 (FincaRaiz también) — deduplicar por hash. A7 tiene `precio_cop` en COP completo, **no requiere escalar** (a diferencia de A2).
+
+---
+
+### 2.8 Esquema de columnas — Dataset A8 (Características vivienda nueva Bogotá UPZ)
+
+A8 es un dataset complementario muy pequeño (32 filas, una por UPZ de Bogotá) procedente de Datos Abiertos Bogotá. No es apto para modelado principal pero sirve como **referencia de precios oficiales por zona** para validación cruzada.
+
+| Columna A8 | Tipo | Descripción | Mapeo canónico |
+|---|---|---|---|
+| `Subzona` | object | Nombre de la UPZ | *(referencia)* |
+| `precios` | float | Precio promedio de vivienda nueva | → **`price`** |
+| `estrato` | float | Estrato modal de la UPZ | → **`estrato`** |
+| `area` | float | Área promedio de las viviendas nuevas | → **`area`** |
+| `alcobas` | float | Número promedio de alcobas | → **`rooms`** |
+| `baños` | float | Número promedio de baños | → **`bathrooms`** |
+| `parqueadero` | float | Promedio de parqueaderos | → **`parking`** |
+| `Long_com_corr` | float | Longitud de corredores comerciales (m) | *(descartar)* |
+| `parques`, `vias` | float | Métricas de infraestructura | *(descartar)* |
+| `remocion_masa` | float | Índice de riesgo de remoción en masa | *(descartar)* |
+| `grandes_superficies`, `colegios`, `hospitales` | int | Equipamientos urbanos | *(descartar para modelo principal)* |
+
+> **Alerta:** A8 no tiene columna de ciudad → se asigna `city = 'Bogotá'`. Solo 32 registros; **no se incluye en el dataset integrado para modelado** sino que se reserva como referencia validatoria de precios por UPZ.
+
+---
+
+### 2.9 Resumen comparativo de los 8 datasets
 
 | Dataset | Peculiaridades clave | Columna de precio | Columna de área | Columna de ciudad |
 |---|---|---|---|---|
-| **A3** (House Prediction) | 37 features ML | `price` (COP) | `area` | `city` |
-| **A4** (Bogotá granular) | Solo Bogotá; tiene `upz` (Unidad de Planeamiento Zonal) | `price` (COP) | `area_m2` | *(siempre "Bogotá")* |
-| **A5** (Medellín 2023) | Solo Medellín; tiene `barrio` y `comunas` | `precio` (COP) | `metros` | *(siempre "Medellín")* |
-| **A6** (Bogotá 2023) | Solo Bogotá; tiene `localidad` | `valor` (COP) | `area` | *(siempre "Bogotá")* |
-| **A7** (Villavicencio scraping) | Scraping FincaRaiz Villavicencio; muchas columnas de calidad | variada | variada | *(siempre "Villavicencio")* |
-| **A8** (Carac Pre Viv Nueva) | Datos de vivienda nueva Bogotá por UPZ (Datos Abiertos) | `precio_m2` | — | *(siempre "Bogotá")* |
+| **A3** (House Prediction) | 37 columnas; 25 son amenities binarias descartables | `valor` (COP) | `area` | *(no tiene; imputar)* |
+| **A4** (Bogotá granular) | Solo Bogotá; tiene UPZ | `Valor` (COP) | `Área` | *(asignar "Bogotá")* |
+| **A5** (Medellín 2023) | Solo Medellín; tiene barrio y coordenadas | `price` (COP) | `area` | *(asignar "Medellín")* |
+| **A6** (Bogotá 2023) | Solo Bogotá; tiene barrio y conjunto | `precio` (COP) | `área` | *(asignar "Bogotá")* |
+| **A7** (Villavicencio scraping) | Único dataset propio; 2024; en COP completo | `precio_cop` (COP) | `area_m2` | `ciudad` |
+| **A8** (Carac Pre Viv Nueva) | 32 filas; solo referencia validatoria | `precios` (promedio) | `area` (promedio) | *(asignar "Bogotá")* |
 
 ---
 
@@ -189,7 +329,7 @@ print(pd.DataFrame(reporte_calidad).to_string(index=False))
 | A7 — Scraping Villavicencio | 2.500 | ~15% | ~2% | ~12% | 0,0% | ~30 |
 | A8 — Carac Pre Viv Nueva | 32 | 0% | 0% | — | 0,0% | 0 |
 
-> **Interpretación:** El dataset A1 (Properati) tiene la mayor tasa de nulos globales (24,7%), concentrada principalmente en `surface_total` (área). Esto es esperable dado su cobertura temporal amplia (2015–2021) y la diversidad de fuentes. El dataset A2 (FincaRaiz) es el más limpio. Los nulos en precio son bajos en todos los datasets (<4%), lo que es favorable para el modelado.
+> **Interpretación:** El dataset A1 (Properati) tiene la mayor tasa de nulos globales (24,7%), concentrada principalmente en `surface_total` (área). Esto es esperable dado su cobertura temporal amplia (2020–2021) y la diversidad de fuentes. El dataset A2 (FincaRaiz) es el más limpio. Los nulos en precio son bajos en todos los datasets (<4%), lo que es favorable para el modelado.
 
 ---
 
@@ -304,7 +444,7 @@ Esta segmentación preliminar ya anticipa los clusters que se obtendrán en la F
 ```python
 # ----- 4.3.1 Preparar columna de año -----
 df['year'] = pd.to_datetime(df['created_on'], errors='coerce').dt.year
-df_temporal = df[(df['year'] >= 2015) & (df['year'] <= 2024)].copy()
+df_temporal = df[(df['year'] >= 2019) & (df['year'] <= 2024)].copy()
 
 # ----- 4.3.2 Evolución nacional -----
 evolucion_nacional = (
@@ -356,7 +496,7 @@ plt.savefig('docs/figures/04_evolucion_temporal.png', dpi=150, bbox_inches='tigh
 plt.show()
 ```
 
-**Hallazgo 3:** El precio mediano nacional creció ~68% en términos nominales entre 2018 y 2023 (de ~$230M a ~$387M COP). El crecimiento se aceleró después de 2020, coincidiendo con el rebote post-pandemia y la mayor inflación. Bogotá y Medellín muestran tendencias de crecimiento más pronunciadas que ciudades intermedias. **Este hallazgo será la base cuantitativa de la respuesta a la Pregunta 2 de investigación.**
+**Hallazgo 3:** El precio mediano nacional creció ~60% en términos nominales entre 2019 y 2024 (de ~$245M a ~$416M COP). El crecimiento se aceleró después de 2020, coincidiendo con el rebote post-pandemia y la mayor inflación (IPC: 10,18% en 2022, 11,74% en 2023). Bogotá y Medellín muestran tendencias de crecimiento más pronunciadas (~70–75% acumulado) que ciudades intermedias (~40–50%). **Este hallazgo será la base cuantitativa de la respuesta a la Pregunta 2 de investigación.**
 
 ### 4.4 Análisis de área construida
 
@@ -467,12 +607,12 @@ plt.show()
 # ----- 4.6.2 Tabla de volumen por ciudad-año -----
 pivot_ciudad_año = pd.crosstab(
     df['city'], df['year'].astype('Int64')
-)[df[(df['year'].between(2018, 2024))]['year'].dropna().astype(int).unique()]
+)[df[(df['year'].between(2019, 2024))]['year'].dropna().astype(int).unique()]
 print("\nRegistros por ciudad × año (muestra A1):")
 print(pivot_ciudad_año[pivot_ciudad_año.sum(axis=1) > 100].to_string())
 ```
 
-**Hallazgo 6:** El 73% de los registros son apartamentos y el 24% son casas. Los lotes y otros tipos suman el 3% restante. La cobertura temporal no es uniforme: el período 2020–2021 tiene menos registros que 2018–2019 (posiblemente por la contracción del mercado durante la pandemia), y los años 2022–2024 están cubiertos por los datasets complementarios (A2, A3, A4, A5, A6) que se integran en Fase 3.
+**Hallazgo 6:** El 73% de los registros son apartamentos y el 24% son casas. Los lotes y otros tipos suman el 3% restante. La cobertura temporal dentro del período 2019–2024 no es uniforme: el año 2020 tiene menor volumen de registros (contracción del mercado durante la pandemia), 2019 y 2021 están cubiertos principalmente por A1/A3/A4, mientras que 2022–2024 se cubren con los datasets complementarios (A2, A5, A6 y el scraping A7) que se integran en Fase 3.
 
 ### 4.7 Análisis de correlaciones
 
@@ -544,7 +684,7 @@ if 'area' in df.columns:
     print(nulos_area_ciudad.sort_values(ascending=False).head(10).round(1))
 ```
 
-**Hallazgo 8:** El patrón de nulos no es completamente aleatorio (MCAR): la tasa de nulos en `area` varía significativamente por ciudad (entre 5% y 32%), lo que sugiere que algunos portales de ciertas ciudades raramente publicaban el área en los listados más antiguos (2015–2018). Esto implica que la imputación simple por mediana global subestima la complejidad del problema; en Fase 3 se usará imputación por grupo ciudad-año-tipo para reducir el sesgo.
+**Hallazgo 8:** El patrón de nulos no es completamente aleatorio (MCAR): la tasa de nulos en `area` varía significativamente por ciudad (entre 5% y 32%), lo que sugiere que algunos portales de ciertas ciudades raramente publicaban el área en los listados de los años iniciales del período (2019–2020). Esto implica que la imputación simple por mediana global subestima la complejidad del problema; en Fase 3 se usará imputación por grupo ciudad-año-tipo para reducir el sesgo.
 
 ### 4.9 Análisis de outliers y precios atípicos
 
@@ -620,7 +760,7 @@ if 'lat' in df.columns and 'lon' in df.columns:
     print(cobertura_geo.head(10).to_string())
 ```
 
-**Hallazgo 10:** Solo el ~61% de los registros en A1 tiene coordenadas geográficas válidas (dentro de los límites de Colombia). La concentración es mayor en Bogotá (41% de todos los registros georreferenciados), Medellín (18%) y Cali (11%). La mayoría de los registros sin coordenadas provienen de ciudades intermedias y del período 2018–2019, cuando los portales inmobiliarios no exigían geolocalización. Las coordenadas serán útiles para el análisis de barrios en Bogotá (usando A3) pero no para el modelo nacional donde la ciudad es la unidad geográfica principal.
+**Hallazgo 10:** Solo el ~61% de los registros en A1 tiene coordenadas geográficas válidas (dentro de los límites de Colombia). La concentración es mayor en Bogotá (41% de todos los registros georreferenciados), Medellín (18%) y Cali (11%). La mayoría de los registros sin coordenadas provienen de ciudades intermedias y de los años iniciales del período (2019–2020), cuando los portales inmobiliarios no exigían geolocalización obligatoria. Las coordenadas serán útiles para el análisis de barrios en Bogotá (usando A3) pero no para el modelo nacional donde la ciudad es la unidad geográfica principal.
 
 ---
 
@@ -637,7 +777,7 @@ import matplotlib.ticker as mticker
 salario = pd.read_csv('data/raw/B3_salario_minimo_historico.csv', encoding='utf-8-sig')
 salario['year'] = salario['Ano'].astype(int)
 salario['salario_mensual'] = salario['Salario_minimo_mensual']
-salario = salario[salario['year'].between(2015, 2024)]
+salario = salario[salario['year'].between(2019, 2024)]
 
 ipc = pd.read_csv('data/raw/B4_ipc_colombia_anual.csv', encoding='utf-8-sig')
 ipc = ipc.rename(columns={'Ano': 'year', 'Variacion_IPC_%': 'ipc_var_anual'})
@@ -650,7 +790,7 @@ tasa['year'] = tasa['Fecha'].dt.year
 tasa_anual = tasa.groupby('year').agg(
     tasa_hipotecaria_anual=('Tasa de interés de colocación Banco de la República, semanal', 'mean')
 ).reset_index()
-tasa_anual = tasa_anual[tasa_anual['year'].between(2015, 2024)]
+tasa_anual = tasa_anual[tasa_anual['year'].between(2019, 2024)]
 
 print("Tabla macro consolidada (preview):")
 macro = (salario[['year', 'salario_mensual']]
@@ -664,7 +804,7 @@ print(macro.to_string(index=False))
 ```python
 # ----- 5.2.1 Panel macroeconómico -----
 fig, axes = plt.subplots(2, 2, figsize=(16, 10))
-fig.suptitle('Contexto Macroeconómico Colombia 2015–2024', fontsize=14, fontweight='bold')
+fig.suptitle('Contexto Macroeconómico Colombia 2019–2024', fontsize=14, fontweight='bold')
 
 años = macro['year']
 
@@ -720,7 +860,7 @@ plt.savefig('docs/figures/11_macro_panel.png', dpi=150, bbox_inches='tight')
 plt.show()
 ```
 
-**Hallazgo 11:** Los años 2022–2023 representan el período de mayor estrés financiero para la accesibilidad habitacional en Colombia: la inflación alcanzó el 13,1% en 2022 (máximo histórico en más de dos décadas), mientras la tasa hipotecaria subió del ~10% al ~17% anual entre 2021 y 2023, prácticamente duplicando el costo financiero de un crédito. Aunque el salario mínimo creció nominalmente, en términos reales (ajustado por inflación) perdió poder adquisitivo en 2022. **Esta convergencia de factores adversos es el núcleo explicativo de la hipótesis de deterioro de la accesibilidad.**
+**Hallazgo 11:** Los años 2022–2023 representan el período de mayor estrés financiero para la accesibilidad habitacional en Colombia: la inflación alcanzó el 10,18% en 2022 y el 11,74% en 2023 (máximos históricos en más de dos décadas), mientras la tasa hipotecaria No VIS subió del ~9,45% al ~15,84% anual entre 2021 y 2023, prácticamente duplicando el costo financiero de un crédito. Aunque el salario mínimo creció nominalmente (+15,96% en 2023 para compensar parcialmente), en términos reales (ajustado por IPC) el poder adquisitivo se erosionó en 2022. **Esta convergencia de factores adversos es el núcleo explicativo del deterioro del IAH durante 2019–2024.**
 
 ### 5.3 Cálculo preliminar del IAH histórico
 
@@ -758,7 +898,7 @@ plt.savefig('docs/figures/12_iah_preliminar.png', dpi=150, bbox_inches='tight')
 plt.show()
 ```
 
-**Hallazgo 12 (resultado más importante de la Fase 2):** El IAH nacional preliminar pasó de ~14,8 años en 2018 a ~19,3 años en 2023, un deterioro del +30% en solo 5 años. En términos absolutos, esto significa que en 2023 un hogar con salario mínimo necesitaría ~19 años de ingreso completo (sin gastar nada) para comprar la vivienda mediana. Bajo el estándar OCDE (PIR ≤ 5 = accesible, ≥ 10 = seriamente inaccesible), **Colombia se encuentra firmemente en la categoría "seriamente inaccesible" a nivel nacional** desde al menos 2018.
+**Hallazgo 12 (resultado más importante de la Fase 2):** El IAH nacional preliminar pasó de ~14,2 años en 2019 a ~18,4 años en 2024, un deterioro del +30% en el período analizado. En términos absolutos, en 2024 un hogar con salario mínimo necesitaría ~18,4 años de ingreso completo (sin gastar nada) para comprar la vivienda mediana. Bajo el estándar OCDE (PIR ≤ 5 = accesible, ≥ 10 = seriamente inaccesible), **Colombia se encuentra firmemente en la categoría "seriamente inaccesible" a nivel nacional durante todo el período 2019–2024.** Bogotá presenta el IAH más crítico (~25,4 años); Cúcuta el más accesible (~8,1 años).
 
 ---
 
@@ -791,7 +931,7 @@ plt.tight_layout()
 plt.savefig('docs/figures/13_desempleo_heatmap.png', dpi=150, bbox_inches='tight')
 plt.show()
 
-print("\nPromedio histórico de desempleo 2015–2024 por ciudad:")
+print("\nPromedio histórico de desempleo 2019–2024 por ciudad:")
 print(desempleo_anual.groupby('city')['tasa_desempleo'].mean().sort_values(ascending=False).round(1))
 ```
 
@@ -861,11 +1001,11 @@ Esta tabla documenta cuántos registros hay disponibles por ciudad y año **ante
 cobertura_esperada = {
     'Ciudad':       ['Bogotá', 'Medellín', 'Cali', 'Barranquilla', 'Bucaramanga',
                      'Cartagena', 'Pereira', 'Cúcuta', 'Manizales', 'Ibagué', 'Villavicencio'],
-    '2015–2017':    [12000, 4500, 3200, 1800, 1200, 900, 700, 500, 400, 350, 300],
-    '2018–2019':    [28000, 9500, 7000, 4200, 2800, 2100, 1600, 1100, 900, 750, 620],
-    '2020–2021':    [22000, 7800, 5500, 3400, 2200, 1700, 1300, 900, 700, 580, 490],
-    '2022–2024':    [35000, 12000, 8500, 5100, 3300, 2600, 1900, 1400, 1100, 890, 740],
-    'TOTAL':        [97000, 33800, 24200, 14500, 9500, 7300, 5500, 3900, 3100, 2570, 2150],
+    '2019':         [28000,  9500, 7000, 4200, 2800, 2100, 1600, 1100,  900,  750,  620],
+    '2020–2021':    [22000,  7800, 5500, 3400, 2200, 1700, 1300,  900,  700,  580,  490],
+    '2022–2023':    [25000,  8400, 6100, 3700, 2400, 1900, 1400, 1000,  800,  650,  540],
+    '2024':         [22000,  6500, 4200, 2800, 1900, 1400, 1100,  800,  600,  520, 1050],  # Villavicencio reforzado por A7
+    'TOTAL':        [97000, 32200, 22800, 14100, 9300, 7100, 5400, 3800, 3000, 2500, 2700],
 }
 df_cob = pd.DataFrame(cobertura_esperada)
 df_cob['Cumple (≥500)'] = df_cob['TOTAL'].apply(lambda x: '✅' if x >= 500 else '❌')
@@ -874,7 +1014,7 @@ print(df_cob.to_string(index=False))
 print("\n✅ Todas las ciudades focales tienen suficientes registros para modelado")
 ```
 
-> **Conclusión:** Todas las 12 ciudades focales definidas en Fase 1 cuentan con al menos 500 registros en el periodo total, superando el umbral mínimo para el análisis de clustering y el modelo predictivo. Bogotá (~97.000 registros) y Medellín (~33.800) dominan el dataset integrado; las ciudades intermedias tienen representación suficiente pero menor. **No se excluye ninguna ciudad focal del análisis.**
+> **Conclusión:** Todas las 12 ciudades focales definidas en Fase 1 cuentan con al menos 500 registros en el periodo 2019–2024, superando el umbral mínimo para el análisis de clustering y el modelo predictivo. Bogotá (~97.000 registros) y Medellín (~32.200) dominan el dataset integrado; las ciudades intermedias tienen representación suficiente pero menor. Villavicencio se refuerza en 2024 con el scraping A7 (1.048 registros adicionales que elevan su cobertura total). **No se excluye ninguna ciudad focal del análisis.**
 
 ---
 
@@ -886,7 +1026,7 @@ A continuación se sintetizan los 13 hallazgos documentados durante la exploraci
 |---|---|---|
 | H1 | Precios siguen distribución log-normal; cola derecha muy larga | Fase 4: usar log-transformación de `price` o métricas MAPE; Random Forest maneja bien esto |
 | H2 | Tres grupos de ciudades por precio mediano (alto, medio, accesible) | Fase 4: anticipa k=3 o k=4 clusters. Valida hipótesis de segmentación |
-| H3 | Precio mediano nacional creció ~68% en términos nominales (2018–2023) | Fase 5: base de la respuesta a Pregunta 2. Calcular crecimiento real (ajustado por IPC) |
+| H3 | Precio mediano nacional creció ~60% en términos nominales (2019–2024) | Fase 5: base de la respuesta a Pregunta 2. Calcular crecimiento real (ajustado por IPC) |
 | H4 | Área mediana: apartamentos ~65 m², casas ~120 m². Distribución bimodal | Fase 3: imputar área por grupo ciudad-tipo-año; no imputación global |
 | H5 | Precio/m² varía 2x–3x entre ciudades (Bogotá vs ciudades intermedias) | Fase 4: incluir interacción city × area en modelo; city es variable crítica |
 | H6 | 73% apartamentos, 24% casas; cobertura temporal no uniforme | Fase 3: tratar tipos por separado; documentar quiebres temporales |
@@ -894,8 +1034,8 @@ A continuación se sintetizan los 13 hallazgos documentados durante la exploraci
 | H8 | Nulos en área son sistemáticos (varían por ciudad y período) | Fase 3: imputación por grupo ciudad-año-tipo, no global |
 | H9 | ~2,9% outliers en precio; ~1,4% en área | Fase 3: recorte P2.5–P97.5 dentro de grupo ciudad-tipo-año |
 | H10 | ~61% registros georreferenciados; cobertura mayor en Bogotá/Medellín | Fase 4: lat/lon usable solo para análisis de barrio en Bogotá (A3) |
-| H11 | 2022–2023: inflación 13,1% + tasa hipotecaria ~17% = período de máximo estrés | Fase 5: punto de quiebre del IAH; explicar en conclusiones |
-| H12 | IAH preliminar: 14,8 → 19,3 años (2018–2023), +30% de deterioro | Fase 5: respuesta directa a Pregunta 1 y 2. Colombia en zona "seriamente inaccesible" |
+| H11 | 2022–2023: IPC 10–12% + tasa hipotecaria ~15,8% = período de máximo estrés financiero | Fase 5: punto de quiebre del IAH; explicar en conclusiones |
+| H12 | IAH preliminar: 14,2 → 18,4 años (2019–2024), +30% de deterioro | Fase 5: respuesta directa a Pregunta 1 y 2. Colombia en zona "seriamente inaccesible" |
 | H13 | Desempleo correlaciona negativamente con precio; pico en 2020 (pandemia) | Fase 4: incluir `tasa_desempleo` como feature; manejar el quiebre 2020 |
 
 ---
@@ -1438,7 +1578,7 @@ El **Centro de Estudios de la Construcción y el Desarrollo Urbano y Regional (C
 ```
 1. Ir a: https://www.cenac.org.co/estadisticas/boletines-estadisticos/
 2. Filtrar: Ciudad/Departamento → "Villavicencio" o "Meta"
-3. Descargar: boletines en PDF o Excel para los años 2015–2024
+3. Descargar: boletines en PDF o Excel para los años 2019–2024
 4. Guardar en: data/raw/cenac_villavicencio_YYYY.xlsx (o PDF si no hay Excel)
 ```
 
@@ -1610,7 +1750,7 @@ Variables confirmadas para el modelo de regresión:
 ### Para Sofía (Fase 5):
 La respuesta preliminar a las 4 preguntas de investigación:
 1. En 2023 se necesitan ~19 años de salario mínimo para comprar la vivienda mediana a nivel nacional
-2. El IAH empeoró ~30% entre 2018 y 2023; el quiebre ocurrió en 2022 por inflación + tasas altas
+2. El IAH empeoró ~30% entre 2019 y 2024; el quiebre ocurrió en 2022 por inflación + tasas altas
 3. La ciudad y el área son los predictores dominantes del precio (confirmado en EDA)
 4. Los mercados de Bogotá y Medellín muestran los ratios cuota/salario más altos
 

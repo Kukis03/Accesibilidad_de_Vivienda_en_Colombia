@@ -5,7 +5,7 @@
 [![Model](https://img.shields.io/badge/model-Random%20Forest-green.svg)](https://scikit-learn.org/)
 [![Methodology](https://img.shields.io/badge/methodology-CRISP--DM-orange.svg)](https://en.wikipedia.org/wiki/Cross-industry_standard_process_for_data_mining)
 
-Este repositorio contiene el código, los datos y la documentación del proyecto final de Ciencia de Datos orientado a analizar la **Accesibilidad Económica a la Vivienda Urbana en Colombia** entre los años **2015 y 2024**. El proyecto integra un gran volumen de listados inmobiliarios con variables macroeconómicas oficiales bajo la metodología estándar **CRISP-DM**.
+Este repositorio contiene el código, los datos y la documentación del proyecto final de Ciencia de Datos orientado a analizar la **Accesibilidad Económica a la Vivienda Urbana en Colombia** entre los años **2019 y 2024**. El proyecto integra un gran volumen de listados inmobiliarios con variables macroeconómicas oficiales bajo la metodología estándar **CRISP-DM**.
 
 👉 **URL de Producción:** [https://colombia-housing-accessibility.streamlit.app/](https://colombia-housing-accessibility.streamlit.app/)
 
@@ -100,7 +100,7 @@ El panel se abrirá automáticamente en tu navegador web predeterminado en la di
 * **Inaccesibilidad Crítica:** El promedio nacional del IAH en 2024 se situó en **18.4 años** de salario mínimo. Según el estándar de la OCDE (donde un índice mayor a 10 se considera severamente inasequible), **Colombia se encuentra en una crisis generalizada de accesibilidad habitacional**.
 * **El Abismo Territorial:** Adquirir la vivienda mediana en **Bogotá exige 25.4 años** de ingresos frente a los **8.1 años necesarios en Cúcuta**, evidenciando una enorme disparidad de costo por metro cuadrado ($3.98M/m² vs. $1.62M/m²).
 * **Sobrecarga de Deuda:** En 10 de las 12 capitales analizadas, la cuota mensual de amortización de un crédito hipotecario estándar (70% financiado a 15 años) **supera el límite saludable del 30% del ingreso mensual**, llegando en Bogotá y Medellín a requerir más de **1.5 salarios mínimos completos tan solo para cubrir la cuota**.
-* **Extinción del Mercado Accesible:** El análisis temporal revela que mientras en 2015 la mitad de las ciudades focalizadas clasificaban en submercados de accesibilidad 'Moderado' o 'Accesible', **para 2024 ninguna ciudad del estudio califica en el nivel 'Accesible'**.
+* **Extinción del Mercado Accesible:** El análisis temporal revela que mientras en 2019 la mitad de las ciudades focalizadas clasificaban en submercados de accesibilidad 'Moderado' o 'Accesible', **para 2024 ninguna ciudad del estudio califica en el nivel 'Accesible'**.
 
 ---
 

@@ -1,0 +1,19 @@
+[
+  "A1: price mezcla COP y USD — requiere conversión con TRM histórica.",
+  "A1: l3 contiene países (no solo Colombia) — filtrar por l1=='Colombia'.",
+  "A1: property_type tiene valores en inglés (House, Apartment).",
+  "A2: Nombres en español con espacios y mayúsculas — requiere normalización.",
+  "A2: Area Construida puede diferir de área total.",
+  "A2: Ciudad mezcla nombres — requiere estandarización.",
+  "A3: 37 columnas, mayoría binarias (0/1) — muchas no mapeables a canónico.",
+  "A3: valor es precio de venta, valorventa posible duplicado.",
+  "A4: No tiene coordenadas (lat/lon) — limitación geoespacial.",
+  "A4: Solo Bogotá — no aporta cobertura geográfica nacional.",
+  "A5: neighbourhood en inglés — requiere estandarización.",
+  "A5: Solo Medellín 2023 — cobertura temporal limitada.",
+  "A6: Caracteres especiales en nombres (á, ó) — codificación UTF-8.",
+  "A6: Solo Bogotá 2023 — mismo alcance que A4.",
+  "A7: precio_cop ya en COP — buena práctica.",
+  "A7: Scraping propio — puede tener duplicados vs A1/A2.",
+  "A8: Solo 32 registros — dataset complementario, no principal."
+]
