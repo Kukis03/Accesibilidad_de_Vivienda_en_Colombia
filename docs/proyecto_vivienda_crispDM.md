@@ -147,11 +147,11 @@ Documento de planificación aprobado (este archivo) que incluye: enunciado del p
 
 | # | Variable | Fuente | Archivo en data/raw/ | Frecuencia | Período |
 |---|---|---|---|---|---|
-| B1 | Índices de Precios de Vivienda (IPVN+IPVU) | BanRep + DANE | `B1_indices_precios_vivienda.csv` | Mensual/Trimestral | 1988–2026 |
-| B2 | Tasa de interés crédito hipotecario semanal | Banco de la República | `B2_tasa_hipotecaria_semanal.csv` | Semanal | 2002–2026 |
-| B3 | Salario mínimo legal mensual | DANE/Mintrabajo | `B3_salario_minimo_historico.csv` | Anual | 1984–2026 |
+| B1 | Índices de Precios de Vivienda (IPVN+IPVU) | BanRep + DANE | `B1_indices_precios_vivienda.csv` | Mensual/Trimestral | 1988–2025 |
+| B2 | Tasa de interés crédito hipotecario semanal | Banco de la República | `B2_tasa_hipotecaria_semanal.csv` | Semanal | 2002–2025 |
+| B3 | Salario mínimo legal mensual | DANE/Mintrabajo | `B3_salario_minimo_historico.csv` | Anual | 1984–2025 |
 | B4 | IPC variación anual | DANE | `B4_ipc_colombia_anual.csv` | Anual | 2018–2024 |
-| B5 | GEIH empleo nacional + 13 ciudades | DANE | `B5_geih_empleo_colombia.csv` | Mensual | 2001–2026 |
+| B5 | GEIH empleo nacional + 13 ciudades | DANE | `B5_geih_empleo_colombia.csv` | Mensual | 2001–2025 |
 | B6 | Confianza constructora (QCON) | Fedesarollo | `B6_qcon_confianza_constructora.csv` | Trimestral | 2005–presente |
 | B7 | Licencias de construcción (QCON) | Fedesarollo | `B7_qcon_licencias_construccion.csv` | Trimestral | 2005–presente |
 | B8 | GEO estados/localidades Colombia | — | `B8_geo_estados_localidades.csv` | — | — |

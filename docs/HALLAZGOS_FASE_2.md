@@ -6,7 +6,7 @@
 **Responsable:** Sofía · **Apoyo:** Steve  
 **Período de análisis:** 2019 – 2024  
 **Estado:** ✅ Completa y lista para revisión del jurado  
-**Generado:** 2026-06-02
+**Generado:** 2025-06-02
 
 ---
 

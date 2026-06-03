@@ -5,7 +5,7 @@
 **Estado:** ✅ Completa y lista para revisión del jurado  
 **Notebooks asociados:** `notebooks/01_EDA_esquema_canonico.ipynb` a `notebooks/12_EDA_validacion_oficial.ipynb`  
 **Semanas:** 3 – 4  
-*Nota: Este documento refleja el inventario actualizado a Junio 2026 con la nueva numeración de archivos (A1–A8, B1–B8).*
+*Nota: Este documento refleja el inventario actualizado a Junio 2025 con la nueva numeración de archivos (A1–A8, B1–B8).*
 
 ---
 
@@ -33,18 +33,18 @@ Antes de cualquier análisis, se verificó que todos los archivos descargados co
 | **A4** | `A4_real_estate_bogota.csv` | 892 KB | ~13.000 | 8 | 2019–2022 | ✅ OK |
 | **A5** | `A5_medellin_properties_2023.csv` | 879 KB | ~12.000 | 12 | 2023 | ✅ OK |
 | **A6** | `A6_real_estate_bogota_2023.csv` | 467 KB | ~6.500 | 8 | 2023 | ✅ OK |
-| **A7** | `A7_fincaraiz_villavicencio_scraping.csv` | 294 KB | ~2.500 | 24 | 2024–2025 | ✅ OK |
+| **A7** | `A7_fincaraiz_villavicencio_scraping.csv` | 294 KB | ~2.500 | 24 | 2024 | ✅ OK |
 | **A8** | `A8_carac_pre_viv_nueva.csv` | 4 KB | 32 | 14 | 2022 | ✅ OK |
 
 ### 1.2 Grupo B — Variables Macroeconómicas (DANE + BanRep) — estado actual (8 archivos)
 
 | ID | Archivo en `/data/raw/` | Registros | Frecuencia | Período verificado | Estado |
 |---|---|---|---|---|---|
-| **B1** | `B1_indices_precios_vivienda.csv` | 332 | Mensual/Trimestral | 1988–2026 | ✅ OK (IPVN+IPVU unificado) |
-| **B2** | `B2_tasa_hipotecaria_semanal.csv` | 1.255 | Semanal | 2002–2026 | ✅ OK |
-| **B3** | `B3_salario_minimo_historico.csv` | 43 | Anual | 1984–2026 | ✅ OK |
+| **B1** | `B1_indices_precios_vivienda.csv` | 332 | Mensual/Trimestral | 1988–2025 | ✅ OK (IPVN+IPVU unificado) |
+| **B2** | `B2_tasa_hipotecaria_semanal.csv` | 1.255 | Semanal | 2002–2025 | ✅ OK |
+| **B3** | `B3_salario_minimo_historico.csv` | 43 | Anual | 1984–2025 | ✅ OK |
 | **B4** | `B4_ipc_colombia_anual.csv` | 10 | Anual | 2015–2024 | ✅ OK |
-| **B5** | `B5_geih_empleo_colombia.csv` | 1.202 | Mensual | 2001–2026 | ✅ OK (procesado de XLSX) |
+| **B5** | `B5_geih_empleo_colombia.csv` | 1.202 | Mensual | 2001–2025 | ✅ OK (procesado de XLSX) |
 | **B6** | `B6_qcon_confianza_constructora.csv` | ~200 | Trimestral | 2005–presente | ✅ OK |
 | **B7** | `B7_qcon_licencias_construccion.csv` | ~200 | Trimestral | 2005–presente | ✅ OK |
 | **B8** | `B8_geo_estados_localidades.csv` | ~50 | — | — | ✅ OK |
@@ -1094,7 +1094,7 @@ mv fincaraiz_villavicencio_scraping.csv A7_fincaraiz_villavicencio_scraping.csv 
 |---|---|---|---|
 | `B1_indices_precios_vivienda.csv` | B1 | ✅ Unificado | IPVN BanRep + IPVU BanRep + IPVN DANE detalle fusionados |
 | `B2_tasa_hipotecaria_semanal.csv` | B2 | ✅ Convertido de XLSX | De `tasa_de_interes.xlsx` original (BanRep) |
-| `B3_salario_minimo_historico.csv` | B3 | ✅ Reconstruido | 1984–2026 desde DANE/Mintrabajo |
+| `B3_salario_minimo_historico.csv` | B3 | ✅ Reconstruido | 1984–2025 desde DANE/Mintrabajo |
 | `B4_ipc_colombia_anual.csv` | B4 | ✅ Reconstruido | IPC anual 2015–2024 desde DANE |
 | `B5_geih_empleo_colombia.csv` | B5 | ✅ Procesado de XLSX | GEIH empleo mensual nacional+13 ciudades, original+ajuste estacional |
 | `B6_qcon_confianza_constructora.csv` | B6 | ✅ OK | Confianza constructora (Fedesarollo) |
@@ -1116,7 +1116,7 @@ Villavicencio es la única ciudad focal del proyecto clasificada en la región O
 
 Para fortalecer su cobertura con datos actualizados (2024–2025) y permitir validación cruzada con fuentes oficiales, se implementa una estrategia integrada de tres fuentes complementarias, **todas de acceso gratuito**.
 
-> **Precedente académico:** La construcción de bases de datos de precios de vivienda a partir de portales inmobiliarios digitales (web scraping) es una metodología ampliamente aceptada en la literatura de economía urbana y ciencia de datos aplicada. En el contexto colombiano, el uso combinado de datos de portales como Properati y FincaRaiz con fuentes oficiales (DANE, BanRep) sigue un enfoque híbrido que ha sido documentado en estudios de accesibilidad habitacional y patrones espaciales del mercado inmobiliario, validando esta estrategia como insumo para investigación aplicada en ciudades intermedias. [*Nota: Inserte aquí la referencia bibliográfica específica de su marco teórico.*]
+> **Precedente académico:** La construcción de bases de datos de precios de vivienda a partir de portales inmobiliarios digitales (web scraping) es una metodología ampliamente aceptada en la literatura de economía urbana y ciencia de datos aplicada. En el contexto colombiano, el uso combinado de datos de portales como Properati y FincaRaiz con fuentes oficiales (DANE, BanRep) sigue un enfoque híbrido que ha sido documentado en estudios de accesibilidad habitacional y patrones espaciales del mercado inmobiliario, validando esta estrategia como insumo para investigación aplicada en ciudades intermedias.
 
 ---
 
@@ -1677,7 +1677,7 @@ Cuando las fuentes reportan precios por m² diferentes para el mismo período, s
 
 ### Nota sobre el precedente académico de esta estrategia
 
-La combinación de datos de portales inmobiliarios digitales con fuentes oficiales (DANE, BanRep) para el análisis del mercado de vivienda en Colombia sigue una metodología híbrida reconocida en la literatura especializada: los datos georreferenciados de portales permiten contrastar hipótesis sobre patrones espaciales del mercado inmobiliario que las estadísticas agregadas oficiales no pueden revelar por sí solas. Este respaldo académico valida la solidez metodológica de la estrategia de datos del proyecto. [*Nota: Inserte aquí la referencia bibliográfica específica de su marco teórico.*]
+La combinación de datos de portales inmobiliarios digitales con fuentes oficiales (DANE, BanRep) para el análisis del mercado de vivienda en Colombia sigue una metodología híbrida reconocida en la literatura especializada: los datos georreferenciados de portales permiten contrastar hipótesis sobre patrones espaciales del mercado inmobiliario que las estadísticas agregadas oficiales no pueden revelar por sí solas. Este respaldo académico valida la solidez metodológica de la estrategia de datos del proyecto.
 
 ---
 

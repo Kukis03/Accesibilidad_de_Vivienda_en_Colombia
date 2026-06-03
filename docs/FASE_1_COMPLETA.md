@@ -167,11 +167,11 @@ El análisis de precios, modelos predictivos y clustering se realizará sobre la
 
 | ID | Variable | Fuente | Frecuencia | Período |
 |:--:|---|---|:---:|:---:|
-| **B1** | Índices de Precios de Vivienda (IPVN + IPVU) | [DANE](https://www.dane.gov.co/index.php/estadisticas-por-tema/precios-y-costos/indice-de-precios-de-la-vivienda-nueva-ipvn) + [BanRep](https://www.banrep.gov.co/es/estadisticas/precios-vivienda) | Mensual / Trimestral | 1988–2026 |
-| **B2** | Tasa hipotecaria semanal | [BanRep](https://www.banrep.gov.co/es/estadisticas/tasas-interes) | Semanal | 2002–2026 |
-| **B3** | Salario mínimo mensual histórico | [DANE / Mintrabajo](https://www.mintrabajo.gov.co/web/guest/salario-minimo) | Anual | 1984–2026 |
+| **B1** | Índices de Precios de Vivienda (IPVN + IPVU) | [DANE](https://www.dane.gov.co/index.php/estadisticas-por-tema/precios-y-costos/indice-de-precios-de-la-vivienda-nueva-ipvn) + [BanRep](https://www.banrep.gov.co/es/estadisticas/precios-vivienda) | Mensual / Trimestral | 1988–2025 |
+| **B2** | Tasa hipotecaria semanal | [BanRep](https://www.banrep.gov.co/es/estadisticas/tasas-interes) | Semanal | 2002–2025 |
+| **B3** | Salario mínimo mensual histórico | [DANE / Mintrabajo](https://www.mintrabajo.gov.co/web/guest/salario-minimo) | Anual | 1984–2025 |
 | **B4** | IPC — Variación anual | [DANE](https://www.dane.gov.co/index.php/estadisticas-por-tema/precios-y-costos/indice-de-precios-al-consumidor-ipc) | Anual | 2019–2024 |
-| **B5** | GEIH — Empleo nacional y 13 ciudades | [DANE](https://www.dane.gov.co/index.php/estadisticas-por-tema/mercado-laboral/empleo-y-desempleo/geih-historicos) | Mensual | 2001–2026 |
+| **B5** | GEIH — Empleo nacional y 13 ciudades | [DANE](https://www.dane.gov.co/index.php/estadisticas-por-tema/mercado-laboral/empleo-y-desempleo/geih-historicos) | Mensual | 2001–2025 |
 | **B6** | Confianza constructora (QCON) | [Fedesarrollo](https://www.fedesarrollo.org.co/encuestas) | Trimestral | 2005–presente |
 | **B7** | Licencias de construcción (QCON) | [Fedesarrollo](https://www.fedesarrollo.org.co/encuestas) | Trimestral | 2005–presente |
 | **B8** | GEO — Estados/localidades Colombia | [IGAC / Geoportal](https://geoportal.igac.gov.co/) | — | — |
