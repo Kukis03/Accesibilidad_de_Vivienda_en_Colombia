@@ -297,7 +297,9 @@ def eliminar_duplicados(df):
         np.round(df['price'] / 1000000).astype(str) + "_" + 
         np.round(df['area'].fillna(-1)).astype(str) + "_" + 
         df['property_type'].astype(str) + "_" + 
-        df['year'].astype(str)
+        df['year'].astype(str) + "_" +
+        df['rooms'].fillna(-1).astype(str) + "_" +
+        df['bathrooms'].fillna(-1).astype(str)
     )
     
     df['fuente_priority'] = df['fuente'].map({
@@ -339,6 +341,20 @@ def imputar_valores_faltantes(df):
     mediana_estrato_ciudad = df.groupby('city')['estrato'].transform('median')
     df['estrato'] = df['estrato'].fillna(mediana_estrato_ciudad).fillna(3).astype(int)
     df['estrato'] = df['estrato'].clip(1, 6).astype(int)
+    
+    # Imputar lat/lon faltantes con el centroide de la ciudad
+    centroides = {
+        'Bogotá': (4.6097, -74.0817), 'Medellín': (6.2442, -75.5812),
+        'Cali': (3.4516, -76.5320), 'Barranquilla': (10.9685, -74.7813),
+        'Cartagena': (10.3997, -75.4763), 'Bucaramanga': (7.1254, -73.1198),
+        'Pereira': (4.8133, -75.6961), 'Manizales': (5.0689, -75.5174),
+        'Armenia': (4.5339, -75.6811), 'Cúcuta': (7.8939, -72.5078),
+        'Ibagué': (4.4389, -75.2322), 'Villavicencio': (4.1420, -73.6266)
+    }
+    
+    if 'lat' in df.columns and 'lon' in df.columns:
+        df['lat'] = df.apply(lambda row: centroides.get(row['city'], (np.nan, np.nan))[0] if pd.isna(row['lat']) else row['lat'], axis=1)
+        df['lon'] = df.apply(lambda row: centroides.get(row['city'], (np.nan, np.nan))[1] if pd.isna(row['lon']) else row['lon'], axis=1)
     
     return df
 
