@@ -40,15 +40,15 @@ if not df.empty:
     ciudades_disponibles = sorted(df['city'].unique())
     ciudades_sel = st.sidebar.multiselect("Seleccione Ciudades", ciudades_disponibles, default=ciudades_disponibles[:3])
 
-    anos_disponibles = sorted(df['year'].unique())
-    anos_sel = st.sidebar.slider("Rango de Años", min(anos_disponibles), max(anos_disponibles), (2018, 2024))
+    años_disponibles = sorted(df['year'].unique())
+    años_sel = st.sidebar.slider("Rango de Años", min(años_disponibles), max(años_disponibles), (2018, 2024))
 
     tipos_disponibles = df['property_type'].unique()
     tipos_sel = st.sidebar.multiselect("Tipo de Propiedad", tipos_disponibles, default=list(tipos_disponibles))
 
     df_filtrado = df[
         (df['city'].isin(ciudades_sel)) &
-        (df['year'].between(anos_sel[0], anos_sel[1])) &
+        (df['year'].between(años_sel[0], años_sel[1])) &
         (df['property_type'].isin(tipos_sel))
     ]
 
@@ -131,8 +131,8 @@ if not df.empty:
     ciudades_disponibles = sorted(df['city'].unique())
     ciudades_sel = st.sidebar.multiselect("Seleccione Ciudades", ciudades_disponibles, default=ciudades_disponibles[:3])
     
-    anos_disponibles = sorted(df['year'].unique())
-    anos_sel = st.sidebar.slider("Rango de Años", min(anos_disponibles), max(anos_disponibles), (2018, 2024))
+    años_disponibles = sorted(df['year'].unique())
+    años_sel = st.sidebar.slider("Rango de Años", min(años_disponibles), max(años_disponibles), (2018, 2024))
     
     tipos_disponibles = df['property_type'].unique()
     tipos_sel = st.sidebar.multiselect("Tipo de Propiedad", tipos_disponibles, default=list(tipos_disponibles))
@@ -140,7 +140,7 @@ if not df.empty:
     # Filtrar datos
     df_filtrado = df[
         (df['city'].isin(ciudades_sel)) & 
-        (df['year'].between(anos_sel[0], anos_sel[1])) & 
+        (df['year'].between(años_sel[0], años_sel[1])) & 
         (df['property_type'].isin(tipos_sel))
     ]
     
