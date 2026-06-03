@@ -38,6 +38,8 @@ def cargar_y_canonizar_datasets():
     df1 = pd.read_csv(os.path.join(DIR_RAW, "A1_colombia_housing_properties.csv"))
     if 'operation_type' in df1.columns:
         df1 = df1[df1['operation_type'] == 'Venta'].copy()
+    if 'l1' in df1.columns:
+        df1 = df1[df1['l1'] == 'Colombia'].copy()
     
     # Avoid duplicate created_on
     if 'created_on' in df1.columns and 'start_date' in df1.columns:
@@ -234,12 +236,12 @@ def limpiar_fechas(df):
         'A7_Scraping_Villavicencio': 2024, 'A8_CaracPreVivNueva': 2022
     }
     df['year'] = df['year'].fillna(df['fuente'].map(año_fuente)).fillna(2023).astype(int)
-    df = df[(df['year'] >= 2015) & (df['year'] <= 2024)]
+    df = df[(df['year'] >= 2019) & (df['year'] <= 2024)]
     return df
 
 print("4. Aplicando filtro temporal...")
 df_clean_temporal = limpiar_fechas(df_clean_ciudades)
-registrar_metrica(3, "Restriccion Temporal 2015-2024", df_clean_ciudades, df_clean_temporal)
+registrar_metrica(3, "Restriccion Temporal 2019-2024", df_clean_ciudades, df_clean_temporal)
 
 MAPA_PROPIEDADES = {
     'apartamento': 'Apartamento', 'apto': 'Apartamento', 'apartment': 'Apartamento',
@@ -383,7 +385,7 @@ def cargar_e_integrar_macro(df_inmuebles):
     b1_year['ipvu_variacion_anual'] = b1_year['ipvu_indice_nominal'].pct_change() * 100
 
     # Merge todo
-    df_macro = pd.DataFrame({'year': range(2015, 2025)})
+    df_macro = pd.DataFrame({'year': range(2019, 2025)})
     df_macro = df_macro.merge(b3, on='year', how='left')
     df_macro = df_macro.merge(b4, on='year', how='left')
     df_macro = df_macro.merge(b2_year, on='year', how='left')
@@ -450,7 +452,7 @@ def validar_dataset_final(df):
     assert (df['rooms'] >= 1).all(), "Error: Cantidad de habitaciones invalida"
     assert (df['bathrooms'] >= 1).all(), "Error: Cantidad de banos invalida"
     assert df['city'].isin(MAPA_CIUDADES.values()).all(), "Error: Ciudades fuera del catalogo"
-    assert df['year'].between(2015, 2024).all(), "Error: Anos fuera del periodo temporal"
+    assert df['year'].between(2019, 2024).all(), "Error: Anos fuera del periodo temporal"
     assert df['estrato'].between(1, 6).all(), "Error: Estratos fuera del rango 1-6"
     print("Validacion de integridad aprobada exitosamente.")
 
