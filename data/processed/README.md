@@ -16,12 +16,12 @@ Este directorio contiene el dataset final procesado, listo para su uso en los mo
 | `bathrooms` | int | Número de baños (mínimo 1) |
 | `property_type` | str | Tipo de propiedad (`Apartamento` o `Casa`) |
 | `city` | str | Ciudad estandarizada (12 ciudades principales) |
-| `lat` | float | Latitud (puede contener nulos) |
-| `lon` | float | Longitud (puede contener nulos) |
+| `lat` | float | Latitud (imputada con centroide de ciudad — sin nulos) |
+| `lon` | float | Longitud (imputada con centroide de ciudad — sin nulos) |
 | `created_on` | datetime | Fecha de publicación o extracción del registro |
 | `estrato` | int | Estrato socioeconómico (1-6) |
 | `fuente` | str | Origen de los datos (A1-A8) |
-| `year` | int | Año de análisis (2015-2024) |
+| `year` | int | Año de análisis (2019-2024) |
 | `salario_mensual` | float | Salario mínimo legal vigente mensual (COP) para ese año |
 | `ipc_var_anual` | float | Variación anual del IPC (%) |
 | `ipc_base2018` | float | Índice de Precios al Consumidor (Base 2018=100) |
