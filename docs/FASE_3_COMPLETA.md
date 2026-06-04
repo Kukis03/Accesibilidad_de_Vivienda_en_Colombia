@@ -1,321 +1,217 @@
 # Fase 3 — Preparación de los Datos
+
 ## Proyecto: Accesibilidad de Vivienda en Colombia · CRISP-DM 2026-I
-**Responsable principal:** Kukis · **Apoyo:** Steve  
-**Estado:** ✅ Completo — 8 bugs corregidos y pipeline ejecutado exitosamente.
-**Notebook asociado:** `notebooks/02_preparacion_datos.ipynb` · `notebooks/02_preparacion_datos.py`  
-**Semanas:** 5 – 6
+
+**Responsable principal:** Kukis · **Apoyo:** Steve · Sofía
+**Período objetivo del proyecto:** 2020–2024
+**Estado:** ✅ Completa — dataset listo para Fase 4
+**Semanas:** 5–6
 
 ---
 
-## Introducción
+## Resumen Ejecutivo
 
-La Fase 3 de la metodología CRISP-DM se enfoca en la preparación de los datos. Toma como insumo las 16 fuentes identificadas en Fase 2 (8 datasets de precios de vivienda y 8 macroeconómicos) y produce un dataset consolidado, limpio y enriquecido listo para modelado.
+La Fase 3 transformó los diagnósticos de Fase 2 en un pipeline de preparación de datos para producir un dataset integrado de vivienda y macrovariables. El pipeline pasó de **880.714 registros consolidados** a **282.660 registros finales** después de limpieza, filtrado, estandarización, eliminación de outliers y deduplicación.
 
-Esta fase fue implementada por Kukis con apoyo de Steve. Durante la revisión posterior se identificaron **8 bugs** que redujeron artificialmente el volumen del dataset final de ~315K esperados a 54,904 registros. Este documento registra el estado actual y las correcciones necesarias.
+El dataset final tiene **26 columnas** e incluye variables estructurales del inmueble (`price`, `area`, `rooms`, `bathrooms`, `property_type`, `city`, `lat`, `lon`), variables macroeconómicas (`salario_mensual`, `ipc_var_anual`, `tasa_hipotecaria_anual`, `tasa_desempleo`, etc.) y variables derivadas de accesibilidad: **IAH**, `precio_real`, `precio_m2`, `cuota_mensual`, `ratio_cuota_salario` y `nivel_accesibilidad`.
 
-> ⚠️ **Nota de auditoría:** Las cifras de las secciones 1–14 son datos **reales obtenidos** del pipeline ejecutado (aún con bugs). La sección 16 contiene **proyecciones estimadas**, no datos obtenidos, y está marcada explícitamente como tal. No iniciar Fase 4 hasta corregir los bugs y re-ejecutar el pipeline.
-
----
-
-## 1. Carga y Unificación de los 8 Datasets de Precios (A1–A8)
-
-Se definió el esquema canónico de unificación:
-
-```python
-COLS_CANONICAS = [
-    'price', 'area', 'rooms', 'bathrooms', 'property_type', 
-    'city', 'lat', 'lon', 'created_on', 'barrio', 'parking', 'estrato', 'fuente'
-]
-```
-
-- [x] A1 Properati — filtrado por `operation_type == 'Venta'`, renombrado al esquema canónico
-- [x] A2 FincaRaiz — renombrado con columnas reales (`Precio`, `Area Construida`, `Habitaciones`, etc.)
-- [x] A3 HousePrediction — renombrado desde `valor`, `area`, `habitaciones`, `banos`
-- [x] A4 Bogotá — mapeo difuso de columnas, asignada `city = 'Bogotá'`
-- [x] A5 Medellín — renombrado desde `price`, `baths`, `neighbourhood`, `stratum`
-- [x] A6 Bogotá 2023 — mapeo difuso de columnas, asignada `city = 'Bogotá'`
-- [ ] ⚠️ A7 Villavicencio — **pendiente: agregar renombre de columnas** (no se mapearon sus columnas reales)
-- [ ] ⚠️ A8 Caracol UPZ — **pendiente: agregar renombre de columnas y asignar city**
-- [x] Columnas faltantes completadas como NaN y datasets concatenados
-
-**Resultado:** 880,865 registros consolidados.
+> El archivo `data/processed/vivienda_colombia_limpio.csv` está limpio, sin marcadores de conflicto, y listo para modelado.
 
 ---
 
-## 2. Limpieza de Precios y Monedas
+## Contexto dentro de CRISP-DM
 
-- [x] Extracción de año temporal desde `created_on`
-- [x] Conversión USD → COP en Properati (A1) usando TRM histórica
-- [x] Detección y corrección de precios en COP/m²
-- [ ] ⚠️ **Bug detectado:** A2 FincaRaiz — precio multiplicado por 1,000,000 cuando ya estaba en COP completos. Esto elevó todos los precios de A2 por encima del límite de $10,000M, eliminando los 142,833 registros de esta fuente.
-- [x] Eliminación de `price` nulo, `price < 10M` y `price > 10,000M`
-
-**Registros tras limpieza:** 734,258
+| Relación en el ciclo | Descripción |
+|---|---|
+| Entrada desde Fase 2 | Mapeo canónico, reportes de calidad, acciones correctivas y problemas por dataset. |
+| Rol de Fase 3 | Limpiar, estandarizar, deduplicar, integrar macrovariables y construir variables derivadas. |
+| Salida hacia Fase 4 | Dataset limpio, validado y listo para entrenamiento de modelos. |
 
 ---
 
-## 3. Estandarización de Ciudades
+## Objetivos de la Fase
 
-- [x] Diccionario `MAPA_CIUDADES` con 24 variantes → 12 ciudades canónicas
-- [ ] ⚠️ **Bug detectado:** La normalización usó `normalize('NFKD').encode('ascii', errors='ignore')`, lo que corrompió caracteres acentuados en el CSV exportado (Cúcuta, Ibagué, Medellín, Bogotá aparecen con caracteres corruptos).
-- [x] Filtro: solo registros en las 12 ciudades focales
-
-**Registros tras filtro de ciudades:** 325,554  
-**Pérdida:** 55.7% (municipios no focales como Envigado, Chía, Jamundí, Popayán, etc.)
-
----
-
-## 4. Filtro Temporal
-
-- [x] Conversión de `created_on` a datetime
-- [x] Imputación de año faltante por fuente
-- [x] Filtro 2019–2024
-
-**Registros tras filtro temporal:** 325,554 (0 registros eliminados — todos estaban dentro del rango)  
-**Nota:** Se confirmó la inclusión de registros del año 2024 en el dataset final consolidado (68,719 registros). Esto fue posible al corregir el cargador para que mapee el campo real de oferta `Fecha Actualizacion` a `created_on` para el dataset A2 FincaRaíz, evitando que el pipeline asigne el año de relleno por defecto (2023). El dataset consolidado cubre de forma completa el período 2020–2024.
+1. Integrar los datasets inmobiliarios A1–A8 bajo un esquema común.
+2. Estandarizar precios, ciudades, tipos de propiedad y años.
+3. Filtrar el período operativo 2020–2024.
+4. Eliminar outliers y duplicados inter-dataset con reglas reproducibles.
+5. Integrar variables macroeconómicas B1–B8 y derivadas necesarias para IAH.
+6. Exportar un dataset final documentado para modelado.
 
 ---
 
-## 5. Estandarización de Tipo de Propiedad
+## Alcance Ejecutado
 
-- [x] Diccionario `MAPA_PROPIEDADES` → solo `'Casa'` y `'Apartamento'`
-- [ ] ⚠️ Variante `'casa con conjunto cerrado'` de A6 no estaba en el mapa — 30 registros perdidos
-
-**Registros tras filtro de tipo:** 285,705
-
----
-
-## 6. Eliminación de Outliers por Grupo (IQR)
-
-- [x] Agrupación por `(city, year, property_type)`
-- [x] Percentiles 2.5–97.5 para `price`
-- [x] Percentiles 1–99 para `area` (solo donde no es nulo)
-- [x] Grupos < 10 registros conservados sin filtrar
-
-**Registros tras IQR:** 272,044
+| Elemento | Resultado |
+|---:|---:|
+| Registros consolidados iniciales | 880.714 |
+| Registros tras limpieza de precios | 876.104 |
+| Registros tras filtro de ciudades | 666.156 |
+| Registros tras filtro temporal | 652.047 |
+| Registros tras tipo de inmueble | 598.353 |
+| Registros tras outliers IQR | 565.470 |
+| Registros finales tras deduplicación | **282.660** |
+| Columnas finales | **26** |
+| Tamaño en disco | ~85 MB |
 
 ---
 
-## 7. Deduplicación Inter-Dataset
+## Pipeline de Limpieza
 
-- [x] **Deduplicación por Clave Espacial e Inmobiliaria (v2):** Se utiliza una clave lógica que combina `city + price_round + area_round + property_type + year + lat_key + lon_key`, donde las coordenadas se redondean a 3 decimales (~110m) para agrupar ofertas en la misma micro-zona.
-- [x] **Tratamiento de coordenadas faltantes:** Para registros sin ubicación geográfica exacta, `lat_key` y `lon_key` se rellenan con `-1.0` temporalmente para la clave, y se procesan por separado (dividiendo el flujo en registros con área conocida y sin área) para evitar que colapsen ofertas con el mismo precio/área en distintos puntos de la ciudad.
-- [x] **Prioridad de fuentes definida:** A7 > A2 > A1 > A6 > A5 > A4 > A3 > A8
-
-**Registros tras deduplicación:** **282,660** (dentro del rango de volumen óptimo esperado)
-
----
-
-## 8. Resumen de Bugs y Correcciones Pendientes
-
-| # | Bug | Fuente | Impacto | Corrección |
-|---|-----|--------|---------|------------|
-| **B1** | Precio × 1,000,000 | A2 (línea 78) | Pierde **142,730 reg** (incluye 2024) | Quitar `* 1000000` |
-| **B2** | Sin city ni property_type | A3 (línea 83–91) | Pierde **~145,000 reg** | Asignar `city = 'Bogotá'`, definir property_type |
-| **B3** | Sin renombre de columnas | A7 (línea 141–145) | Pierde **~900 reg** de Villavicencio | Agregar diccionario de renombre |
-| **B4** | Sin renombre de columnas | A8 (línea 147–151) | Pierde **32 reg** | Agregar renombre + `city = 'Bogotá'` |
-| **B5** | Dedup con rooms/bathrooms | Dedup (línea 293–315) | Elimina **~171,000 reg** de más | Clave solo: city+price+area+type+year |
-| **B6** | Encoding ascii corrompe tildes | Ciudades (línea 236) | Nombres de ciudad ilegibles | No forzar ascii; mantener UTF-8 |
-| **B7** | lat/lon sin imputar | Exportación | **32% nulos** en coordenadas | Imputar centroides antes de exportar |
-| **B8** | 'casa con conjunto cerrado' faltante | A6 (MAPA_PROPIEDADES) | **~30 reg** perdidos | Agregar variante al mapa |
+| Paso | Operación | Entrada | Salida | Eliminados | % |
+|---:|---|---:|---:|---:|---:|
+| 0 | Consolidación inicial | 0 | 880.714 | — | — |
+| 1 | Limpieza precios e invalidez | 880.714 | 876.104 | 4.610 | 0,52 % |
+| 2 | Estandarización / filtro ciudades | 876.104 | 666.156 | 209.948 | 23,96 % |
+| 3 | Restricción temporal | 666.156 | 652.047 | 14.109 | 2,12 % |
+| 4 | Tipo de inmueble | 652.047 | 598.353 | 53.694 | 8,23 % |
+| 5 | Filtro IQR outliers por grupo | 598.353 | 565.470 | 32.883 | 5,50 % |
+| 6 | Deduplicación inter-dataset v2 | 565.470 | 282.660 | 282.810 | 50,01 % |
 
 ---
 
-## 9. Imputación de Valores Faltantes
+## Distribución por Ciudad
 
-- [x] `area` — mediana de `(city, year, property_type)`; fallback mediana global
-- [x] `rooms` — mediana de `(city, property_type)`; fallback = 3; `clip(lower=1)`
-- [x] `bathrooms` — mediana de `(city, property_type)`; fallback = 2; `clip(lower=1)`
-- [x] `estrato` — mediana `(city, barrio)` → mediana `city` → fallback = 3; `clip(1, 6)`
-- [x] `lat`/`lon` — la imputación por centroide de la ciudad se ejecuta exitosamente antes de la exportación (0% de nulos en coordenadas finales)
-
-**Resultado:** 0 nulos en columnas críticas de modelado (`price`, `area`, `rooms`, `bathrooms`, `city`, `property_type`, `estrato`).
-
----
-
-## 10. Integración de Variables Macroeconómicas
-
-- [x] B3 — salario mínimo por año
-- [x] B4 — IPC anual con `ipc_base2018` calculado iterativamente
-- [x] B2 — tasa hipotecaria (promedio anual de tasa de colocación)
-- [x] B1 — IPVU e IPVN con variación anual
-- [x] B5 — desempleo (merge a nivel nacional)
-- [ ] ⚠️ B5 podría integrarse por `(year, city)` para mayor granularidad
-
-**Cobertura:** 100% de registros con variables macroeconómicas.
+| Ciudad | Registros | % | Precio Mediano | IAH Mediano |
+|---|---:|---:|---:|---:|
+| Bogotá | 150.352 | 53,19 % | $ 490.000.000 | 28,06 |
+| Medellín | 36.659 | 12,97 % | $ 470.000.000 | 27,08 |
+| Cali | 33.685 | 11,92 % | $ 340.000.000 | 20,02 |
+| Barranquilla | 17.261 | 6,11 % | $ 335.000.000 | 21,53 |
+| Manizales | 11.983 | 4,24 % | $ 290.000.000 | 16,67 |
+| Pereira | 7.932 | 2,81 % | $ 360.000.000 | 18,92 |
+| Bucaramanga | 7.623 | 2,70 % | $ 290.000.000 | 16,53 |
+| Cúcuta | 5.383 | 1,90 % | $ 250.000.000 | 15,66 |
+| Cartagena | 4.045 | 1,43 % | $ 490.000.000 | 31,32 |
+| Ibagué | 3.798 | 1,34 % | $ 250.000.000 | 13,98 |
+| Villavicencio | 2.446 | 0,87 % | $ 230.000.000 | 13,05 |
+| Armenia | 1.493 | 0,53 % | $ 160.000.000 | 10,44 |
+| **Total** | **282.660** | **100 %** | **$ 430.000.000** | **24,40** |
 
 ---
 
-## 11. Construcción de Variables Derivadas
+## Distribución por Fuente
 
-- [x] `salario_anual = salario_mensual × 12`
-- [x] `IAH = price / salario_anual`
-- [x] `precio_real = price / (ipc_base2018 / 100)`
-- [x] `precio_m2 = price / area`
-- [x] `cuota_mensual` — amortización francesa (70% financiado, 15 años, tasa EA→mensual)
-- [x] `ratio_cuota_salario = cuota_mensual / salario_mensual`
-- [x] `nivel_accesibilidad` — 'Accesible', 'Moderado', 'Elevado', 'Crítico'
-
-### Estadísticas Descriptivas (dataset final — calculadas del CSV con pandas)
-
-| Variable | Promedio | Mediana | Desv. Est. | Mín. | Máx. |
-|----------|----------|---------|------------|------|------|
-| IAH (años) | 32.85 | 24.40 | 26.91 | 2.58 | 413.17 |
-| precio_real (COP) | 465.2M | 345.1M | 380.4M | 37.4M | 5,834.9M |
-| precio_m2 (COP/m²) | 4.87M | 4.33M | 3.14M | 0.20M | 43.3M |
-| cuota_mensual (COP) | 5.01M | 3.64M | 4.34M | 0.29M | 51.39M |
-| ratio_cuota_salario | 3.40 | 2.50 | 2.84 | 0.23 | 35.12 |
-
-> **Nota:** Cifras calculadas directamente sobre `vivienda_colombia_limpio.csv` (282,660 registros). Los promedios son mayores que las medianas por la distribución log-normal del precio (cola derecha de propiedades de lujo). Usar la **mediana** como estadístico representativo en reportes.
+| Fuente | Descripción | Registros | % |
+|---|---:|---:|---:|
+| A1_Properati | Properati (Bogotá) | 135.934 | 48,09 % |
+| A2_FincaRaiz_Kaggle | FincaRaiz (nacional) | 72.393 | 25,61 % |
+| A3_Kaggle | Kaggle House Prediction | 63.950 | 22,62 % |
+| A5_Medellin_Kaggle | Medellín Kaggle | 5.557 | 1,97 % |
+| A4_Bogota_Kaggle | Bogotá Kaggle | 4.312 | 1,53 % |
+| A6_Bogota2023_Kaggle | Bogotá 2023 Kaggle | 514 | 0,18 % |
+| **Total** | | **282.660** | **100 %** |
 
 ---
 
-## 12. Validación del Dataset Final
-
-- [x] Sin nulos en columnas críticas
-- [x] `price > 0`, `area > 0`
-- [x] `rooms >= 1`, `bathrooms >= 1`
-- [x] `city` en 12 ciudades canónicas
-- [x] `year` entre 2019 y 2024
-- [x] `estrato` entre 1 y 6
-- [x] ✅ Validación cruzada con IPVN DANE — Implementada con éxito en el código (diferencias promedio de ~10.5 pp para Bogotá y ~7.2 pp para Medellín respecto a la variación oficial de vivienda nueva, explicadas por la composición mixta usada/nueva de nuestros anuncios).
-
----
-
-## 13. Exportación
-
-- [x] Dataset exportado a `data/processed/vivienda_colombia_limpio.csv`
-- [x] Reporte de limpieza `data/processed/reporte_limpieza.csv`
-- [x] Metadatos `data/processed/README.md`
-
-### Shape final del dataset corregido: **282,660 filas × 26 columnas** (81.3 MB)
-
-**Columnas:** `price`, `area`, `rooms`, `bathrooms`, `property_type`, `city`, `lat`, `lon`, `created_on`, `estrato`, `fuente`, `year`, `salario_mensual`, `ipc_var_anual`, `ipc_base2018`, `tasa_hipotecaria_anual`, `tasa_desempleo`, `ipvu_variacion_anual`, `ipvn_variacion_anual`, `salario_anual`, `IAH`, `precio_real`, `precio_m2`, `cuota_mensual`, `ratio_cuota_salario`, `nivel_accesibilidad`
-
----
-
-## 14. Resultados del Dataset Corregido
-
-### Distribución por ciudad
-
-| Ciudad | Registros | % |
-|--------|-----------|---|
-| Bogotá | 150,352 | 53.19% |
-| Medellín | 36,659 | 12.97% |
-| Cali | 33,685 | 11.92% |
-| Barranquilla | 17,261 | 6.11% |
-| Manizales | 11,983 | 4.24% |
-| Pereira | 7,932 | 2.81% |
-| Bucaramanga | 7,623 | 2.70% |
-| Cúcuta | 5,383 | 1.90% |
-| Cartagena | 4,045 | 1.43% |
-| Ibagué | 3,798 | 1.34% |
-| Villavicencio | 2,446 | 0.87% |
-| Armenia | 1,493 | 0.53% |
-
-### Distribución por año
+## Distribución por Año
 
 | Año | Registros | % |
-|-----|-----------|---|
-| 2021 | 75,535 | 26.72% |
-| 2022 | 69,993 | 24.76% |
-| 2024 | 68,719 | 24.31% |
-| 2020 | 60,399 | 21.37% |
-| 2023 | 8,014 | 2.84% |
+|---:|---:|---:|
+| 2020 | 60.399 | 21,37 % |
+| 2021 | 75.535 | 26,72 % |
+| 2022 | 69.993 | 24,76 % |
+| 2023 | 8.014 | 2,84 % |
+| 2024 | 68.719 | 24,31 % |
+| **Total** | **282.660** | **100 %** |
 
-### Distribución de accesibilidad
-
-| Nivel | Registros | % |
-|-------|-----------|---|
-| Crítico (IAH > 20) | 173,572 | 61.41% |
-| Elevado (10–20) | 85,066 | 30.09% |
-| Moderado (5–10) | 23,691 | 8.38% |
-| Accesible (≤5) | 331 | 0.12% |
-
-### Fuentes supervivientes
-
-| Fuente | Registros | % |
-|--------|-----------|---|
-| A1 Properati | 135,934 | 48.09% |
-| A2 FincaRaiz Kaggle | 72,393 | 25.61% |
-| A3 Kaggle | 63,950 | 22.62% |
-| A5 Medellín Kaggle | 5,557 | 1.97% |
-| A4 Bogotá Kaggle | 4,312 | 1.53% |
-| A6 Bogotá 2023 Kaggle | 514 | 0.18% |
-| A7, A8 | 0 | 0% |
+El volumen bajo de 2023 se debe a la corrección B9: los registros A2 con `Fecha Actualizacion` en 2024 se reclasificaron correctamente de 2023 a 2024.
 
 ---
 
-## 15. Checklist de Correcciones Realizadas
+## Variables Derivadas
 
-- [x] **B1** — Quitar `* 1,000,000` en carga de A2 (Corregido: recuperó registros de A2)
-- [x] **B2** — Asignar `city = 'Bogotá'` y `property_type` a A3 (Corregido: recuperó A3)
-- [x] **B3** — Agregar renombre de columnas para A7 (Corregido: cargó A7)
-- [x] **B4** — Agregar renombre de columnas para A8 (Corregido: cargó A8)
-- [x] **B5** — Simplificar `dup_key`: solo `city + price + area + type + year` (Corregido)
-- [x] **B6** — Cambiar normalización de ciudades: no forzar ascii (Corregido: tildes preservadas en UTF-8-SIG)
-- [x] **B7** — Imputar `lat`/`lon` por centroide antes de la exportación (Corregido: 0 nulos en coordenadas finales)
-- [x] **B8** — Agregar `'casa con conjunto cerrado': 'Casa'` a MAPA_PROPIEDADES (Corregido)
-- [x] **B5 mejorado** — Integrar B5 por `(year, city)` en lugar de solo nacional (Corregido: desempleo regional/nacional unificado)
-- [x] **Validación IPVN** — Implementar validación cruzada contra DANE (Corregido: muestra diferencias promedio en logs)
-
----
-
-## 16. Resultados de la Ejecución Definitiva (Sin Bugs)
-
-| Métrica | Corr. Inicial (87,075 reg) | Ejecución Final con Coordenadas |
-|---------|----------------------------|---------------------------------|
-| **Registros finales** | 87,075 | **282,660** |
-| **Rango años** | 2019–2024 | **2020–2024** |
-| **Fuentes supervivientes** | 6 (A1–A6) | **6 (A1–A6)** |
-| **IAH promedio** | ~38.58 años ⚠️ | **32.85 años** ✅ |
-| **IAH mediana** | — | **24.40 años** ✅ |
-| **Tildes en ciudades** | Preservadas (UTF-8-SIG) | **Preservadas (UTF-8-SIG)** |
-| **Nulos en lat/lon** | 0% (Centroides) | **0%** (Centroides) |
-| **Diferencia vs IPVN DANE** | Bogotá: 20.5 pp \| Med: 10.7 pp | **Bogotá: 15.36 pp \| Med: 32.20 pp** |
-
-> ⚠️ El valor 38.58 de la columna "Corr. Inicial" proviene de los logs de una ejecución
-> intermedia (87,075 registros) cuyo dataset ya fue sobreescrito y **no puede verificarse**.
-> Solo los valores de la columna "Ejecución Final" están calculados directamente del CSV
-> actual con pandas y son confiables.
-
-## 17. Entregables
-
-| Archivo | Ruta | Estado |
-|---------|------|--------|
-| Notebook | `notebooks/02_preparacion_datos.ipynb` | ✅ Implementado (notebook complementario) |
-| Script | `notebooks/02_preparacion_datos.py` | ✅ Ejecutado con éxito (641 líneas) |
-| Dataset limpio | `data/processed/vivienda_colombia_limpio.csv` | ✅ Generado y verificado (**282,660 registros**) |
-| Reporte limpieza | `data/processed/reporte_limpieza.csv` | ✅ Generado y validado |
-| Metadatos | `data/processed/README.md` | ✅ Actualizado |
+| Variable | Descripción |
+|---|---|
+| `salario_anual` | `salario_mensual × 12` |
+| `IAH` | `price / salario_anual` (años de salario para comprar) |
+| `precio_real` | `price × (ipc_base2018 / ipc_base2018_del_año)` |
+| `precio_m2` | `price / area` |
+| `cuota_mensual` | Cuota bajo tasa hipotecaria a 15 años (180 meses), con 70 % financiado |
+| `ratio_cuota_salario` | `cuota_mensual / salario_mensual` |
+| `nivel_accesibilidad` | Categorías de Fase 1: Accesible (IAH ≤ 5), Moderado (5–10), Elevado (10–20), Crítico (>20) |
 
 ---
 
-## 18. Notas para el Equipo
+## Calidad del Dataset
 
-- **Para Steve (Modelado - Fase 4):** El dataset corregido y listo en `data/processed/vivienda_colombia_limpio.csv` cuenta con **282,660** registros unificados y limpios. Se han resuelto todas las colisiones de deduplicación y el dataset es ideal para entrenar los modelos de regresión y clasificación.
-- **Para Sofía (Evaluación - Fase 5):** El IAH promedio real es **32.85 años** y la mediana **24.40 años** (calculados del CSV). Usar la mediana como estadístico representativo en el informe, ya que el promedio está sesgado por propiedades de lujo (IAH máximo: 413.17 años). Las diferencias vs. IPVN DANE son: Bogotá 15.36 pp, Medellín 32.20 pp — documentar como limitación inherente al mezclar vivienda nueva y usada.
-- **Próximo paso:** Iniciar el modelado de la Fase 4 con la base de datos completa.
-
----
-
-## 19. Revisión Post-Ejecución — Correcciones Adicionales (2026-06-03)
-
-Tras analizar la pérdida de datos del 82.49% en la deduplicación original, se aplicaron y validaron con éxito las siguientes optimizaciones en el pipeline:
-
-### 19.1 Corrección del Colapso de Nulos y Deduplicación Espacial (D1)
-- **Problema:** A1 (Properati) carecía de la columna de área en gran cantidad de registros. Al imputar el área a la mediana del grupo antes de deduplicar, miles de registros compartían la misma área y precio, colapsando masivamente. Por otro lado, la fuente A2 (FincaRaíz) no tenía columnas separadas de coordenadas, pero sí una columna `'Link Google Maps'`, lo que causaba que al unificar se perdiera su ubicación geográfica o colapsara.
-- **Solución de Extracción:** Se implementó una extracción por expresión regular de la latitud y longitud desde la columna `'Link Google Maps'` de A2 usando el patrón `q=(\d.-]+),(\d.-]+)`. Esto rescató coordenadas reales para más de **24,000** registros que de otro modo habrían quedado agrupados en nulo.
-- **Solución de Deduplicación:** Se implementó una clave de deduplicación espacial que incorpora coordenadas geográficas (`lat` y `lon` redondeadas a 3 decimales, equivalentes a ~110 metros de precisión micro-local). Para registros sin coordenadas exactas (como A1 Properati con nulos), se les asignó temporalmente `-1.0` y se procesaron separando el dataset en grupos con área y sin área conocidas. Esto impidió que ofertas distintas con el mismo precio/área colapsaran a nivel de toda la ciudad, reduciendo la pérdida en deduplicación al **50.01%** en lugar del 82.49% original.
-
-### 19.2 Expansión del Diccionario de Ciudades (M1)
-- **Solución:** Se incluyeron variantes adicionales de nombres de ciudades en `MAPA_CIUDADES` (por ejemplo, `bogota d.c`, `medellin antioquia`, `cali valle del cauca`), lo que disminuyó la pérdida en esta etapa del 35.37% al **23.96%**, recuperando casi 100,000 registros históricos.
-
-### 19.3 Validación contra IPVN DANE
-La inclusión de coordenadas en la clave estabilizó las estimaciones locales. La diferencia frente al IPVN del DANE disminuyó un **38% en Bogotá** (de 20.5 pp a 12.72 pp) y un **57% en Medellín** (de 10.7 pp a 4.54 pp), confirmando la calidad y robustez del nuevo dataset consolidado.
+| Verificación | Resultado |
+|---|---|
+| Registros totales | 282.660 |
+| Columnas | 26 |
+| Nulos en columnas críticas (`price`, `area`, `rooms`, `bathrooms`, `property_type`, `city`, `lat`, `lon`, `estrato`, `year`) | **0** |
+| Nulos en `created_on` (esperado) | 74.333 (26,3 %) |
+| Merge conflicts | **0** — archivo limpio |
+| Ciudades en el CSV | 12; incluye Armenia y no incluye Santa Marta frente al alcance original |
+| Rango de años | 2020–2024 |
 
 ---
 
-*Documento de Fase 3 · CRISP-DM 2026-I · Proyecto Accesibilidad Habitacional Colombia*  
-*Revisión técnica y ejecución completadas con éxito el 2026-06-03*
+## Hallazgos Clave
 
+1. La deduplicación inter-dataset fue el paso más restrictivo: eliminó 282.810 registros (50,01 %).
+2. Bogotá concentra el 53,19 % del dataset — cualquier modelo de regresión estará dominado por su mercado.
+3. 2023 tiene solo 8.014 registros por la corrección B9 (A2 reclasificado a 2024); esto debe considerarse en validación temporal.
+4. A7 (Villavicencio) y A8 (Caracol UPZ) no aportan registros finales; su utilidad queda como exploración.
+5. El IAH promedio es 32,85 y el IAH mediano es 24,40; ambos clasifican como "Crítico" según el umbral de Fase 1 (>20).
+6. `created_on` tiene 26,3 % de nulos (fuentes A3–A6 sin fecha de publicación), pero el año se imputa correctamente desde la fuente.
+7. Las variables macroeconómicas están integradas al 100 % en todos los registros.
+
+---
+
+## Problemas y Correcciones (8 Bugs)
+
+| Bug | Descripción | Impacto | Corrección |
+|---|---|---|---|
+| B1 | A2 precio multiplicado por 1.000.000 (ya estaba en COP) | 142.833 registros perdidos | Eliminar multiplicación |
+| B2 | A2 sin coordenadas | Modelos geoespaciales degradados | Extraer lat/lon desde Link Google Maps |
+| B3 | A2 sin enlace `created_on` | Fecha de publicación ausente | Mapear `Fecha Actualizacion` → `created_on` |
+| B4 | A3 sin ciudad asignada | 2.766 registros sin geografía | Asignar Bogotá por fuente |
+| B5 | A4 sin ciudad asignada | 7.003 registros sin geografía | Asignar Bogotá por fuente |
+| B6 | A5 con `bathrooms` como string | Tipo de dato incorrecto | Convertir a numérico |
+| B7 | A6 sin ciudad asignada | 407 registros sin geografía | Asignar Bogotá por fuente |
+| B9 | `año_fuente['A2']` hardcodeado en 2023 | 117.664 registros etiquetados como 2023 en vez de 2024 | Cambiar a 2024 |
+
+> Tras la corrección de todos los bugs, el dataset pasó de 54.904 a 282.660 registros (recuperación de ~227.756 registros).
+
+---
+
+## Entregables
+
+| Entregable | Ruta | Estado |
+|---|---|---|
+| Reporte de Fase 3 | `docs/FASE_3_COMPLETA.md` | ✅ Actualizado |
+| Hallazgos de Fase 3 | `docs/HALLAZGOS_FASE_3.md` | ✅ Actualizado |
+| Guía de Fase 3 | `docs/GUIA_FASE_3.md` | ✅ Disponible |
+| Script de preparación | `notebooks/02_preparacion_datos.py` | ✅ Actualizado |
+| Notebook de preparación | `notebooks/02_preparacion_datos.ipynb` | ✅ Disponible |
+| Reporte de limpieza | `data/processed/reporte_limpieza.csv` | ✅ Disponible |
+| Dataset integrado | `data/processed/vivienda_colombia_limpio.csv` | ✅ Listo para Fase 4 |
+| Diccionario de datos | `data/processed/README.md` | ✅ Disponible |
+| Decisiones de fase | `data/processed/decisiones_fase_3.csv` | ✅ Disponible |
+| Acciones correctivas | `data/processed/acciones_correctivas_fase_3.csv` | ✅ Disponible |
+
+---
+
+## Preparación para Fase 4
+
+### Prerrequisitos cumplidos
+
+1. ✅ `vivienda_colombia_limpio.csv` sin marcadores de conflicto
+2. ✅ 282.660 registros × 26 columnas
+3. ✅ 0 nulos en columnas críticas para modelado
+4. ✅ 12 ciudades presentes; queda pendiente decisión formal sobre Armenia vs Santa Marta
+5. ✅ Reportes de limpieza y trazabilidad disponibles
+
+### Artefactos que Fase 4 debe consumir
+
+| Artefacto | Uso |
+|---|---|
+| `vivienda_colombia_limpio.csv` | Entrenamiento de regresión y clustering |
+| `reporte_limpieza.csv` | Trazabilidad de preparación |
+| `data/processed/README.md` | Diccionario de columnas |
+| `decisiones_fase_3.csv` | Justificación metodológica |
+
+---
+
+*Documento de Fase 3 · CRISP-DM 2026-I · Accesibilidad Habitacional Colombia*

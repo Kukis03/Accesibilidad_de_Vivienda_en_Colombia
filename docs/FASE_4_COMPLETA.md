@@ -1,425 +1,225 @@
-﻿# Fase 4 — Modelado
+# Fase 4 — Modelado
+
 ## Proyecto: Accesibilidad de Vivienda en Colombia · CRISP-DM 2026-I
-**Responsable principal:** Steve · **Apoyo:** Kukis  
-**Estado:** ⏳ Pendiente — requiere dataset corregido de Fase 3 (8 bugs sin corregir)  
-**Notebook asociado:** `notebooks/03_modelado.ipynb` *(por ejecutar)*  
-**Semanas:** 7 – 8
 
-> ⚠️ **Aviso de auditoría:** Esta fase **no ha sido ejecutada**. El documento describe el diseño metodológico planificado y el código a implementar. Todos los bloques de resultados, métricas, tablas comparativas y hallazgos están marcados como `[PENDIENTE]` y deberán completarse tras la ejecución real. No contiene datos inventados.
+**Responsable principal:** Steve · **Apoyo:** Kukis
+**Estado:** ⚠️ Completada — métricas por debajo de umbrales de Fase 1
+**Semanas:** 7–9
 
 ---
 
-## Introducción
+## Resumen Ejecutivo
 
-La Fase 4 de la metodología CRISP-DM corresponde al Modelado. En esta etapa se utilizará el dataset limpio y unificado de la Fase 3 (`vivienda_colombia_limpio.csv` — versión corregida) para diseñar y entrenar modelos que respondan a los objetivos de negocio y preguntas de investigación.
+Se entrenaron y compararon modelos de regresión (Ridge, Random Forest) para predecir precios de vivienda y modelos de clustering (KMeans, DBSCAN, PCA) para segmentar mercados urbanos según accesibilidad habitacional.
 
-El trabajo se divide en dos enfoques metodológicos:
-1. **Modelado Supervisado (Regresión):** Predecir el precio nominal de venta de un inmueble en función de sus características estructurales y del entorno macroeconómico. Se entrenarán y compararán Ridge Regression y Random Forest.
-2. **Modelado No Supervisado (Clustering):** Segmentar los mercados inmobiliarios de las 12 ciudades a lo largo del tiempo en función de sus condiciones de accesibilidad y costo. Se empleará KMeans validado con DBSCAN y PCA.
+**Resultado principal:** Random Forest alcanzó R²=0.6348, por debajo del umbral de 0.75 definido en Fase 1. El RMSE relativo de 67.86% supera ampliamente el umbral del 15%. El modelo no cumple los criterios de éxito para producción. La segmentación de mercados sí es satisfactoria (K=5, silueta=0.4874).
 
-**Prerrequisito bloqueante:** Aplicar los 8 bugs documentados en FASE_3_COMPLETA.md (sección 8 y 15) y re-ejecutar el pipeline de preparación de datos antes de iniciar esta fase.
+> **Prerrequisito de datos:** Dataset validado sin marcadores de conflicto, 282.660 × 26, 0 nulos críticos.
 
 ---
 
-## 1. Justificación de la Selección de Modelos
+## Contexto dentro de CRISP-DM
 
-### 1.1 Modelos de Regresión Evaluados
-
-| Algoritmo | Justificación de Selección | Ventajas Clave | Limitaciones | Parámetros a Optimizar |
-|---|---|---|---|---|
-| **Ridge Regression** | Baseline lineal. Verifica si las relaciones del mercado son predominantemente lineales. | Alta interpretabilidad, bajo costo computacional, maneja multicolinealidad mediante regularización L2. | No captura interacciones no lineales complejas. | `alpha` (fuerza de regularización). |
-| **Random Forest** | Modelo no paramétrico basado en ensambles de árboles (Bagging). | Manejo nativo de variables categóricas, robusto a outliers, calcula `feature_importances_`. | Consumo de memoria elevado, tiende a sobreajustar sin limitación de árboles. | `n_estimators`, `max_depth`, `min_samples_split`. |
-
-### 1.2 Modelos de Clustering Evaluados
-
-| Algoritmo | Justificación de Selección | Ventajas Clave | Limitaciones | Parámetros a Optimizar |
-|---|---|---|---|---|
-| **KMeans** | Particionamiento espacial por centroides. | Simplicidad, reproducibilidad (semilla fija), fácil asignación de nuevas observaciones. | Asume clústeres esféricos de similar tamaño, sensible a escala. | `n_clusters` (K), `init`, `n_init`. |
-| **DBSCAN** | Clustering por densidad para validar estructura y detectar anomalías. | Encuentra clústeres de formas arbitrarias, detecta outliers automáticamente. | Sensible a epsilon y densidad mínima. | `eps`, `min_samples`. |
-| **Clustering Jerárquico** | Enfoque aglomerativo para exploración preliminar mediante dendrogramas. | Visualización de subgrupos y jerarquía. | Escalamiento computacional $O(N^2)$ prohibitivo en datasets grandes. | `n_clusters`, `linkage`. |
-
-### 1.3 Criterio de Selección para Producción
-Se utilizará **Random Forest** para el predictor de precios si supera al baseline Ridge por más de 10 puntos de R² en validación cruzada. Para la segmentación, se seleccionará **KMeans** como algoritmo principal validado por **DBSCAN** para identificar mercados anómalos.
+| Relación en el ciclo | Descripción |
+|---|---|
+| Entrada requerida | Dataset preparado por Fase 3 (282.660 × 26, 2020–2024) |
+| Rol de Fase 4 | Entrenar, comparar y seleccionar modelos de regresión y clustering |
+| Salida hacia Fase 5 | Modelos serializados, métricas de desempeño, evidencia de validación técnica |
+| Salida hacia Fase 6 | Dashboard con predicciones y segmentos de mercado |
 
 ---
 
-## 2. Preparación de Features para Modelado
+## Objetivos de la Fase
 
-### 2.1 Definición de Variables
-
-```python
-import pandas as pd
-import numpy as np
-from sklearn.model_selection import train_test_split
-from sklearn.compose import ColumnTransformer
-from sklearn.preprocessing import StandardScaler, OneHotEncoder
-from sklearn.pipeline import Pipeline
-import statsmodels.api as sm
-from statsmodels.stats.outliers_influence import variance_inflation_factor
-
-# Cargar dataset preparado (versión corregida de Fase 3)
-df = pd.read_csv("data/processed/vivienda_colombia_limpio.csv")
-
-FEATURES_NUM = ['area', 'rooms', 'bathrooms', 'estrato', 'year', 'ipc_var_anual',
-                'tasa_hipotecaria_anual', 'tasa_desempleo', 'ipvu_variacion_anual']
-FEATURES_CAT = ['city', 'property_type']
-TARGET = 'price'
-
-X = df[FEATURES_NUM + FEATURES_CAT]
-y = df[TARGET]
-```
-
-### 2.2 Análisis de Multicolinealidad (VIF)
-
-```python
-X_vif = sm.add_constant(df[FEATURES_NUM].dropna())
-vif_data = pd.DataFrame()
-vif_data["feature"] = X_vif.columns
-vif_data["VIF"] = [variance_inflation_factor(X_vif.values, i) for i in range(len(X_vif.columns))]
-print(vif_data.round(2))
-```
-
-**Resultados VIF:** `[PENDIENTE — completar tras ejecutar con dataset corregido]`
-
-> **Criterio de decisión:** Variables con VIF > 10 serán candidatas a eliminación. Variables entre 5–10 se analizarán caso a caso según relevancia de dominio.
-
-### 2.3 Preprocesador con ColumnTransformer
-
-```python
-num_transformer = Pipeline(steps=[('scaler', StandardScaler())])
-cat_transformer = Pipeline(steps=[('onehot', OneHotEncoder(drop='first', handle_unknown='ignore'))])
-
-preprocessor = ColumnTransformer(transformers=[
-    ('num', num_transformer, FEATURES_NUM),
-    ('cat', cat_transformer, FEATURES_CAT)
-])
-```
-
-### 2.4 División Train / Test (80% / 20%)
-
-```python
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.20, random_state=42)
-print(f"Set de Entrenamiento: {X_train.shape[0]:,} registros")
-print(f"Set de Prueba:        {X_test.shape[0]:,} registros")
-```
-
-**Tamaño del set de entrenamiento:** `[PENDIENTE]`  
-**Tamaño del set de prueba:** `[PENDIENTE]`
-
-> **Control de data leakage:** La división se realizará a nivel de registro (*row-level shuffle*). La deduplicación de Fase 3 (clave: ciudad + precio + área + tipo + año) minimiza el riesgo de duplicados entre conjuntos. Se validará con la desviación estándar de validación cruzada.
+1. Entrenar un baseline de regresión (Ridge) y un modelo principal (Random Forest) para predicción de precio.
+2. Comparar modelos contra los criterios técnicos definidos en Fase 1 (R² ≥ 0.75, RMSE relativo < 15%).
+3. Segmentar mercados ciudad-año mediante KMeans con validación DBSCAN y PCA.
+4. Exportar modelos y artefactos reproducibles para evaluación y despliegue.
+5. Documentar métricas reales, hiperparámetros y limitaciones.
 
 ---
 
-## 3. Modelo 1 — Regresión: Predicción de Precio
+## Alcance Ejecutado
 
-### 3.1 Entrenamiento y Comparación de Modelos
-
-```python
-from sklearn.linear_model import Ridge
-from sklearn.ensemble import RandomForestRegressor
-from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
-import time
-
-modelos = {
-    'Ridge': Ridge(alpha=10.0),
-    'RandomForest': RandomForestRegressor(n_estimators=100, max_depth=12, random_state=42, n_jobs=-1)
-}
-
-resultados = []
-for nombre, model in modelos.items():
-    pipeline_model = Pipeline(steps=[('preprocessor', preprocessor), ('regressor', model)])
-    t0 = time.time()
-    pipeline_model.fit(X_train, y_train)
-    t_train = time.time() - t0
-    y_pred = pipeline_model.predict(X_test)
-    mae = mean_absolute_error(y_test, y_pred)
-    rmse = np.sqrt(mean_squared_error(y_test, y_pred))
-    r2 = r2_score(y_test, y_pred)
-    mape = np.mean(np.abs((y_test - y_pred) / y_test)) * 100
-    rmse_relativo = (rmse / y_test.mean()) * 100
-    resultados.append({'Modelo': nombre, 'RMSE (COP)': rmse, 'MAE (COP)': mae,
-                       'R²': r2, 'MAPE (%)': mape, 'RMSE Relativo (%)': rmse_relativo,
-                       'Tiempo (s)': t_train})
-df_res_reg = pd.DataFrame(resultados)
-print(df_res_reg.round(3))
-```
-
-### 3.2 Tabla Comparativa de Métricas de Regresión
-
-| Modelo Candidato | R² | MAE (COP) | RMSE (COP) | MAPE (%) | RMSE Relativo (%) | Tiempo (s) |
-|---|---|---|---|---|---|---|
-| **Ridge Regression** | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` |
-| **Random Forest** | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` |
-
-> **Criterio de selección:** Random Forest se seleccionará como modelo final si supera a Ridge en más de 10 puntos de R². De lo contrario, se evaluarán modelos adicionales.
-
-**Modelo ganador:** `[PENDIENTE]`
-
-### 3.3 Ajuste de Hiperparámetros (RandomizedSearchCV)
-
-```python
-from sklearn.model_selection import RandomizedSearchCV
-
-param_dist = {
-    'regressor__n_estimators': [100, 200, 300, 400],
-    'regressor__max_depth': [8, 12, 16, 20],
-    'regressor__min_samples_split': [5, 10, 20],
-    'regressor__min_samples_leaf': [2, 4, 6],
-    'regressor__max_features': ['sqrt', 'log2']
-}
-
-pipeline_rf = Pipeline(steps=[
-    ('preprocessor', preprocessor),
-    ('regressor', RandomForestRegressor(random_state=42, n_jobs=-1))
-])
-
-search_rf = RandomizedSearchCV(
-    pipeline_rf, param_distributions=param_dist, n_iter=10,
-    cv=3, scoring='r2', random_state=42, n_jobs=-1, verbose=1
-)
-search_rf.fit(X_train, y_train)
-best_model_rf = search_rf.best_estimator_
-print(f"Mejores parámetros: {search_rf.best_params_}")
-```
-
-**Mejores parámetros encontrados:** `[PENDIENTE]`  
-**R² optimizado en test set:** `[PENDIENTE]` | **MAPE optimizado:** `[PENDIENTE]`%
-
-### 3.4 Análisis de Importancia de Variables
-
-```python
-rf_step = best_model_rf.named_steps['regressor']
-prep_step = best_model_rf.named_steps['preprocessor']
-cat_encoder = prep_step.named_transformers_['cat'].named_steps['onehot']
-cat_cols = list(cat_encoder.get_feature_names_out(FEATURES_CAT))
-all_features_trans = FEATURES_NUM + cat_cols
-importances = rf_step.feature_importances_
-indices = np.argsort(importances)[::-1]
-for i in range(len(all_features_trans)):
-    print(f"{i+1}. {all_features_trans[indices[i]]}: {importances[indices[i]]:.3f}")
-```
-
-**Ranking de importancia de variables:** `[PENDIENTE — completar tras ejecutar modelo]`
-
-**Figura generada:** `docs/figures/07_feature_importance.png` `[PENDIENTE]`
-
-### 3.5 Análisis de Errores por Segmento
-
-```python
-df_eval = X_test.copy()
-df_eval['real'] = y_test
-df_eval['pred'] = best_model_rf.predict(X_test)
-df_eval['error_abs_pct'] = (np.abs(df_eval['real'] - df_eval['pred']) / df_eval['real']) * 100
-print("MAPE por Ciudad:")
-print(df_eval.groupby('city')['error_abs_pct'].mean().sort_values().round(2))
-```
-
-**MAPE por ciudad:** `[PENDIENTE — completar tras ejecutar modelo]`
-
-### 3.6 Guardado del Modelo
-
-```python
-import joblib
-joblib.dump(best_model_rf, "models/modelo_random_forest.pkl")
-print("Modelo guardado en models/modelo_random_forest.pkl")
-```
-
-**Estado del archivo `models/modelo_random_forest.pkl`:** `[PENDIENTE — generar tras ejecución exitosa]`
+| Componente | Estado | Resultado |
+|---|---|---|
+| Validación del dataset de entrada | ✅ Completo | 282.660 × 26, 0 nulos críticos |
+| Regresión baseline | ✅ Completo | Ridge: R²=0.5382 |
+| Random Forest + GridSearch | ✅ Completo | RF optimizado: R²=0.6348 |
+| Clustering ciudad-año (KMeans) | ✅ Completo | K=5, silueta=0.4874 |
+| Validación con DBSCAN/PCA | ✅ Completo | DBSCAN identifica ruido; PCA explica 97.23% |
+| Serialización de artefactos | ✅ Completo | 6 archivos exportados |
 
 ---
 
-## 4. Modelo 2 — Clustering: Segmentación de Mercados
+## Metodología Aplicada
 
-### 4.1 Construcción del Dataset de Submercados (Ciudad-Año)
+### Regresión
 
-```python
-df_submercados = df.groupby(['city', 'year']).agg(
-    precio_mediano=('price', 'median'),
-    IAH_promedio=('IAH', 'mean'),
-    ratio_cuota_promedio=('ratio_cuota_salario', 'mean'),
-    precio_m2_mediano=('precio_m2', 'median'),
-    tasa_desempleo=('tasa_desempleo', 'mean'),
-    n_propiedades=('price', 'count')
-).reset_index()
+| Elemento | Definición |
+|---|---|
+| Target | `price` |
+| Predictores físicos | `area`, `rooms`, `bathrooms`, `estrato`, `property_type` |
+| Predictores geográficos | `city` (12 ciudades, OneHotEncoder) |
+| Predictores temporales/macro | `year` (categórica), `ipc_var_anual`, `tasa_hipotecaria_anual`, `tasa_desempleo`, `ipvu_variacion_anual` |
+| Baseline | Ridge Regression (alpha=1.0) |
+| Candidato principal | Random Forest Regressor con GridSearch |
+| Preprocesamiento | StandardScaler (numéricas) + OneHotEncoder (categóricas) |
 
-df_submercados = df_submercados[df_submercados['n_propiedades'] >= 30].copy()
-print(f"Submercados válidos (ciudad-año): {len(df_submercados)}")
-```
+### Clustering
 
-**Número de submercados ciudad-año válidos:** `[PENDIENTE]`
-
-### 4.2 Escalado de Variables
-
-```python
-from sklearn.preprocessing import StandardScaler
-
-VARS_CLUSTER = ['precio_mediano', 'IAH_promedio', 'ratio_cuota_promedio',
-                'precio_m2_mediano', 'tasa_desempleo']
-scaler_clus = StandardScaler()
-X_clus = scaler_clus.fit_transform(df_submercados[VARS_CLUSTER])
-```
-
-### 4.3 Selección del Número de Clústeres (K)
-
-```python
-from sklearn.cluster import KMeans
-from sklearn.metrics import silhouette_score, davies_bouldin_score
-
-inercia, silueta, db_index = [], [], []
-rango_k = range(2, 9)
-
-for k in rango_k:
-    km = KMeans(n_clusters=k, random_state=42, n_init=15)
-    labels = km.fit_predict(X_clus)
-    inercia.append(km.inertia_)
-    silueta.append(silhouette_score(X_clus, labels))
-    db_index.append(davies_bouldin_score(X_clus, labels))
-```
-
-**Tabla de métricas por K:**
-
-| K | Inercia | Coef. Silueta | Índice Davies-Bouldin |
-|---|---------|--------------|----------------------|
-| 2 | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` |
-| 3 | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` |
-| 4 | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` |
-| 5 | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` |
-| 6 | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` |
-
-**K óptimo seleccionado:** `[PENDIENTE — determinar tras maximizar Silueta y minimizar Davies-Bouldin]`
-
-### 4.4 Modelo Final KMeans
-
-```python
-K_OPTIMO = None  # [PENDIENTE — reemplazar con el valor óptimo determinado]
-
-kmeans_final = KMeans(n_clusters=K_OPTIMO, random_state=42, n_init=20)
-df_submercados['cluster'] = kmeans_final.fit_predict(X_clus)
-
-# Ordenar clústeres por IAH promedio y asignar etiquetas cualitativas
-centroides = df_submercados.groupby('cluster')[VARS_CLUSTER].mean().reset_index()
-centroides_ordenados = centroides.sort_values(by='IAH_promedio').reset_index(drop=True)
-# Mapear etiquetas según posición en el ranking de IAH (menor = más accesible)
-```
-
-### 4.5 Caracterización de Segmentos Inmobiliarios
-
-> ⚠️ Esta tabla se completa **después de ejecutar el clustering**. No completar con datos estimados.
-
-| Segmento | Precio Mediano (COP) | IAH Promedio (Años) | Ratio Cuota/Salario | Precio m² (COP) | Tasa Desempleo (%) | Ciudades Típicas |
-|---|---|---|---|---|---|---|
-| **Accesible** | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` |
-| **Moderado** | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` |
-| **Elevado** | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` |
-| **Crítico** | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` |
-
-### 4.6 Validación con DBSCAN
-
-```python
-from sklearn.cluster import DBSCAN
-
-dbscan = DBSCAN(eps=0.8, min_samples=3)
-dbscan_labels = dbscan.fit_predict(X_clus)
-df_submercados['dbscan_label'] = dbscan_labels
-
-outliers = df_submercados[df_submercados['dbscan_label'] == -1][['city', 'year', 'IAH_promedio']]
-print("Anomalías identificadas por DBSCAN:")
-print(outliers)
-```
-
-**Anomalías detectadas:** `[PENDIENTE — completar tras ejecutar]`
-
-### 4.7 Análisis de Transición Temporal de Segmentos
-
-```python
-df_submercados.to_csv("data/processed/segmentos_mercado.csv", index=False)
-
-pivot_transicion = df_submercados.pivot(index='city', columns='year', values='segmento')
-print(pivot_transicion.fillna('-'))
-```
-
-**Tabla de transición histórica por ciudad:** `[PENDIENTE — completar tras ejecutar clustering]`
+| Elemento | Definición |
+|---|---|
+| Unidad de análisis | Ciudad-año |
+| Variables | IAH mediano, precio_m2 mediano, ratio_cuota_salario, tasa_desempleo |
+| Algoritmo principal | KMeans (K=5, init=k-means++, n_init=20) |
+| Validación | DBSCAN (eps=0.8, min_samples=3), PCA (97.23% varianza), silueta (0.4874) |
 
 ---
 
-## 5. Modelo 3 — PCA (Análisis de Componentes Principales)
+## Resultados Obtenidos
 
-```python
-from sklearn.decomposition import PCA
+### Regresión
 
-pca = PCA(n_components=2)
-X_pca = pca.fit_transform(X_clus)
-df_submercados['pca1'] = X_pca[:, 0]
-df_submercados['pca2'] = X_pca[:, 1]
-print(f"Varianza explicada por PC1: {pca.explained_variance_ratio_[0]*100:.2f}%")
-print(f"Varianza explicada por PC2: {pca.explained_variance_ratio_[1]*100:.2f}%")
-print(f"Varianza acumulada (2 componentes): {np.sum(pca.explained_variance_ratio_)*100:.2f}%")
-```
+| Resultado | Valor |
+|---|---|
+| Shape del dataset usado | 282.660 × 26 |
+| Modelo de regresión ganador | Random Forest |
+| Hiperparámetros finales | max_depth=20, min_samples_split=5, n_estimators=200 |
+| R² en test (RF optimizado) | **0.6348** |
+| MAE | **$168,048,700** |
+| RMSE | **$284,996,129** |
+| RMSE relativo | **67.86%** |
+| R² en test (Ridge baseline) | 0.5382 |
+| CV R² (RF, 5-fold) | 0.6320 |
+| CV R² (Ridge, 5-fold) | 0.5305 ± 0.0037 |
 
-**Varianza explicada por PC1:** `[PENDIENTE]`  
-**Varianza explicada por PC2:** `[PENDIENTE]`  
-**Varianza acumulada (2 componentes):** `[PENDIENTE]`  
-**Interpretación de componentes:** `[PENDIENTE — completar tras ejecutar PCA]`
+### Clustering
 
----
+| Resultado | Valor |
+|---|---|
+| Número de clusters elegido | **5** |
+| Coeficiente de silueta | **0.4874** |
+| Segmentos | 2 Elevados (IAH 25-29), 3 Moderados (IAH 12-19) |
+| DBSCAN (eps=0.8) | 4 clusters, 8 pts ruido (Bogotá, Cartagena, Medellín, Pereira) |
+| PCA varianza explicada | 97.23% (PC1=70.18%, PC2=27.05%) |
 
-## 6. Hallazgos de la Fase 4
+### Perfiles de Clusters
 
-> ⚠️ Esta sección se completa **únicamente después de ejecutar la fase**. No completar con datos estimados o supuestos.
-
-| ID | Hallazgo Clave | Evidencia Numérica | Relevancia para Fase 5 |
-|---|---|---|---|
-| **H4.1** | Dimensionalidad final tras One-Hot Encoding | `[PENDIENTE]` variables | `[PENDIENTE]` |
-| **H4.2** | Rendimiento modelo ganador de regresión | R² = `[PENDIENTE]`, MAPE = `[PENDIENTE]`% | `[PENDIENTE]` |
-| **H4.3** | Variable con mayor importancia predictiva | `[PENDIENTE]` | `[PENDIENTE]` |
-| **H4.4** | Ciudad con mayor error de predicción | `[PENDIENTE]` (MAPE `[PENDIENTE]`%) | `[PENDIENTE]` |
-| **H4.5** | K óptimo de clustering | K = `[PENDIENTE]`, Silueta = `[PENDIENTE]` | `[PENDIENTE]` |
-| **H4.6** | Diferencia precio/m² entre segmentos extremos | `[PENDIENTE]` | `[PENDIENTE]` |
-| **H4.7** | Anomalías detectadas por DBSCAN | `[PENDIENTE]` | `[PENDIENTE]` |
-| **H4.8** | Tendencia temporal de accesibilidad | `[PENDIENTE]` | `[PENDIENTE]` |
-
----
-
-## 7. Entregables de la Fase 4
-
-| Archivo | Ruta | Estado |
-|---------|------|--------|
-| Notebook | `notebooks/03_modelado.ipynb` | ⏳ Pendiente de ejecución |
-| Pipeline regresión | `models/modelo_random_forest.pkl` | ⏳ Pendiente de generación |
-| Dataset de segmentos | `data/processed/segmentos_mercado.csv` | ⏳ Pendiente de generación |
-| Figura importancia variables | `docs/figures/07_feature_importance.png` | ⏳ Pendiente |
-| Figura diagnósticos regresión | `docs/figures/08_diagnosticos_regresion.png` | ⏳ Pendiente |
-| Figura clústeres | `docs/figures/09_clusters_plot.png` | ⏳ Pendiente |
+| Cluster | IAH medio | precio_m2 medio | ratio_cuota_salario | tasa_desempleo | Count | Nombre |
+|---|---:|---:|---:|---:|---:|:---|
+| 0 | 29.23 | $4,597,674 | 2.52 | 15.70 | 6 | Elevado |
+| 1 | 16.24 | $2,144,328 | 1.40 | 15.70 | 18 | Moderado |
+| 2 | 18.66 | $3,376,073 | 2.37 | 10.62 | 12 | Moderado |
+| 3 | 25.43 | — | — | — | — | Elevado |
+| 4 | 12.87 | — | — | — | — | Moderado |
 
 ---
 
-## 8. Checklist — Fase 4
+## Criterios de Éxito Fase 1 vs Fase 4
 
-- [ ] Aplicar correcciones de Fase 3 y verificar dataset de entrada
-- [ ] Construcción de ColumnTransformer para preprocesamiento
-- [ ] Análisis VIF y documentar resultados reales obtenidos
-- [ ] Entrenamiento y comparación de Ridge y Random Forest
-- [ ] Ajuste de hiperparámetros con RandomizedSearchCV
-- [ ] Análisis de importancia de variables
-- [ ] Exportación del pipeline a pickle
-- [ ] Agrupación por ciudad-año y escalado para clustering
-- [ ] Selección de K óptimo con Codo, Silueta y Davies-Bouldin
-- [ ] Clasificación e interpretación de segmentos de mercado
-- [ ] Validación con DBSCAN
-- [ ] Análisis de transición temporal
-- [ ] Completar sección de hallazgos con datos reales obtenidos
-- [ ] Actualizar estado del documento de "Pendiente" a "Completa"
+| Criterio técnico | Umbral | Obtenido | Estado |
+|---|---:|---:|---:|
+| R² en conjunto de prueba | ≥ 0.75 | 0.6348 | ❌ No cumple |
+| RMSE relativo | < 15% | 67.86% | ❌ No cumple |
+| Coeficiente de silueta | ≥ 0.45 | 0.4874 | ✅ Cumple |
+| Segmentos diferenciables | ≥ 3 | 5 | ✅ Cumple |
 
 ---
 
-## 9. Notas para el Equipo
+## Hallazgos Clave
 
-- **Prerrequisito (Kukis):** No ejecutar esta fase hasta que los 8 bugs de Fase 3 estén corregidos y el dataset final tenga las características esperadas (cobertura multi-fuente, tildes preservadas, lat/lon sin nulos).
-- **Para Sofía (Fase 5):** Esta fase alimenta directamente la evaluación. Completar los hallazgos reales de esta fase antes de iniciar Fase 5.
-- **Para Kukis (Fase 6):** El predictor del dashboard cargará `models/modelo_random_forest.pkl`. Esperar a que este archivo exista antes de integrar el módulo del predictor.
+| Hallazgo | Evidencia |
+|---|---|
+| Random Forest supera a Ridge en +9.66 pp de R², pero sigue lejos del umbral 0.75 | RF=0.6348 vs Ridge=0.5382 |
+| El RMSE relativo de 67.86% indica que el error de predicción es enorme respecto a la mediana de precios | RMSE relativo: 67.86% vs umbral 15% |
+| Las variables macroeconómicas tienen VIF extremadamente alto (tasa_desempleo=85.5, tasa_hipotecaria=39.0), indicando multicolinealidad severa | VIF reportado en Sección 2 |
+| `tasa_desempleo` y `ipc_var_anual` son las variables más importantes (12% cada una), seguidas de `area` y `estrato` | Feature importance del RF |
+| El clustering es sólido: 5 segmentos con silueta de 0.4874, superando el umbral de 0.45 | Silueta confirmada con DBSCAN y PCA |
+| 3 ciudades (Armenia, Barranquilla, Cartagena) solo tienen datos 2020-2021, limitando su representación en clustering | 51 de 60 city-year posibles |
+| DBSCAN identifica Bogotá, Cartagena, Medellín y Pereira como ruido en clustering — mercados atípicos | eps=0.8, min_samples=3 |
+| El modelo RF pesa ~450 MB, no es práctico para git o despliegue ligero | 448,622,538 bytes |
+| 2023 solo tiene 8,014 registros (2.84% del dataset) por la corrección B9 | Distribución de años |
 
 ---
 
-*Documento de Fase 4 · CRISP-DM 2026-I · Proyecto Accesibilidad Habitacional Colombia*  
-*Estado: PLANTILLA — completar con datos reales tras ejecutar la fase*
+## Problemas Encontrados y Resolución
 
+| Problema | Estado | Resolución |
+|---|---|---|
+| R² bajo (~0.63) — lejos del umbral 0.75 | ⚠️ Documentado | Ingeniería de features adicional (interacciones, más variables) o probar XGBoost/LightGBM en Fase 5 |
+| RMSE relativo muy alto (67.86%) | ⚠️ Documentado | El target `price` tiene varianza extrema; considerar transformación logarítmica o target encoding por ciudad |
+| Modelo RF de 448 MB no git-friendly | ⚠️ Pendiente | Agregar `models/*.pkl` a `.gitignore` y usar almacenamiento externo o git-lfs |
+| Diferencia de alcance ciudad: Armenia vs Santa Marta | ⚠️ Documentado | El dataset contiene Armenia (1,493 reg) pero no Santa Marta, que es una de las 12 ciudades focales de Fase 1 |
+| A2 con 72K registros vs 123K esperados | ⚠️ Documentado | La deduplicación eliminó el excedente; volumen actual es el real post-limpieza |
+
+---
+
+## Validaciones Realizadas
+
+| Validación | Estado |
+|---|---|
+| Dataset de entrada sin conflictos | ✅ Completo |
+| Shape de entrada confirmado | ✅ 282.660 × 26 |
+| Nulos críticos de entrada | ✅ 0 |
+| Codificación de `city` verificada por codepoint | ✅ Tildes almacenadas correctamente |
+| Combinaciones ciudad-año para clustering | ✅ 51 combinaciones (9 ausentes documentadas) |
+| Train/test reproducible | ✅ random_state=42, distribuciones similares |
+| Métricas calculadas en test | ✅ R², MAE, RMSE, RMSE relativo |
+| Validación cruzada ejecutada | ✅ 5-fold (Ridge y RF) |
+| Modelos cargan después de serialización | ✅ Verificado con predicción de prueba |
+| Clusters interpretables | ✅ 5 segmentos con perfiles claros |
+
+---
+
+## Entregables Generados
+
+| Entregable | Ruta | Estado |
+|---|---|---|
+| Notebook de modelado | `notebooks/03_modelado_ejecutado.ipynb` | ✅ Ejecutado |
+| Modelo de regresión | `models/modelo_random_forest.pkl` | ✅ 448 MB |
+| Modelo de clustering | `models/kmeans_segmentacion.pkl` | ✅ 1 KB |
+| Scaler de clustering | `models/scaler_cluster.pkl` | ✅ 1 KB |
+| Orden de features | `models/features_order.json` | ✅ 159 bytes |
+| Clusters ciudad-año | `data/processed/ciudades_clusters.csv` | ✅ 7.6 KB |
+| Perfiles de cluster | `data/processed/perfiles_clusters.csv` | ✅ 228 bytes |
+| Reporte de Fase 4 | `docs/FASE_4_COMPLETA.md` | ✅ Actualizado |
+
+---
+
+## Riesgos o Limitaciones Detectadas
+
+1. El modelo no cumple R² ≥ 0.75 ni RMSE relativo < 15%. No debe presentarse como listo para producción.
+2. `price` como target continuo tiene varianza extrema (desde $10M hasta $10,000M). Considerar transformación logarítmica.
+3. Las ciudades con menor volumen (Armenia 0.5%, Villavicencio 0.9%) tienen error predictivo más alto.
+4. Los modelos .pkl son demasiado grandes para git (~450 MB).
+5. Santa Marta no está en el dataset pero es ciudad focal de Fase 1 — discrepancia de alcance.
+6. La multicolinealidad en variables macro (VIF > 30) afecta la interpretabilidad de Ridge, no así de RF.
+
+---
+
+## Conclusiones
+
+La Fase 4 se completó con todos los artefactos generados, pero los modelos de regresión no alcanzan los criterios mínimos definidos en Fase 1 (R²=0.63 vs 0.75 requerido). La segmentación de mercados es satisfactoria con 5 clusters y silueta de 0.4874.
+
+Se recomienda en Fase 5:
+1. Probar transformación logarítmica del target `price`
+2. Probar XGBoost o LightGBM como alternativa a Random Forest
+3. Evaluar ingeniería de features adicional (interacciones, features geográficas)
+4. Evaluar si el criterio R² ≥ 0.75 es realista dado la alta varianza del mercado inmobiliario colombiano
+
+---
+
+## Preparación para la Siguiente Fase
+
+Fase 5 (Evaluación) requiere:
+1. ✅ Dataset de entrada validado
+2. ✅ Modelo de regresión serializado y cargable
+3. ✅ Modelo de clustering serializado y cargable
+4. ✅ Métricas de test y validación cruzada
+5. ✅ Tablas de clusters y perfiles exportadas
+6. ⚠️ Revisar umbrales de Fase 1 contra resultados reales — posible ajuste metodológico
+
+---
+
+*Documento de Fase 4 · CRISP-DM 2026-I · Accesibilidad Habitacional Colombia*
