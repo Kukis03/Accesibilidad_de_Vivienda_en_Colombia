@@ -8,14 +8,38 @@ warnings.filterwarnings('ignore')
 
 st.set_page_config(page_title="Segmentos de Mercado", page_icon="�", layout="wide")
 
+CLUSTER_VARS = ['IAH', 'precio_m2', 'ratio_cuota_salario', 'tasa_desempleo']
+REQUIRED_COLS = {'city', 'year', 'IAH', 'precio_m2', 'ratio_cuota_salario', 'tasa_desempleo', 'cluster', 'PC1', 'PC2'}
+
+def _rebuild_clusters():
+    """Reconstruye ciudades_clusters.csv desde vivienda_colombia_limpio.csv + modelos guardados."""
+    import joblib
+    from sklearn.decomposition import PCA
+
+    df = pd.read_csv("data/processed/vivienda_colombia_limpio.csv")
+    dfc = df.groupby(['city', 'year'])[CLUSTER_VARS].median().reset_index()
+
+    scaler = joblib.load('models/scaler_cluster.pkl')
+    kmeans = joblib.load('models/kmeans_segmentacion.pkl')
+
+    X = scaler.transform(dfc[CLUSTER_VARS])
+    dfc['cluster'] = kmeans.predict(X)
+
+    pcs = PCA(n_components=2).fit_transform(X)
+    dfc['PC1'] = pcs[:, 0]
+    dfc['PC2'] = pcs[:, 1]
+
+    dfc.to_csv("data/processed/ciudades_clusters.csv", index=False)
+    return dfc
+
 @st.cache_data
 def load_clusters():
-    import joblib
-    dfc = pd.read_csv("data/processed/ciudades_clusters.csv")
-    if 'cluster' not in dfc.columns:
-        cluster_vars = ['IAH', 'precio_m2', 'ratio_cuota_salario', 'tasa_desempleo']
-        pipeline = joblib.load('models/pipeline_clustering.pkl')
-        dfc['cluster'] = pipeline.predict(dfc[cluster_vars])
+    try:
+        dfc = pd.read_csv("data/processed/ciudades_clusters.csv")
+        if not REQUIRED_COLS.issubset(dfc.columns):
+            dfc = _rebuild_clusters()
+    except FileNotFoundError:
+        dfc = _rebuild_clusters()
     return dfc
 
 @st.cache_data
