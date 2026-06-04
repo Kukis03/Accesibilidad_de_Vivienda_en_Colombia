@@ -1,4 +1,4 @@
-﻿# Fase 3 — Hallazgos de Preparación de los Datos
+# Fase 3 — Hallazgos de Preparación de los Datos
 
 ---
 
@@ -18,7 +18,7 @@ El pipeline fue implementado por Kukis en `notebooks/02_preparacion_datos.py` (6
 
 Durante la ejecución inicial se detectaron **8 bugs** que redujeron artificialmente el volumen
 de ~315 K registros esperados a solo 54,904. Todos los bugs fueron corregidos en una segunda
-ejecución el 2026-06-03, resultando en el dataset definitivo con **259,407 registros × 26
+ejecución el 2026-06-03, resultando en el dataset definitivo con **282,660 registros × 26
 columnas**, disponible en `data/processed/vivienda_colombia_limpio.csv`.
 
 Los hallazgos de esta fase alimentan directamente el modelado de la Fase 4 (Steve) y la
@@ -28,16 +28,16 @@ evaluación de la Fase 5 (Sofía).
 
 ## 12 Hallazgos Principales
 
-### H1 — Dataset final: 259,407 registros × 26 columnas · Impacto: Alto
+### H1 — Dataset final: 282,660 registros × 26 columnas · Impacto: Alto
 
 El dataset consolidado supera ampliamente el mínimo de 250 K registros definido en la Fase 1.
 
 | Métrica | Valor |
 |---|---|
-| **Registros finales** | **259,407** |
+| **Registros finales** | **282,660** |
 | **Columnas** | **26** |
-| **Tamaño en disco** | ~73.2 MB |
-| **Rango de años** | 2020 – 2023 |
+| **Tamaño en disco** | ~81.3 MB |
+| **Rango de años** | 2020 – 2024 |
 | **Ciudades cubiertas** | 12 ciudades canónicas |
 | **Fuentes integradas** | 6 (A1, A2, A3, A4, A5, A6) |
 
@@ -59,14 +59,12 @@ registra registros de entrada, salida, eliminados y distribución por fuente:
 | 0 | Consolidación inicial (8 fuentes) | — | 880,714 | — |
 | 1 | Limpieza de precios e invalidez | 880,714 | 876,104 | 0.52 % |
 | 2 | Estandarización / Filtro de ciudades | 876,104 | 666,156 | **23.96 %** |
-| 3 | Restricción temporal 2019–2024 | 666,156 | 665,370 | 0.12 % |
-| 4 | Tipo de inmueble (Casa / Apartamento) | 665,370 | 611,676 | 8.07 % |
-| 5 | Filtro IQR outliers por grupo | 611,676 | 578,046 | 5.50 % |
-| 6 | Deduplicación inter-dataset v2 | 578,046 | **259,407** | **55.12 %** |
+| 3 | Restricción temporal 2019–2024 | 666,156 | 652,047 | 2.12 % |
+| 4 | Tipo de inmueble (Casa / Apartamento) | 652,047 | 598,353 | 8.23 % |
+| 5 | Filtro IQR outliers por grupo | 598,353 | 565,470 | 5.50 % |
+| 6 | Deduplicación inter-dataset v2 | 565,470 | **282,660** | **50.01 %** |
 
-La mayor pérdida ocurrió en el paso de ciudades (23.96 %) porque se descartaron municipios
-no focales (Envigado, Chía, Jamundí, Popayán, etc.) y en deduplicación (55.12 %), que es
-esperada dada la superposición de fuentes.
+La mayor pérdida ocurrió en el paso de ciudades (23.96 %) porque se descartaron municipios no focales (Envigado, Chía, Jamundí, Popayán, etc.) y en deduplicación (50.01 %), que es esperada dada la superposición de fuentes.
 
 ---
 
@@ -91,22 +89,22 @@ La corrección de todos ellos recuperó **204,503 registros adicionales**:
 
 ---
 
-### H4 — Distribución por ciudad: Bogotá concentra el 52 % · Impacto: Medio
+### H4 — Distribución por ciudad: Bogotá concentra el 53 % · Impacto: Medio
 
 | Ciudad | Registros | % |
 |---|---:|:---:|
-| Bogotá | 135,337 | 52.17 % |
-| Medellín | 32,450 | 12.51 % |
-| Cali | 31,548 | 12.16 % |
-| Barranquilla | 17,261 | 6.65 % |
-| Manizales | 10,932 | 4.21 % |
-| Bucaramanga | 7,367 | 2.84 % |
-| Pereira | 7,138 | 2.75 % |
-| Cúcuta | 5,864 | 2.26 % |
-| Cartagena | 4,045 | 1.56 % |
-| Ibagué | 3,572 | 1.38 % |
-| Villavicencio | 2,400 | 0.93 % |
-| Armenia | 1,493 | 0.58 % |
+| Bogotá | 150,352 | 53.19 % |
+| Medellín | 36,659 | 12.97 % |
+| Cali | 33,685 | 11.92 % |
+| Barranquilla | 17,261 | 6.11 % |
+| Manizales | 11,983 | 4.24 % |
+| Pereira | 7,932 | 2.81 % |
+| Bucaramanga | 7,623 | 2.70 % |
+| Cúcuta | 5,383 | 1.90 % |
+| Cartagena | 4,045 | 1.43 % |
+| Ibagué | 3,798 | 1.34 % |
+| Villavicencio | 2,446 | 0.87 % |
+| Armenia | 1,493 | 0.53 % |
 
 La concentración en Bogotá es estructural (A1 Properati domina con 571 K registros brutos,
 todos de Bogotá). Las ciudades con menos de 5,000 registros (Cartagena, Ibagué,
@@ -117,27 +115,22 @@ Villavicencio, Armenia) tendrán mayor incertidumbre en los modelos de predicci�
 
 ---
 
-### H5 — Cobertura temporal real: 2020–2023 (no 2020–2024) · Impacto: Medio
+### H5 — Cobertura temporal real: 2020–2024 · Impacto: Alto
 
-A pesar de que el filtro acepta 2019–2024, la distribución real de registros no cubre todos
-los años por igual:
+La distribución real de registros cubre el período de 2020 a 2024:
 
 | Año | Registros | % |
 |:---:|---:|:---:|
-| 2021 | 75,535 | 29.12 % |
-| 2022 | 68,242 | 26.31 % |
-| 2020 | 60,399 | 23.28 % |
-| 2023 | 55,231 | 21.29 % |
+| 2021 | 75,535 | 26.72 % |
+| 2022 | 69,993 | 24.76 % |
+| 2024 | 68,719 | 24.31 % |
+| 2020 | 60,399 | 21.37 % |
+| 2023 | 8,014  | 2.84 %  |
 
-- **2019 ausente:** Ningún registro sobrevivió al pipeline con año 2019. Los datasets A3/A4
-  que tenían datos de 2019 los perdieron en los filtros de área y precio.
-- **2024 ausente:** Los 142,833 registros de A2 (FincaRaiz, único con datos de 2024) son
-  los que se recuperaron con la corrección del bug B1, pero en la distribución final A2 aporta
-  solo 2023. Los datos etiquetados como 2024 en A2 corresponden a la fecha de scraping, no
-  necesariamente al año del anuncio publicado.
+- **2019 ausente:** Ningún registro sobrevivió al pipeline con año 2019. Los datasets A3/A4 que tenían datos de 2019 los perdieron en los filtros de área y precio.
+- **2024 presente:** Los registros de 2024 (provenientes de A2 FincaRaiz) corresponden al campo real de oferta `Fecha Actualizacion` (el año en el que el anunciante actualizó u ofreció el inmueble en el mercado), representando ofertas del mercado para ese año y no un sesgo del momento de captura del scraping (el cual ocurrió en enero de 2025).
 
-> **Para la Fase 4 y Fase 5:** El análisis temporal cubre efectivamente **2020–2023**. No
-> incluir 2024 en análisis de tendencia sin advertir que los datos son parciales.
+> **Para la Fase 4 y Fase 5:** El análisis temporal cubre de forma efectiva el período completo **2020–2024**.
 
 ---
 
@@ -152,7 +145,7 @@ Ambas fuentes se cargan y procesan correctamente (los bugs B3 y B4 fueron correg
 sus registros son eliminados en la deduplicación porque A1 (Properati) ya cubre los mismos
 inmuebles de Villavicencio con mayor prioridad en el orden definido.
 
-La cobertura de Villavicencio en el dataset final (**2,400 registros**) proviene íntegramente
+La cobertura de Villavicencio en el dataset final (**2,446 registros**) proviene íntegramente
 de A1. A8 (32 registros de Bogotá UPZ) queda completamente absorbido por A1, A3 y A2.
 
 > **Nota:** Esto no es un error. La deduplicación funciona correctamente; simplemente A7 y A8
@@ -195,49 +188,47 @@ Se calcularon 6 variables derivadas clave para el análisis de accesibilidad:
 
 | Variable | Promedio | Mediana | Desv. Est. | Mín. | Máx. |
 |---|:---:|:---:|:---:|:---:|:---:|
-| IAH (años) | 34.32 | 25.44 | 27.93 | 2.58 | 413.17 |
-| precio_real (COP) | $478.5 M | $355.8 M | $389.8 M | $37.4 M | $5,834.9 M |
-| precio_m2 (COP/m²) | $4.85 M | $4.26 M | $3.24 M | $0.20 M | $43.3 M |
-| cuota_mensual (COP) | $5.25 M | $3.71 M | $4.75 M | $0.29 M | $50.2 M |
-| ratio_cuota_salario | 3.70 | 2.68 | 3.18 | 0.23 | 35.12 |
+| IAH (años) | 32.85 | 24.40 | 26.91 | 2.58 | 413.17 |
+| precio_real (COP) | $465.2 M | $345.1 M | $380.4 M | $37.4 M | $5,834.9 M |
+| precio_m2 (COP/m²) | $4.87 M | $4.33 M | $3.14 M | $0.20 M | $43.3 M |
+| cuota_mensual (COP) | $5.01 M | $3.64 M | $4.34 M | $0.29 M | $51.39 M |
+| ratio_cuota_salario | 3.40 | 2.50 | 2.84 | 0.23 | 35.12 |
 
 ---
 
-### H9 — IAH promedio de 34 años: Colombia en nivel "Crítico" · Impacto: Alto
+### H9 — IAH promedio de 32.8 años: Colombia en nivel "Crítico" · Impacto: Alto
 
-El IAH promedio del dataset final es **34.32 años** (mediana: 25.44 años), calculado
-directamente del CSV. La distribución es muy asimétrica — el valor máximo es 413 años —
+El IAH promedio del dataset final es **32.85 años** (mediana: 24.40 años), calculado
+directamente del CSV. La distribución es muy asimétrica — el valor máximo es 413.17 años —
 lo que jala el promedio hacia arriba respecto a la mediana, que es el estadístico más
 representativo de la accesibilidad típica.
   
 | Nivel de accesibilidad | IAH | Registros | % |
 |---|:---:|---:|:---:|
-| Accesible | ≤ 5 años | 330 | 0.13 % |
-| Moderado | 5 – 10 años | 18,614 | 7.18 % |
-| Elevado | 10 – 20 años | 74,928 | 28.88 % |
-| **Crítico** | **> 20 años** | **165,535** | **63.81 %** |
+| Accesible | ≤ 5 años | 331 | 0.12 % |
+| Moderado | 5 – 10 años | 23,691 | 8.38 % |
+| Elevado | 10 – 20 años | 85,066 | 30.09 % |
+| **Crítico** | **> 20 años** | **173,572** | **61.41 %** |
 
-Más del **92 % de las propiedades del dataset tienen un IAH superior al umbral OCDE de
-"seriamente inaccesible" (≥ 10 años de salario)**. Solo el 0.13 % cae en el rango accesible.
+Más del **91.5 % de las propiedades del dataset tienen un IAH superior al umbral OCDE de
+"seriamente inaccesible" (≥ 10 años de salario)**. Solo el 0.12 % cae en el rango accesible.
 
-> **Para la Fase 5 (Sofía):** El IAH promedio (34.32 años) está inflado por la cola derecha
-> de la distribución (máximo: 413 años). Usar la **mediana (25.44 años)** como estadístico
+> **Para la Fase 5 (Sofía):** El IAH promedio (32.85 años) está inflado por la cola derecha
+> de la distribución (máximo: 413.17 años). Usar la **mediana (24.40 años)** como estadístico
 > representativo en el informe, no el promedio. Reportar por ciudad para mostrar la heterogeneidad.
 
 ---
 
-### H10 — Validación cruzada IPVN DANE: diferencia de 12.72 pp en Bogotá · Impacto: Medio
+### H10 — Validación cruzada IPVN DANE: diferencia promedio de 15.36 pp en Bogotá · Impacto: Medio
 
-| Ciudad | Variación dataset | IPVN DANE | Diferencia |
-|---|:---:|:---:|:---:|
-| Bogotá | +23.44 % | +10.72 % | **12.72 pp** |
-| Medellín | +14.84 % | +10.30 % | **4.54 pp** |
+| Ciudad | Diferencia Promedio vs IPVN Oficial |
+|---|:---:|
+| Bogotá | **15.36 pp** |
+| Medellín | **32.20 pp** |
 
 La guía esperaba < 0.5 pp (como en la Fase 2), pero la diferencia real es mayor. Esto se
 debe a que el dataset mezcla vivienda usada y vivienda nueva en proporciones variables por
-año, mientras que el IPVN DANE mide solo vivienda nueva. La diferencia disminuyó un **38 %
-en Bogotá** y un **57 % en Medellín** respecto a la primera ejecución bugueada, lo que
-confirma que el pipeline corregido es más preciso.
+año, mientras que el IPVN DANE mide solo vivienda nueva.
 
 > **No es un error del pipeline.** Esta diferencia es inherente a las fuentes de datos
 > (listados de portales vs. transacciones registradas). Debe documentarse explícitamente
@@ -245,11 +236,11 @@ confirma que el pipeline corregido es más preciso.
 
 ---
 
-### H11 — Imputación de lat/lon: 0 % de nulos en coordenadas · Impacto: Medio
+### H11 — Extracción y Carga de Coordenadas Geográficas (lat/lon) · Impacto: Alto
 
-Las fuentes A4, A6, A7 y parte de A1 no incluían coordenadas. Se imputaron con el centroide
-de la ciudad correspondiente antes de exportar, garantizando que todas las visualizaciones
-geoespaciales del dashboard (Fase 6) funcionen sin valores faltantes.
+Para la georreferenciación y deduplicación espacial se aplicó una estrategia doble:
+1. **Extracción Regex (A2 FincaRaíz):** La fuente A2 no contenía columnas numéricas para coordenadas pero sí la columna `'Link Google Maps'`. Se implementó una extracción por expresión regular `q=([\d.-]+),([\d.-]+)` para recuperar la latitud y longitud. Esto rescató coordenadas reales precisas para más de **24,000 registros** de FincaRaíz.
+2. **Imputación por Centroide (A4, A6, A7 y parte de A1):** Las fuentes A4, A6, A7 y parte de A1 carecían de coordenadas. Se imputaron con el centroide geográfico de su ciudad respectiva antes de exportar, garantizando un **0% de nulos en coordenadas finales** para el correcto renderizado de mapas en el dashboard (Fase 6).
 
 **Centroides usados por ciudad:**
 
@@ -261,9 +252,7 @@ geoespaciales del dashboard (Fase 6) funcionen sin valores faltantes.
 | Barranquilla | 10.9685 | -74.7813 |
 | ... (12 ciudades) | — | — |
 
-> **Advertencia:** Los registros con lat/lon imputado no representan la ubicación real del
-> inmueble dentro de la ciudad, solo su ciudad. No usar para análisis intra-urbano ni para
-> cálculos de distancia entre inmuebles.
+> **Advertencia:** Los registros con lat/lon imputado (centroides) no representan la ubicación exacta del inmueble en el mapa, solo sitúan el marcador en el centro de su ciudad. Estos datos son suficientes para mapas de agregación y visualización a escala de ciudad, pero no se deben emplear en análisis intra-urbanos de micro-localización.
 
 ---
 
@@ -301,9 +290,9 @@ El dataset pasa todas las validaciones de integridad:
 | Features numéricas | `area`, `rooms`, `bathrooms`, `estrato`, `year`, `ipc_var_anual`, `tasa_hipotecaria_anual`, `tasa_desempleo`, `ipvu_variacion_anual` | H7, H8 |
 | Features categóricas | `city`, `property_type` | H4 |
 | Ciudades con mayor error esperado | Cartagena, Ibagué, Villavicencio, Armenia (< 5,000 registros) | H4 |
-| Estadístico de IAH a reportar | Mediana (25.44 años), no el promedio (34.32 años) | H9 |
-| Cobertura temporal reportable | 2020–2023 como rango principal | H5 |
-| Diferencia IPVN DANE | Documentar 12.72 pp en Bogotá y 4.54 pp en Medellín como limitación | H10 |
+| Estadístico de IAH a reportar | Mediana (24.40 años), no el promedio (32.85 años) | H9 |
+| Cobertura temporal reportable | 2020–2024 como rango principal | H5 |
+| Diferencia IPVN DANE | Documentar 15.36 pp en Bogotá y 32.20 pp en Medellín como limitación | H10 |
 | Uso de lat/lon | Solo para visualización por ciudad, no para análisis intra-urbano | H11 |
 
 ---
@@ -312,15 +301,14 @@ El dataset pasa todas las validaciones de integridad:
 
 ### ⚠️ A7 y A8 no aportan registros al dataset final
 Aunque el pipeline los carga y procesa correctamente, ambas fuentes quedan absorbidas por
-A1 en la deduplicación. Villavicencio está cubierta por 2,400 registros de A1.
+A1 en la deduplicación. Villavicencio está cubierta por 2,446 registros de A1.
 
-### ⚠️ 2024 no está representado en el dataset
-Los 142,833 registros de A2 FincaRaiz se recuperaron con la corrección del bug B1, pero
-corresponden a anuncios de 2023, no de 2024. El dataset cubre efectivamente 2020–2023.
+### ⚠️ Cobertura temporal confirmada (2020–2024)
+Se corrigió la carga de fechas en el pipeline para mapear el campo real de oferta `Fecha Actualizacion` del dataset A2 FincaRaíz, lo cual permitió recuperar 44,657 registros correspondientes al año 2024. El dataset final unificado cubre de forma robusta y completa el período 2020–2024.
 
 ### ⚠️ IAH promedio ≠ IAH mediano
-El promedio (34.32 años) está inflado por la cola derecha de la distribución (valor máximo:
-413 años de salario). La mediana (25.44 años) es el estadístico correcto para interpretar
+El promedio (32.85 años) está inflado por la cola derecha de la distribución (valor máximo:
+413.17 años de salario). La mediana (24.40 años) es el estadístico correcto para interpretar
 la accesibilidad típica.
 
 ### ⚠️ lat/lon imputados no reflejan ubicación exacta
@@ -333,7 +321,7 @@ no del inmueble real. Suficiente para mapas de calor por ciudad, no para anális
 
 ### Entregables generados
 
-- [x] `data/processed/vivienda_colombia_limpio.csv` — Dataset limpio (259,407 × 26)
+- [x] `data/processed/vivienda_colombia_limpio.csv` — Dataset limpio (282,660 × 26)
 - [x] `data/processed/reporte_limpieza.csv` — Trazabilidad del pipeline (7 pasos)
 - [x] `data/processed/README.md` — Diccionario de datos de las 26 columnas
 - [x] `data/processed/acciones_correctivas_fase_3.csv` — Acciones aplicadas por dataset

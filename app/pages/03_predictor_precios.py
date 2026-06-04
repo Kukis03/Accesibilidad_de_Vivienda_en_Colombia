@@ -55,7 +55,7 @@ if modelo is None:
     Ruta esperada: `{os.path.normpath(ruta_modelo)}`
 
     Mientras tanto, puedes explorar las otras secciones del dashboard:
-    - 🇨🇴 **Análisis Nacional** — Evolución histórica del IAH
+    - 📈 **Análisis Nacional** — Evolución histórica del IAH
     - 📊 **Comparador de Ciudades** — Contrasta dos ciudades
     """)
     st.stop()

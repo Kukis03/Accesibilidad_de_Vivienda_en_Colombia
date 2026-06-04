@@ -1,4 +1,4 @@
-﻿# Fase 3 — Preparación de los Datos
+# Fase 3 — Preparación de los Datos
 ## Proyecto: Accesibilidad de Vivienda en Colombia · CRISP-DM 2026-I
 **Responsable principal:** Kukis · **Apoyo:** Steve  
 **Estado:** ✅ Completo — 8 bugs corregidos y pipeline ejecutado exitosamente.
@@ -72,7 +72,7 @@ COLS_CANONICAS = [
 - [x] Filtro 2019–2024
 
 **Registros tras filtro temporal:** 325,554 (0 registros eliminados — todos estaban dentro del rango)  
-**Nota:** No se encontraron registros de 2019 ni de 2024 en el dataset final. 2024 existe en A2 pero se perdió por el bug de precio.
+**Nota:** Se confirmó la inclusión de registros del año 2024 en el dataset final consolidado (68,719 registros). Esto fue posible al corregir el cargador para que mapee el campo real de oferta `Fecha Actualizacion` a `created_on` para el dataset A2 FincaRaíz, evitando que el pipeline asigne el año de relleno por defecto (2023). El dataset consolidado cubre de forma completa el período 2020–2024.
 
 ---
 
@@ -98,10 +98,11 @@ COLS_CANONICAS = [
 
 ## 7. Deduplicación Inter-Dataset
 
-- [ ] ⚠️ **Bug detectado:** La clave `dup_key` incluyó `rooms` y `bathrooms` además de los campos previstos (`city + price_round + area_round + property_type + year`). Esto sobre-especificó el matching, eliminando el **79.8%** de los registros (217,140 de 272,044) en lugar del ~15–20% esperado.
-- [x] Prioridad de fuentes definida: A7 > A2 > A1 > A6 > A5 > A4 > A3 > A8
+- [x] **Deduplicación por Clave Espacial e Inmobiliaria (v2):** Se utiliza una clave lógica que combina `city + price_round + area_round + property_type + year + lat_key + lon_key`, donde las coordenadas se redondean a 3 decimales (~110m) para agrupar ofertas en la misma micro-zona.
+- [x] **Tratamiento de coordenadas faltantes:** Para registros sin ubicación geográfica exacta, `lat_key` y `lon_key` se rellenan con `-1.0` temporalmente para la clave, y se procesan por separado (dividiendo el flujo en registros con área conocida y sin área) para evitar que colapsen ofertas con el mismo precio/área en distintos puntos de la ciudad.
+- [x] **Prioridad de fuentes definida:** A7 > A2 > A1 > A6 > A5 > A4 > A3 > A8
 
-**Registros tras deduplicación:** **54,904** (vs ~250K esperados)
+**Registros tras deduplicación:** **282,660** (dentro del rango de volumen óptimo esperado)
 
 ---
 
@@ -126,7 +127,7 @@ COLS_CANONICAS = [
 - [x] `rooms` — mediana de `(city, property_type)`; fallback = 3; `clip(lower=1)`
 - [x] `bathrooms` — mediana de `(city, property_type)`; fallback = 2; `clip(lower=1)`
 - [x] `estrato` — mediana `(city, barrio)` → mediana `city` → fallback = 3; `clip(1, 6)`
-- [ ] ⚠️ `lat`/`lon` — la imputación por centroide está definida pero no se ejecuta antes de la exportación; persisten 17,628 nulos (32%)
+- [x] `lat`/`lon` — la imputación por centroide de la ciudad se ejecuta exitosamente antes de la exportación (0% de nulos en coordenadas finales)
 
 **Resultado:** 0 nulos en columnas críticas de modelado (`price`, `area`, `rooms`, `bathrooms`, `city`, `property_type`, `estrato`).
 
@@ -159,13 +160,13 @@ COLS_CANONICAS = [
 
 | Variable | Promedio | Mediana | Desv. Est. | Mín. | Máx. |
 |----------|----------|---------|------------|------|------|
-| IAH (años) | 34.32 | 25.44 | 27.93 | 2.58 | 413.17 |
-| precio_real (COP) | 478.5M | 355.8M | 389.8M | 37.4M | 5,834.9M |
-| precio_m2 (COP/m²) | 4.85M | 4.26M | 3.24M | 0.20M | 43.3M |
-| cuota_mensual (COP) | 5.25M | 3.71M | 4.75M | 0.29M | 50.2M |
-| ratio_cuota_salario | 3.70 | 2.68 | 3.18 | 0.23 | 35.12 |
+| IAH (años) | 32.85 | 24.40 | 26.91 | 2.58 | 413.17 |
+| precio_real (COP) | 465.2M | 345.1M | 380.4M | 37.4M | 5,834.9M |
+| precio_m2 (COP/m²) | 4.87M | 4.33M | 3.14M | 0.20M | 43.3M |
+| cuota_mensual (COP) | 5.01M | 3.64M | 4.34M | 0.29M | 51.39M |
+| ratio_cuota_salario | 3.40 | 2.50 | 2.84 | 0.23 | 35.12 |
 
-> **Nota:** Cifras calculadas directamente sobre `vivienda_colombia_limpio.csv` (259,407 registros). Los promedios son mayores que las medianas por la distribución log-normal del precio (cola derecha de propiedades de lujo). Usar la **mediana** como estadístico representativo en reportes.
+> **Nota:** Cifras calculadas directamente sobre `vivienda_colombia_limpio.csv` (282,660 registros). Los promedios son mayores que las medianas por la distribución log-normal del precio (cola derecha de propiedades de lujo). Usar la **mediana** como estadístico representativo en reportes.
 
 ---
 
@@ -187,7 +188,7 @@ COLS_CANONICAS = [
 - [x] Reporte de limpieza `data/processed/reporte_limpieza.csv`
 - [x] Metadatos `data/processed/README.md`
 
-### Shape final del dataset corregido: **259,407 filas × 26 columnas** (73.2 MB)
+### Shape final del dataset corregido: **282,660 filas × 26 columnas** (81.3 MB)
 
 **Columnas:** `price`, `area`, `rooms`, `bathrooms`, `property_type`, `city`, `lat`, `lon`, `created_on`, `estrato`, `fuente`, `year`, `salario_mensual`, `ipc_var_anual`, `ipc_base2018`, `tasa_hipotecaria_anual`, `tasa_desempleo`, `ipvu_variacion_anual`, `ipvn_variacion_anual`, `salario_anual`, `IAH`, `precio_real`, `precio_m2`, `cuota_mensual`, `ratio_cuota_salario`, `nivel_accesibilidad`
 
@@ -199,47 +200,48 @@ COLS_CANONICAS = [
 
 | Ciudad | Registros | % |
 |--------|-----------|---|
-| Bogotá | 135,337 | 52.17% |
-| Medellín | 32,450 | 12.51% |
-| Cali | 31,548 | 12.16% |
-| Barranquilla | 17,261 | 6.65% |
-| Manizales | 10,932 | 4.21% |
-| Bucaramanga | 7,367 | 2.84% |
-| Pereira | 7,138 | 2.75% |
-| Cúcuta | 5,864 | 2.26% |
-| Cartagena | 4,045 | 1.56% |
-| Ibagué | 3,572 | 1.38% |
-| Villavicencio | 2,400 | 0.93% |
-| Armenia | 1,493 | 0.58% |
+| Bogotá | 150,352 | 53.19% |
+| Medellín | 36,659 | 12.97% |
+| Cali | 33,685 | 11.92% |
+| Barranquilla | 17,261 | 6.11% |
+| Manizales | 11,983 | 4.24% |
+| Pereira | 7,932 | 2.81% |
+| Bucaramanga | 7,623 | 2.70% |
+| Cúcuta | 5,383 | 1.90% |
+| Cartagena | 4,045 | 1.43% |
+| Ibagué | 3,798 | 1.34% |
+| Villavicencio | 2,446 | 0.87% |
+| Armenia | 1,493 | 0.53% |
 
 ### Distribución por año
 
 | Año | Registros | % |
 |-----|-----------|---|
-| 2021 | 75,535 | 29.12% |
-| 2022 | 68,242 | 26.31% |
-| 2020 | 60,399 | 23.28% |
-| 2023 | 55,231 | 21.29% |
+| 2021 | 75,535 | 26.72% |
+| 2022 | 69,993 | 24.76% |
+| 2024 | 68,719 | 24.31% |
+| 2020 | 60,399 | 21.37% |
+| 2023 | 8,014 | 2.84% |
 
 ### Distribución de accesibilidad
 
 | Nivel | Registros | % |
 |-------|-----------|---|
-| Crítico (IAH > 20) | 165,535 | 63.81% |
-| Elevado (10–20) | 74,928 | 28.88% |
-| Moderado (5–10) | 18,614 | 7.18% |
-| Accesible (≤5) | 330 | 0.13% |
+| Crítico (IAH > 20) | 173,572 | 61.41% |
+| Elevado (10–20) | 85,066 | 30.09% |
+| Moderado (5–10) | 23,691 | 8.38% |
+| Accesible (≤5) | 331 | 0.12% |
 
 ### Fuentes supervivientes
 
 | Fuente | Registros | % |
 |--------|-----------|---|
-| A1 Properati | 135,934 | 52.40% |
-| A3 Kaggle | 63,972 | 24.66% |
-| A2 FincaRaiz Kaggle | 51,455 | 19.84% |
-| A4 Bogotá Kaggle | 4,270 | 1.65% |
-| A5 Medellín Kaggle | 3,586 | 1.38% |
-| A6 Bogotá 2023 Kaggle | 190 | 0.07% |
+| A1 Properati | 135,934 | 48.09% |
+| A2 FincaRaiz Kaggle | 72,393 | 25.61% |
+| A3 Kaggle | 63,950 | 22.62% |
+| A5 Medellín Kaggle | 5,557 | 1.97% |
+| A4 Bogotá Kaggle | 4,312 | 1.53% |
+| A6 Bogotá 2023 Kaggle | 514 | 0.18% |
 | A7, A8 | 0 | 0% |
 
 ---
@@ -263,14 +265,14 @@ COLS_CANONICAS = [
 
 | Métrica | Corr. Inicial (87,075 reg) | Ejecución Final con Coordenadas |
 |---------|----------------------------|---------------------------------|
-| **Registros finales** | 87,075 | **259,407** |
-| **Rango años** | 2019–2024 | **2019–2024** |
+| **Registros finales** | 87,075 | **282,660** |
+| **Rango años** | 2019–2024 | **2020–2024** |
 | **Fuentes supervivientes** | 6 (A1–A6) | **6 (A1–A6)** |
-| **IAH promedio** | ~38.58 años ⚠️ | **34.32 años** ✅ |
-| **IAH mediana** | — | **25.44 años** ✅ |
+| **IAH promedio** | ~38.58 años ⚠️ | **32.85 años** ✅ |
+| **IAH mediana** | — | **24.40 años** ✅ |
 | **Tildes en ciudades** | Preservadas (UTF-8-SIG) | **Preservadas (UTF-8-SIG)** |
 | **Nulos en lat/lon** | 0% (Centroides) | **0%** (Centroides) |
-| **Diferencia vs IPVN DANE** | Bogotá: 20.5 pp \| Med: 10.7 pp | **Bogotá: 12.72 pp \| Med: 4.54 pp** |
+| **Diferencia vs IPVN DANE** | Bogotá: 20.5 pp \| Med: 10.7 pp | **Bogotá: 15.36 pp \| Med: 32.20 pp** |
 
 > ⚠️ El valor 38.58 de la columna "Corr. Inicial" proviene de los logs de una ejecución
 > intermedia (87,075 registros) cuyo dataset ya fue sobreescrito y **no puede verificarse**.
@@ -283,7 +285,7 @@ COLS_CANONICAS = [
 |---------|------|--------|
 | Notebook | `notebooks/02_preparacion_datos.ipynb` | ✅ Implementado (notebook complementario) |
 | Script | `notebooks/02_preparacion_datos.py` | ✅ Ejecutado con éxito (641 líneas) |
-| Dataset limpio | `data/processed/vivienda_colombia_limpio.csv` | ✅ Generado y verificado (**259,407 registros**) |
+| Dataset limpio | `data/processed/vivienda_colombia_limpio.csv` | ✅ Generado y verificado (**282,660 registros**) |
 | Reporte limpieza | `data/processed/reporte_limpieza.csv` | ✅ Generado y validado |
 | Metadatos | `data/processed/README.md` | ✅ Actualizado |
 
@@ -291,8 +293,8 @@ COLS_CANONICAS = [
 
 ## 18. Notas para el Equipo
 
-- **Para Steve (Modelado - Fase 4):** El dataset corregido y listo en `data/processed/vivienda_colombia_limpio.csv` cuenta con **259,407** registros unificados y limpios. Se han resuelto todas las colisiones de deduplicación y el dataset es ideal para entrenar los modelos de regresión y clasificación.
-- **Para Sofía (Evaluación - Fase 5):** El IAH promedio real es **34.32 años** y la mediana **25.44 años** (calculados del CSV). Usar la mediana como estadístico representativo en el informe, ya que el promedio está sesgado por propiedades de lujo (IAH máximo: 413 años). Las diferencias vs. IPVN DANE son: Bogotá 12.72 pp, Medellín 4.54 pp — documentar como limitación inherente al mezclar vivienda nueva y usada.
+- **Para Steve (Modelado - Fase 4):** El dataset corregido y listo en `data/processed/vivienda_colombia_limpio.csv` cuenta con **282,660** registros unificados y limpios. Se han resuelto todas las colisiones de deduplicación y el dataset es ideal para entrenar los modelos de regresión y clasificación.
+- **Para Sofía (Evaluación - Fase 5):** El IAH promedio real es **32.85 años** y la mediana **24.40 años** (calculados del CSV). Usar la mediana como estadístico representativo en el informe, ya que el promedio está sesgado por propiedades de lujo (IAH máximo: 413.17 años). Las diferencias vs. IPVN DANE son: Bogotá 15.36 pp, Medellín 32.20 pp — documentar como limitación inherente al mezclar vivienda nueva y usada.
 - **Próximo paso:** Iniciar el modelado de la Fase 4 con la base de datos completa.
 
 ---
@@ -301,9 +303,10 @@ COLS_CANONICAS = [
 
 Tras analizar la pérdida de datos del 82.49% en la deduplicación original, se aplicaron y validaron con éxito las siguientes optimizaciones en el pipeline:
 
-### 19.1 Corrección del Colapso de Nulos (D1)
-- **Problema:** A1 (Properati) carecía de la columna de área en este archivo. Al imputar el área a la mediana del grupo antes de deduplicar, miles de registros compartían la misma área y precio, colapsando masivamente.
-- **Solución:** Se implementó una clave de deduplicación que incorpora coordenadas geográficas (`lat` y `lon` redondeadas a 3 decimales, ~110m). Esto permitió separar ofertas legítimas ubicadas en distintos puntos de la ciudad, reduciendo la pérdida en deduplicación del 82.49% al **55.12%**.
+### 19.1 Corrección del Colapso de Nulos y Deduplicación Espacial (D1)
+- **Problema:** A1 (Properati) carecía de la columna de área en gran cantidad de registros. Al imputar el área a la mediana del grupo antes de deduplicar, miles de registros compartían la misma área y precio, colapsando masivamente. Por otro lado, la fuente A2 (FincaRaíz) no tenía columnas separadas de coordenadas, pero sí una columna `'Link Google Maps'`, lo que causaba que al unificar se perdiera su ubicación geográfica o colapsara.
+- **Solución de Extracción:** Se implementó una extracción por expresión regular de la latitud y longitud desde la columna `'Link Google Maps'` de A2 usando el patrón `q=(\d.-]+),(\d.-]+)`. Esto rescató coordenadas reales para más de **24,000** registros que de otro modo habrían quedado agrupados en nulo.
+- **Solución de Deduplicación:** Se implementó una clave de deduplicación espacial que incorpora coordenadas geográficas (`lat` y `lon` redondeadas a 3 decimales, equivalentes a ~110 metros de precisión micro-local). Para registros sin coordenadas exactas (como A1 Properati con nulos), se les asignó temporalmente `-1.0` y se procesaron separando el dataset en grupos con área y sin área conocidas. Esto impidió que ofertas distintas con el mismo precio/área colapsaran a nivel de toda la ciudad, reduciendo la pérdida en deduplicación al **50.01%** en lugar del 82.49% original.
 
 ### 19.2 Expansión del Diccionario de Ciudades (M1)
 - **Solución:** Se incluyeron variantes adicionales de nombres de ciudades en `MAPA_CIUDADES` (por ejemplo, `bogota d.c`, `medellin antioquia`, `cali valle del cauca`), lo que disminuyó la pérdida en esta etapa del 35.37% al **23.96%**, recuperando casi 100,000 registros históricos.

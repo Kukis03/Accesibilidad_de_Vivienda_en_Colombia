@@ -36,7 +36,7 @@ if not os.path.exists(ruta_clusters):
     - `{os.path.normpath(ruta_perfiles)}` — estadísticas descriptivas por cluster (opcional)
 
     Mientras tanto, puedes explorar:
-    - 🇨🇴 **Análisis Nacional** — Evolución histórica del IAH
+    - 📈 **Análisis Nacional** — Evolución histórica del IAH
     - 📊 **Comparador de Ciudades** — Contrasta dos ciudades
     """)
     st.stop()
