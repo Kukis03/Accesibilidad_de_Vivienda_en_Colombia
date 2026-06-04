@@ -5,6 +5,38 @@
 
 ---
 
+## Respuesta a la Pregunta Central de Investigación
+
+> **¿Cómo ha evolucionado la accesibilidad económica a la vivienda en Colombia entre 2020 y 2024, y qué variables estructurales explican mejor las diferencias entre ciudades?**
+
+### Evolución de la accesibilidad (2020–2024)
+
+La accesibilidad económica —medida como IAH (años de salario mínimo para comprar una vivienda)— se mantuvo en niveles críticos durante todo el período. Ninguna de las 12 ciudades analizadas se acerca al estándar OCDE de 5 años.
+
+- **IAH nacional 2024:** ~22.1 años de salario mínimo por vivienda
+- **Tendencia heterogénea:** 5 ciudades mejoraron su IAH, 5 empeoraron
+- **Mayor mejora:** Villavicencio (−20.2%), Ibagué (−16.2%), Bogotá (−12.2%)
+- **Mayor deterioro:** Medellín (+15.3%), Manizales (+13.0%), Pereira (+10.3%)
+- **Brecha entre extremos en 2024:** Ibagué (12.5 años) vs Medellín (30.1 años) — una diferencia de 17.6 años de salario mínimo
+
+**Conclusión:** La accesibilidad no solo es crítica en todos los mercados, sino que la brecha entre ciudades se amplió entre 2020 y 2024. Las ciudades más caras (Bogotá, Medellín, Cartagena) empeoraron o se mantuvieron en niveles de IAH > 25, mientras que las intermedias (Ibagué, Villavicencio, Cúcuta) mostraron recuperación post-pandemia.
+
+### Variables estructurales que explican diferencias
+
+El modelo Random Forest (R²=0.6348) identificó que **las características físicas de la vivienda explican el 81.5% de la varianza del precio**, muy por encima del contexto macroeconómico y geográfico:
+
+| Variable | Importancia RF | Correlación con log(price) |
+|---|---|---|
+| bathrooms | 42.2% | 0.60 |
+| area | 28.0% | 0.46 |
+| estrato | 11.3% | 0.43 |
+| city_Bogotá | 5.0% | — |
+| rooms | 4.2% | 0.18 |
+
+**Hallazgo clave:** El estrato socioeconómico (11.3%) pesa más que cualquier variable macro (tasa_hipotecaria <2%, IPC <2%, desempleo <1%). Esto sugiere que las diferencias de precio entre ciudades están mediadas principalmente por la **calidad y tamaño de las viviendas** que ofrece cada mercado, no por diferencias en el entorno macroeconómico. Sin embargo, el R² de 0.6348 indica que ~37% de las diferencias quedan sin explicar — posiblemente por variables no capturadas como ubicación exacta dentro de la ciudad, calidad de construcción o antigüedad.
+
+---
+
 ## 1. Verificación de Criterios de Éxito (Fase 1)
 
 | Criterio | Umbral Fase 1 | Valor Obtenido | ¿Cumple? |
