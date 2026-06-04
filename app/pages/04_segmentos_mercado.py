@@ -6,7 +6,7 @@ import plotly.graph_objects as go
 import warnings
 warnings.filterwarnings('ignore')
 
-st.set_page_config(page_title="Segmentos de Mercado", page_icon="📊", layout="wide")
+st.set_page_config(page_title="Segmentos de Mercado", page_icon="�", layout="wide")
 
 @st.cache_data
 def load_clusters():
@@ -22,7 +22,7 @@ perfiles = load_perfiles()
 cluster_names = {0: "Premium (IAH 29.2)", 1: "Intermedio (IAH 16.2)", 2: "Intermedio-Alto (IAH 18.7)", 3: "Premium (IAH 25.4)", 4: "Intermedio-Bajo (IAH 12.9)"}
 dfc['cluster_name'] = dfc['cluster'].map(cluster_names)
 
-st.title("📊 Segmentos de Mercado")
+st.title("Segmentos de Mercado")
 st.markdown("""
 Utilizamos **KMeans (K=5)** para segmentar las 12 ciudades colombianas según su nivel de accesibilidad. 
 Las variables usadas son: IAH, precio por m², ratio cuota/salario y tasa de desempleo.
@@ -32,7 +32,7 @@ Las variables usadas son: IAH, precio por m², ratio cuota/salario y tasa de des
 
 
 
-tab1, tab2, tab3 = st.tabs(["📌 Mapa de Clusters", "🗺️ Evolución Temporal", "📋 Perfiles"])
+tab1, tab2, tab3 = st.tabs(["Mapa de Clusters", "Evolución Temporal", "Perfiles"])
 
 with tab1:
     st.subheader("IAH vs Precio por m²")
@@ -55,10 +55,9 @@ with tab1:
         st.plotly_chart(fig2, use_container_width=True)
     with col_b:
         st.subheader("Ciudades en 2024")
-        cluster_emoji = {0: "🔴", 1: "🟡", 2: "🟠", 3: "🔴", 4: "🟢"}
         d24 = dfc[dfc['year'] == 2024][['city', 'cluster', 'cluster_name']].sort_values('cluster_name')
         for _, r in d24.iterrows():
-            st.markdown(f"{cluster_emoji.get(r['cluster'], '⚪')} **{r['city']}** — {r['cluster_name']}")
+            st.markdown(f"**{r['city']}** — {r['cluster_name']}")
 
 with tab2:
     st.subheader("Heatmap Ciudad × Año")
@@ -78,9 +77,9 @@ with tab2:
     st.dataframe(tr, use_container_width=True, hide_index=True)
     nc = tr['cambio'].sum()
     if nc > 0:
-        st.info(f"🔄 {nc} de {len(tr)} ciudades cambiaron de cluster entre 2020 y 2024.")
+        st.info(f"{nc} de {len(tr)} ciudades cambiaron de cluster entre 2020 y 2024.")
     else:
-        st.success("✅ Ninguna ciudad cambió de cluster — la segmentación es estable en el tiempo.")
+        st.success("Ninguna ciudad cambió de cluster — la segmentación es estable en el tiempo.")
 
 with tab3:
     st.subheader("Perfiles de los 5 Clusters")

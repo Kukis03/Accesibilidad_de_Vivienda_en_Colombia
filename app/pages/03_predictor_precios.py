@@ -4,7 +4,7 @@ import json
 import warnings
 warnings.filterwarnings('ignore')
 
-st.set_page_config(page_title="Predictor de Precios", page_icon="💵", layout="wide")
+st.set_page_config(page_title="Predictor de Precios", page_icon="�", layout="wide")
 
 @st.cache_data
 def load_data():
@@ -16,7 +16,7 @@ def load_model():
     try:
         return joblib.load("models/modelo_random_forest.pkl")
     except FileNotFoundError:
-        st.error("❌ Modelo no encontrado: `models/modelo_random_forest.pkl`. Verifica que Git LFS esté configurado y los archivos se hayan descargado.")
+        st.error("Modelo no encontrado: `models/modelo_random_forest.pkl`. Verifica que Git LFS esté configurado y los archivos se hayan descargado.")
         return None
 
 @st.cache_data
@@ -25,7 +25,7 @@ def load_features():
         with open("models/features_order.json") as f:
             return json.load(f)
     except FileNotFoundError:
-        st.error("❌ Archivo `models/features_order.json` no encontrado.")
+        st.error("Archivo `models/features_order.json` no encontrado.")
         return None
 
 df = load_data()
@@ -43,7 +43,7 @@ macro_vars = df.groupby(['city', 'year'])[
     ['ipc_var_anual', 'tasa_hipotecaria_anual', 'tasa_desempleo', 'ipvu_variacion_anual', 'salario_anual']
 ].first().reset_index()
 
-st.title("💵 Predictor de Precios")
+st.title("Predictor de Precios")
 st.markdown("""
 Este predictor usa un modelo **Random Forest** entrenado con 282,660 registros de vivienda 
 (R² = 0.6348). Ingresa las características de una vivienda para estimar su precio de mercado 
@@ -63,13 +63,13 @@ with st.form("form"):
         banos = st.number_input("Baños", 1, 8, 2, 1)
     with c3:
         anio = st.selectbox("Año", anios, index=len(anios)-1)
-    ok = st.form_submit_button("💵 Estimar Precio", type="primary", use_container_width=True)
+    ok = st.form_submit_button("Estimar Precio", type="primary", use_container_width=True)
 
 if ok:
     with st.spinner("Calculando..."):
         macro = macro_vars[(macro_vars['city'] == ciudad) & (macro_vars['year'] == anio)]
         if macro.empty:
-            st.warning(f"⚠️ Datos macroeconómicos no disponibles para {ciudad} {anio}. Usando promedio nacional de {anio} como aproximación.")
+            st.warning(f"Datos macroeconómicos no disponibles para {ciudad} {anio}. Usando promedio nacional de {anio} como aproximación.")
             cols_num = ['ipc_var_anual', 'tasa_hipotecaria_anual', 'tasa_desempleo', 'ipvu_variacion_anual', 'salario_anual']
             vals = macro_vars[macro_vars['year'] == anio][cols_num].mean()
             vals['city'] = ciudad
@@ -123,7 +123,7 @@ if ok:
         """, unsafe_allow_html=True)
 
         pct = (df[(df['city'] == ciudad) & (df['year'] == anio) & (df['property_type'] == tipo)]['price'] < pred).mean() * 100
-        st.info(f"📊 Esta vivienda está en el **percentil {pct:.0f}** de precios en **{ciudad}** ({anio}). "
+        st.info(f"Esta vivienda está en el **percentil {pct:.0f}** de precios en **{ciudad}** ({anio}). "
                 f"Es más cara que el {pct:.0f}% de las viviendas listadas en esa ciudad y año.")
 
         st.warning("""

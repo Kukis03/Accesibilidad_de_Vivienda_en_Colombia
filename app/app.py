@@ -6,7 +6,7 @@ import warnings
 from utils import fmt_cop
 warnings.filterwarnings('ignore')
 
-st.set_page_config(page_title="Accesibilidad de Vivienda en Colombia", page_icon="🏠", layout="wide", initial_sidebar_state="expanded")
+st.set_page_config(page_title="Accesibilidad de Vivienda en Colombia", page_icon="�", layout="wide", initial_sidebar_state="expanded")
 
 @st.cache_data
 def load_data():
@@ -34,7 +34,7 @@ if tipo_sel != "Todos":
 df_f = df_f[df_f['year'] == anio_sel]
 
 # ── Hero ────────────────────────────────────────────────────────
-st.title("🏡 Accesibilidad de Vivienda en Colombia")
+st.title("Accesibilidad de Vivienda en Colombia")
 st.markdown("""
 Dashboard interactivo del proyecto **CRISP-DM** que analiza la evolución de la accesibilidad económica 
 a la vivienda urbana en **12 ciudades colombianas (2020–2024)**. 
@@ -60,7 +60,7 @@ k4.metric("Cuota >30% Salario", f"{cuota:.1f}%" if not np.isnan(cuota) else "N/A
 st.markdown("---")
 col_pie, col_txt = st.columns([2, 1])
 with col_pie:
-    st.subheader("🍰 Distribución del Mercado por Nivel de Accesibilidad")
+    st.subheader("Distribución del Mercado por Nivel de Accesibilidad")
     if not df_f.empty:
         niv = df_f['nivel_accesibilidad'].value_counts().reset_index()
         niv.columns = ['Nivel', 'Registros']
@@ -77,7 +77,7 @@ with col_pie:
         st.info("Sin datos para los filtros seleccionados.")
 
 with col_txt:
-    st.subheader("📊 Interpretación")
+    st.subheader("Interpretación")
     st.markdown("""
     - **Accesible (IAH ≤ 5)** — Cumple estándar OCDE. Prácticamente inexistente en Colombia.
     - **Moderado (5 < IAH ≤ 10)** — Accesible para ingresos medios-alto.
@@ -87,11 +87,11 @@ with col_txt:
 
 # ── Mapa mejorado ──────────────────────────────────────────────
 st.markdown("---")
-st.subheader("🗺️ Distribución Geográfica")
+st.subheader("Distribución Geográfica")
 st.markdown("Cada punto representa una propiedad listada. El color indica el precio y el tamaño el área construida.")
 
 if df_f.empty:
-    st.info("ℹ️ Sin datos para los filtros seleccionados. Ajusta los filtros en el panel lateral.")
+    st.info("Sin datos para los filtros seleccionados. Ajusta los filtros en el panel lateral.")
 else:
     try:
         n_sample = min(3000, len(df_f))
@@ -102,15 +102,23 @@ else:
             hover_name="city",
             hover_data={"price": ":,.0f", "area": ":,.0f", "rooms": True, "estrato": True, "year": True},
             color_continuous_scale="Viridis",
-            zoom=4.8, height=520,
-            title="Propiedades por Precio y Ubicación"
+            zoom=4.8, height=600,
+            title="Propiedades por Precio y Ubicación Geográfica"
         )
         fig_map.update_layout(
-            mapbox_style="carto-positron",
-            margin=dict(l=0, r=0, t=30, b=0),
-            coloraxis_colorbar=dict(title="Precio (COP)", tickprefix="$")
+            mapbox_style="open-street-map",
+            margin=dict(l=0, r=0, t=50, b=0),
+            coloraxis_colorbar=dict(
+                title="Precio (COP)",
+                tickprefix="$",
+                thickness=15,
+                len=0.7,
+                x=1.02
+            ),
+            hovermode="closest",
+            font=dict(size=11)
         )
-        st.plotly_chart(fig_map, use_container_width=True)
+        st.plotly_chart(fig_map, use_container_width=True, key="mapbox_chart")
     except Exception as e:
         st.error(f"Error al generar el mapa: {e}")
         if not df_f.empty:
@@ -121,7 +129,7 @@ else:
 
 # ── Insights rápidos ───────────────────────────────────────────
 st.markdown("---")
-st.subheader("🔍 Insights Rápidos")
+st.subheader("Insights Rápidos")
 if df_f.empty:
     st.info("No hay registros para resumir con los filtros actuales.")
 elif ciudad_sel == "Todas":
@@ -136,7 +144,7 @@ elif ciudad_sel == "Todas":
 | Mercado con cuota > 30% salario | **{cuota:.0f}%** del total |
 | Viviendas analizadas | **{len(df_f):,}** registros |
 
-💡 **Conclusión:** A nivel de mediana por ciudad, ninguna cumple el estándar OCDE de accesibilidad (IAH < 5 años). 
+**Conclusión:** A nivel de mediana por ciudad, ninguna cumple el estándar OCDE de accesibilidad (IAH < 5 años). 
 El mercado de vivienda es **financieramente inviable para un hogar de salario mínimo** en su totalidad.
 """)
 else:

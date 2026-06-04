@@ -4,7 +4,7 @@ import plotly.express as px
 import warnings
 warnings.filterwarnings('ignore')
 
-st.set_page_config(page_title="Comparador de Ciudades", page_icon="🏙️", layout="wide")
+st.set_page_config(page_title="Comparador de Ciudades", page_icon="🏙", layout="wide")
 
 @st.cache_data
 def load_data():
@@ -14,7 +14,7 @@ df = load_data()
 ciudades = sorted(df['city'].unique())
 anios = sorted(df['year'].unique())
 
-st.title("🏙️ Comparador de Ciudades")
+st.title("Comparador de Ciudades")
 st.markdown("""
 Selecciona **2 a 4 ciudades** para comparar sus indicadores de accesibilidad, precios y condiciones del mercado.
 ¿Qué ciudades son más accesibles? ¿Dónde es más caro el metro cuadrado?
@@ -27,12 +27,12 @@ with col2:
     yr = st.select_slider("Año de comparación", options=anios, value=anios[-1])
 
 if len(cities_sel) < 2:
-    st.warning("⚠️ Selecciona al menos 2 ciudades para comparar.")
+    st.warning("Selecciona al menos 2 ciudades para comparar.")
     st.stop()
 
 dc = df[(df['city'].isin(cities_sel)) & (df['year'] == yr)]
 
-tab1, tab2 = st.tabs(["📋 Tabla Comparativa", "📊 Visualizaciones"])
+tab1, tab2 = st.tabs(["Tabla Comparativa", "Visualizaciones"])
 
 with tab1:
     st.subheader(f"Comparación Directa — {yr}")
@@ -60,7 +60,7 @@ with tab1:
     reg_info = ", ".join([f"**{r['city']}**: {r['n']:,}" for _, r in tbl.iterrows()])
     st.info(f"Registros en {yr}: {reg_info}")
     if any(tbl['n'] < 500):
-        st.warning("⚠️ Alguna ciudad tiene menos de 500 registros — las estimaciones pueden ser inestables.")
+        st.warning("Alguna ciudad tiene menos de 500 registros — las estimaciones pueden ser inestables.")
 
 with tab2:
     col_a, col_b = st.columns(2)
@@ -119,6 +119,6 @@ with tab2:
     fig_heat.update_layout(height=450)
     st.plotly_chart(fig_heat, use_container_width=True)
 
-    st.error(f"📌 **Hallazgo P4:** El **{pct_total:.2f}%** del mercado de vivienda en Colombia tiene una cuota hipotecaria superior al 30% del salario mínimo. "
+    st.error(f"**Hallazgo P4:** El **{pct_total:.2f}%** del mercado de vivienda en Colombia tiene una cuota hipotecaria superior al 30% del salario mínimo. "
              f"Todas las ciudades en todos los años superan este umbral. El mercado es **financieramente inviable** para un hogar de salario mínimo.")
-    st.info("💡 **Implicación:** La política de vivienda debería enfocarse en reducir el precio por m² (especialmente en Bogotá y Medellín) y/o en subsidiar la cuota hipotecaria para hogares de bajos ingresos.")
+    st.info("**Implicación:** La política de vivienda debería enfocarse en reducir el precio por m² (especialmente en Bogotá y Medellín) y/o en subsidiar la cuota hipotecaria para hogares de bajos ingresos.")
