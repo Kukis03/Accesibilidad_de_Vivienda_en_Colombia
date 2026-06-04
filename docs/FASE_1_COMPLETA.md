@@ -454,7 +454,6 @@ Durante la Fase 1 se ejecutaron las siguientes actividades:
 La Fase 1 planifica el proyecto; no genera datos experimentales ni resultados cuantitativos propios. La metodología empleada fue:
 
 - **Revisión documental:** Consulta de estadísticas del DANE, BanRep, Fedesarrollo, ONU-Hábitat y OCDE para fundamentar la justificación del proyecto con datos reales del mercado inmobiliario colombiano.
-- **Revisión documental:** Consulta de estadísticas del DANE, BanRep, Fedesarrollo, ONU-Hábitat y OCDE para fundamentar la justificación del proyecto con datos reales del mercado inmobiliario colombiano.
 
 ### 11.1 Justificación metodológica del uso del SMLMV en el IAH
 
@@ -566,4 +565,3 @@ La **Fase 2 — Comprensión de los Datos** puede iniciarse inmediatamente al ci
 
 *Documento de Fase 1 · CRISP-DM 2026-I · Proyecto Accesibilidad Habitacional Colombia — 2020–2025*  
 *Equipo: Steve · Sofía · Kukis*
-
