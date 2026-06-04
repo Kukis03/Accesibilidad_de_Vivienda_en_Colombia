@@ -36,7 +36,7 @@ else:
     df_p = df
     sufijo = ""
 
-tab1, tab2, tab3, tab4 = st.tabs(["📈 IAH y Accesibilidad", "📊 Macro y Precios", "🎯 Niveles de Accesibilidad", "📋 Datos por Año"])
+tab1, tab2, tab3, tab4, tab5 = st.tabs(["📈 IAH y Accesibilidad", "📊 Macro y Precios", "🎯 Niveles de Accesibilidad", "🔬 Variables Predictivas (P2)", "📋 Datos por Año"])
 
 with tab1:
     st.subheader(f"Evolución del IAH{sufijo}")
@@ -115,6 +115,47 @@ with tab3:
         st.info("📌 **Hallazgo:** Bogotá y Medellín concentran la mayor proporción de vivienda 'Crítica' en 2024. Villavicencio y Cúcuta muestran los mercados más accesibles.")
 
 with tab4:
+    st.subheader("¿Qué variables explican mejor el precio? (Pregunta P2)")
+    st.markdown("""
+    El modelo **Random Forest** identificó que las **características físicas de la vivienda** 
+    explican la mayor parte de la varianza del precio, muy por encima del contexto macroeconómico.
+    """)
+
+    col_a, col_b = st.columns([3, 2])
+    with col_a:
+        feat_imp = pd.DataFrame({
+            'variable': ['bathrooms', 'area', 'estrato', 'city_Bogotá', 'rooms', 
+                         'city_Medellín', 'tasa_hipotecaria_anual', 'ipc_var_anual', 
+                         'city_Cali', 'tasa_desempleo'],
+            'importancia': [42.2, 28.0, 11.3, 5.0, 4.2, 1.8, 1.5, 1.2, 1.0, 0.8]
+        })
+        fig_p2 = px.bar(feat_imp.sort_values('importancia'), x='importancia', y='variable',
+                        orientation='h', title="Importancia de Variables en el Modelo RF",
+                        labels={'importancia': 'Importancia relativa (%)', 'variable': ''},
+                        color='importancia', color_continuous_scale='Viridis')
+        fig_p2.update_layout(yaxis=dict(autorange="reversed"))
+        st.plotly_chart(fig_p2, use_container_width=True)
+
+    with col_b:
+        st.markdown("### Top 5 Variables")
+        st.markdown("""
+        1. 🚿 **bathrooms** — 42.2%
+        2. 📐 **area** — 28.0%
+        3. 🏛️ **estrato** — 11.3%
+        4. 🏙️ **city_Bogotá** — 5.0%
+        5. 🛏️ **rooms** — 4.2%
+        """)
+        st.markdown("**Importancia acumulada top 5: 90.8%**")
+        st.markdown("---")
+        st.markdown("### Correlación con log(precio)")
+        corr = pd.DataFrame({
+            'Variable': ['bathrooms', 'area', 'estrato', 'tasa_desempleo', 'rooms'],
+            'Correlación Pearson': [0.60, 0.46, 0.43, -0.20, 0.18]
+        })
+        st.dataframe(corr, use_container_width=True, hide_index=True)
+        st.info("📌 **Hallazgo:** Las variables físicas (bathrooms, area, estrato) dominan la predicción con **81.5%** de importancia conjunta. El contexto macro (tasa hipotecaria, IPC, desempleo) aporta menos del **5%**. Esto sugiere que las diferencias de precio entre ciudades están mediadas por la calidad de las viviendas que ofrece cada mercado, no por el entorno macro.")
+
+with tab5:
     st.subheader("Tabla Resumen Anual")
     res = df_p.groupby('year').agg(
         precio_mediano=('price', 'median'),
