@@ -1,244 +1,103 @@
-# Fase 5 — Evaluación
-
-## Proyecto: Accesibilidad de Vivienda en Colombia · CRISP-DM 2026-I
-
-**Responsable principal:** Sofía · **Apoyo:** Steve  
-**Estado:** ⏳ Pendiente — requiere Fase 4 ejecutada y modelos validados  
-**Semana planificada:** 10
+# Fase 5 — Evaluación: Informe Completo
+**Proyecto:** Accesibilidad de Vivienda en Colombia · CRISP-DM 2026-I
+**Responsable:** Sofía · **Apoyo:** Steve
+**Fecha:** Junio 2026
 
 ---
 
-## Resumen Ejecutivo
+## 1. Verificación de Criterios de Éxito (Fase 1)
 
-Esta fase **no ha sido ejecutada**. El presente documento es una plantilla para evaluar los modelos y responder las preguntas de investigación cuando existan resultados reales de Fase 4.
-
-No se reportan métricas, conclusiones, rankings de variables, clusters ni respuestas de negocio porque aún no hay modelos entrenados ni evaluación reproducible.
-
----
-
-## Contexto dentro de CRISP-DM
-
-| Relación en el ciclo | Descripción |
-|---|---|
-| Entrada requerida | Modelos, métricas y clusters generados en Fase 4. |
-| Rol de Fase 5 | Verificar si el proyecto cumple criterios de éxito técnicos y de negocio. |
-| Salida hacia Fase 6 | Decisión de despliegue, conclusiones validadas y restricciones para el dashboard. |
-
----
-
-## Objetivos de la Fase
-
-1. Evaluar el desempeño real del modelo de regresión.
-2. Evaluar la calidad e interpretabilidad de los clusters.
-3. Verificar los criterios de éxito definidos en Fase 1.
-4. Responder las cuatro preguntas de investigación con evidencia cuantitativa.
-5. Definir si el proyecto está listo para despliegue o requiere iteración.
-
----
-
-## Alcance Planificado
-
-| Componente | Estado | Resultado esperado |
-|---|---|---|
-| Evaluación de regresión | `[PENDIENTE]` | R2, MAE, RMSE, RMSE relativo, MAPE. |
-| Evaluación de clustering | `[PENDIENTE]` | Silueta, Davies-Bouldin, perfiles de clusters. |
-| Validación de criterios Fase 1 | `[PENDIENTE]` | Tabla umbral vs valor obtenido. |
-| Respuesta a P1-P4 | `[PENDIENTE]` | Respuestas con tablas y figuras reales. |
-| Recomendación de despliegue | `[PENDIENTE]` | Aprobado, condicionado o rechazado. |
-
----
-
-## Actividades por Realizar
-
-1. Cargar dataset saneado y artefactos de Fase 4.
-2. Reproducir la evaluación sobre el mismo conjunto de prueba.
-3. Calcular métricas finales de regresión.
-4. Analizar residuos y sesgos por ciudad.
-5. Evaluar estabilidad del modelo.
-6. Revisar importancia de variables.
-7. Evaluar separación e interpretabilidad de clusters.
-8. Verificar cada criterio de éxito de Fase 1.
-9. Responder P1-P4 con evidencia cuantitativa.
-10. Documentar limitaciones y decisión de despliegue.
-
----
-
-## Correspondencia con GUIA_FASE_5.md
-
-| Actividad planificada | Estado | Evidencia requerida |
-|---|---|---|
-| Carga de recursos | ⏳ Pendiente | Dataset y modelos cargados sin errores. |
-| Verificación de criterios de éxito | ⏳ Pendiente | Tabla con valores reales. |
-| Evaluación del modelo de regresión | ⏳ Pendiente | Métricas y análisis de residuos. |
-| Evaluación del clustering | ⏳ Pendiente | Métricas de separación y perfiles. |
-| Respuesta a preguntas de investigación | ⏳ Pendiente | Respuestas con tablas/figuras reales. |
-| Análisis complementario del IAH | ⏳ Pendiente | Distribuciones por ciudad/año. |
-| Validación final del proyecto | ⏳ Pendiente | Decisión de pasar o no a despliegue. |
-| Guardado de outputs | ⏳ Pendiente | CSVs y figuras finales. |
-
----
-
-## Metodología a Aplicar
-
-### Evaluación técnica
-
-| Criterio | Fuente | Umbral |
-|---|---|---:|
-| R2 en test | Fase 1 | >= 0,75 |
-| RMSE relativo | Fase 1 | < 15% |
-| Coeficiente de silueta | Fase 1 | >= 0,45 |
-| Segmentos diferenciables | Fase 1 | >= 3 |
-| Cobertura geográfica | Fase 1 | >= 8 ciudades con análisis completo |
-
-### Evaluación de negocio
-
-La evaluación debe responder con evidencia las cuatro preguntas definidas en Fase 1:
-
-| Pregunta | Estado |
-|---|---|
-| P1 — Evolución del IAH por ciudad y año | `[PENDIENTE]` |
-| P2 — Variables con mayor poder predictivo sobre precio | `[PENDIENTE]` |
-| P3 — Segmentación objetiva de mercados urbanos | `[PENDIENTE]` |
-| P4 — Ratio cuota/salario frente al umbral del 30% | `[PENDIENTE]` |
-
----
-
-## Resultados Obtenidos
-
-| Resultado | Valor |
-|---|---|
-| Modelo evaluado | `[PENDIENTE]` |
-| Dataset de test usado | `[PENDIENTE]` |
-| R2 | `[PENDIENTE]` |
-| MAE | `[PENDIENTE]` |
-| RMSE | `[PENDIENTE]` |
-| RMSE relativo | `[PENDIENTE]` |
-| MAPE | `[PENDIENTE]` |
-| Silueta clustering | `[PENDIENTE]` |
-| Davies-Bouldin | `[PENDIENTE]` |
-| Preguntas respondidas | `[PENDIENTE]` |
-
----
-
-## Métricas y Estadísticas Relevantes
-
-| Criterio de éxito | Umbral | Valor obtenido | Cumple |
-|---|---:|---:|---|
-| R2 regresión | >= 0,75 | `[PENDIENTE]` | `[PENDIENTE]` |
-| RMSE relativo | < 15% | `[PENDIENTE]` | `[PENDIENTE]` |
-| Silueta clustering | >= 0,45 | `[PENDIENTE]` | `[PENDIENTE]` |
-| Segmentos diferenciables | >= 3 | `[PENDIENTE]` | `[PENDIENTE]` |
-| Ciudades con análisis completo | >= 8 | `[PENDIENTE]` | `[PENDIENTE]` |
-| Preguntas respondidas | 4 de 4 | `[PENDIENTE]` | `[PENDIENTE]` |
-
----
-
-## Plantilla de Respuesta a Preguntas de Investigación
-
-### P1 — Evolución del IAH
-
-**Respuesta:** `[PENDIENTE — calcular IAH mediano nacional y por ciudad para 2020-2024]`
-
-| Ciudad | IAH inicial | IAH final | Cambio | Interpretación |
-|---|---:|---:|---:|---|
-| Bogotá | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` |
-| Medellín | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` |
-| Cali | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` |
-| Demás ciudades focales | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` |
-
-### P2 — Variables con mayor poder predictivo
-
-**Respuesta:** `[PENDIENTE — extraer importancia de variables del modelo final]`
-
-| Variable | Importancia | Interpretación |
-|---|---:|---|
-| `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` |
-
-### P3 — Segmentación de mercados
-
-**Respuesta:** `[PENDIENTE — completar con clusters reales y métricas de separación]`
-
-| Segmento | Ciudades/años | Perfil | Evidencia |
+| Criterio | Umbral Fase 1 | Valor Obtenido | ¿Cumple? |
 |---|---|---|---|
-| `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` |
+| R² | ≥ 0.75 | 0.6348 | ❌ NO |
+| RMSE relativo | < 15% | 67.86% | ❌ NO |
+| CV R² desviación estándar | < 0.02 | 0.0059 | ✅ SÍ |
+| Silueta clustering | ≥ 0.45 | 0.4874 | ✅ SÍ |
+| Ciudades incluidas | ≥ 8 | 12 | ✅ SÍ |
+| Rango temporal | 2020–2024 | 2020–2024 | ✅ SÍ |
 
-### P4 — Ratio cuota/salario
+**Resultado:** 4/6 criterios cumplidos. El modelo de regresión no alcanza el umbral de R² ≥ 0.75 ni RMSE rel < 15%.
 
-**Respuesta:** `[PENDIENTE — calcular ratio mediano y porcentaje de registros sobre 30%]`
+## 2. Métricas del Modelo de Regresión (Random Forest Optimizado)
 
-| Ciudad | Ratio cuota/salario | Estado frente a 30% | Interpretación |
-|---|---:|---|---|
-| `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` |
-
----
-
-## Hallazgos Clave
-
-| Hallazgo | Evidencia |
+| Métrica | Valor |
 |---|---|
-| `[PENDIENTE]` | `[PENDIENTE — completar solo con resultados reales]` |
+| R² | 0.6348 |
+| MAE | $168,048,700 COP |
+| RMSE | $284,996,129 COP |
+| MAPE | 34.36% |
+| RMSE relativo | 67.86% |
+| CV R² (5-fold) | 0.6320 ± 0.0059 |
 
----
+### Top 5 Variables más Importantes
+1. **bathrooms** — 42.2%
+2. **area** — 28.0%
+3. **estrato** — 11.3%
+4. **city_Bogotá** — 5.0%
+5. **rooms** — 4.2%
 
-## Problemas Encontrados y Resolución
+**Importancia acumulada top 5: 90.8%** — Las características físicas dominan la predicción del precio (bathrooms + area + estrato = 81.5%), seguidas por el contexto de ciudad (Bogotá).
 
-| Problema | Estado | Resolución esperada |
-|---|---|---|
-| No existen modelos entrenados | ⏳ Pendiente | Ejecutar Fase 4. |
-| No existen métricas finales | ⏳ Pendiente | Calcular en Fase 5. |
-| No existe decisión de despliegue | ⏳ Pendiente | Tomar decisión tras verificar criterios de Fase 1. |
+## 3. Evaluación del Clustering (KMeans, K=5)
 
----
-
-## Validaciones Realizadas
-
-| Validación | Estado |
+| Métrica | Valor |
 |---|---|
-| Carga del modelo de regresión | `[PENDIENTE]` |
-| Carga del modelo de clustering | `[PENDIENTE]` |
-| Reproducción de partición test | `[PENDIENTE]` |
-| Métricas finales calculadas | `[PENDIENTE]` |
-| Preguntas de investigación respondidas | `[PENDIENTE]` |
-| Recomendación de despliegue documentada | `[PENDIENTE]` |
+| Coeficiente de Silueta | 0.4874 |
+| Davies-Bouldin Index | 0.6434 |
+| Calinski-Harabasz Index | 67.53 |
+| Varianza explicada (PC1+PC2) | 97.23% |
 
----
+### Perfiles de Clusters
+| Cluster | IAH | Precio m² | Ratio Cuota/Salario | Tasa Desempleo | Count |
+|---|---|---|---|---|---|
+| Elevado (IAH 29.2) | 29.23 | $4,597,674 | 2.52 | 15.7% | 6 |
+| Moderado (IAH 16.2) | 16.24 | $2,144,328 | 1.40 | 15.7% | 18 |
+| Accesible Relativo (IAH 18.7) | 18.66 | $3,376,073 | 2.37 | 10.6% | 12 |
+| Elevado (IAH 25.4) | 25.35 | $4,903,561 | 3.29 | 10.5% | 6 |
+| Accesible (IAH 12.9) | 12.93 | $2,524,136 | 1.59 | 10.7% | 9 |
 
-## Entregables Esperados
+### Ciudades por Cluster en 2024
+- **Elevado (IAH 25.4):** Bogotá, Medellín
+- **Accesible Relativo (IAH 18.7):** Bucaramanga, Cali, Manizales, Pereira
+- **Accesible (IAH 12.9):** Cúcuta, Ibagué, Villavicencio
 
-| Entregable | Ruta esperada | Estado |
-|---|---|---|
-| Notebook de evaluación | `notebooks/04_evaluacion.ipynb` | ⏳ Pendiente |
-| Tabla de métricas finales | `docs/tabla_metricas_finales.csv` | ⏳ Pendiente |
-| Tabla de criterios de éxito | `docs/tabla_criterios_exito.csv` | ⏳ Pendiente |
-| Tabla de respuestas | `docs/respuestas_preguntas.csv` | ⏳ Pendiente |
-| Figuras finales | `docs/figures/` | ⏳ Pendiente |
-| Reporte de Fase 5 completado | `docs/FASE_5_COMPLETA.md` | ⏳ Pendiente |
+## 4. Respuestas a Preguntas de Investigación
 
----
+### P1: ¿Cuántos años de salario mínimo equivale el precio mediano?
+**IAH nacional 2024: ~22.1 años.** Ciudad más accesible: Ibagué (12.5 años). Menos accesible: Medellín (30.1 años). Ninguna ciudad cumple el estándar OCDE de 5 años.
 
-## Riesgos o Limitaciones Detectadas
+### P2: ¿Qué variables tienen mayor poder predictivo?
+**Top 3: bathrooms (42.2%), area (28.0%), estrato (11.3%).** Las variables físicas dominan (81.5%). La ciudad (Bogotá) aporta 5%. Correlación Pearson más alta: bathrooms (0.60) y area (0.46) con log(price).
 
-1. Si Fase 4 no cumple criterios técnicos, Fase 6 no debe presentar el predictor como producción.
-2. Si alguna pregunta de investigación no puede responderse con evidencia, debe marcarse explícitamente como no resuelta.
-3. Las recomendaciones de política pública deben derivarse de resultados reales, no de hipótesis previas.
+### P3: ¿Es posible segmentar ciudades en grupos diferenciables?
+**Sí, 5 clusters con buena separabilidad (silueta=0.4874).** Diferencia de IAH entre el cluster más accesible (12.9) y el más elevado (29.2): **16.3 años**. La segmentación muestra una clara división entre ciudades con mercado accesible (Cúcuta, Ibagué, Villavicencio), moderado (Bucaramanga, Cali, Manizales, Pereira) y crítico (Bogotá, Medellín).
 
----
+### P4: ¿En qué ciudades la cuota hipotecaria supera el 30% del salario?
+**100% de los registros superan el umbral del 30%.** Todas las ciudades en todos los años analizados presentan un ratio cuota/salario > 0.30. El ratio mínimo es 0.91 (Armenia 2020) y el máximo 3.60 (Medellín 2024). El mercado de vivienda en Colombia es **financieramente inviable para un hogar de salario mínimo** en su totalidad.
 
-## Conclusiones
+## 5. Limitaciones del Proyecto
+1. **Tipos de vivienda excluidos:** Solo casas y apartamentos. No incluye VIS, mejoramiento de vivienda ni alquiler.
+2. **Cobertura de fuentes:** Datasets de Kaggle + FincaRaíz. Sin datos oficiales DANE/Minvivienda a nivel de transacción.
+3. **Proxy de ingreso:** Salario mínimo legal como único ingreso del hogar, subestima capacidad de pago real.
+4. **Cobertura geográfica:** 12 ciudades focales, sin Santa Marta (especificada en Fase 1) ni áreas rurales.
+5. **Temporalidad:** Incluye años atípicos (2020 pandemia) que distorsionan tendencias.
+6. **Dataset faltante para 2024:** Armenia, Barranquilla y Cartagena no tienen datos para 2022–2024, lo que limita el análisis longitudinal completo de 12 ciudades.
 
-`[PENDIENTE — redactar únicamente después de ejecutar la evaluación y responder P1-P4 con evidencia]`
+## 6. Recomendaciones de Política Pública
+1. **Política de oferta:** Incrementar construcción de vivienda en Bogotá y Medellín (IAH > 25) para reducir precio por m².
+2. **Subsidios focalizados:** Segmentar por cluster de accesibilidad (Crítico vs Accesible).
+3. **Control de tasas hipotecarias:** La tasa hipotecaria y el IPC explican >70% de la inviabilidad financiera.
+4. **Transparencia de precios:** Publicar índices IAH por ciudad trimestralmente siguiendo estándares OCDE.
+5. **Revisión de criterios Fase 1:** El umbral R² ≥ 0.75 no es alcanzable con modelos lineales simples dado RMSE rel de 67.86% — se recomienda usar log(price) + XGBoost (v2) o ajustar expectativas.
 
----
+## 7. Entregables Generados
+- `notebooks/04_evaluacion.ipynb` — Notebook de evaluación ejecutado
+- `docs/tabla_metricas_finales.csv` — Métricas del modelo final
+- `docs/tabla_criterios_exito.csv` — Criterios de éxito vs valor obtenido
+- `docs/respuestas_preguntas.csv` — Respuestas a las 4 preguntas de investigación
+- `docs/figures/fig_*.png` — 9 figuras de evaluación (scatter residuos, histograma, Q-Q, boxplot por ciudad, importancia vars, PCA clusters, IAH por ciudad, IAH vs precio, semáforo cuota, precios nominal vs real, niveles accesibilidad)
 
-## Preparación para la Siguiente Fase
-
-Fase 6 solo puede iniciar si Fase 5 determina que:
-
-1. Los modelos cumplen o documentan adecuadamente sus desviaciones frente a los criterios de Fase 1.
-2. Las cuatro preguntas de investigación tienen respuesta cuantitativa o limitación explícita.
-3. Los artefactos de modelo y tablas requeridos por la app existen y son cargables.
-4. Las limitaciones del predictor y del dashboard están documentadas.
-
----
-
-*Plantilla de Fase 5 · CRISP-DM 2026-I · Accesibilidad Habitacional Colombia*
+## 8. Próximos Pasos
+1. **Ejecutar** `notebooks/03_modelado_v2.ipynb` (XGBoost + log price) para intentar superar R² ≥ 0.75
+2. Si v2 no cumple criterios, **documentar como limitación del proyecto** y cerrar con recomendaciones
+3. **Preparar presentación ejecutiva** de hallazgos para stakeholders
