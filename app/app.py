@@ -77,7 +77,7 @@ fig_map = px.scatter_mapbox(
     title="Mapa de Propiedades por Precio"
 )
 fig_map.update_layout(mapbox_style="carto-darkmatter", margin=dict(l=0, r=0, t=30, b=0))
-st.plotly_chart(fig_map, use_container_width=True)
+st.plotly_chart(fig_map, width='stretch')
 
 st.markdown("---")
 st.subheader("Vista Rápida del Dataset")

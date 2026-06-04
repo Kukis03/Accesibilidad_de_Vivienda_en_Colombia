@@ -37,14 +37,14 @@ with tab1:
     fig.add_vline(x=10, line_dash="dot", line_color="orange", annotation_text="Moderado OCDE")
     fig.add_vline(x=20, line_dash="dot", line_color="red", annotation_text="Crítico")
     fig.update_layout(xaxis_title="IAH (años de salario mínimo)", yaxis_title="Precio por m² (COP)")
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width='stretch')
 
     st.subheader("Proyección PCA")
     fig2 = px.scatter(df_cluster, x='PC1', y='PC2', color='cluster_name',
                       hover_name='city', hover_data={'year': True, 'IAH':True, 'precio_m2':True},
                       color_discrete_sequence=px.colors.qualitative.Set2,
                       title="PCA de Clusters (97.2% varianza explicada)")
-    st.plotly_chart(fig2, use_container_width=True)
+    st.plotly_chart(fig2, width='stretch')
 
 with tab2:
     st.subheader("Evolución de Clusters por Ciudad")
@@ -56,7 +56,7 @@ with tab2:
                      labels=dict(x="Año", y="Ciudad", color="Cluster"),
                      title="Mapa de Clusters por Ciudad y Año")
     fig3.update_layout(height=500)
-    st.plotly_chart(fig3, use_container_width=True)
+    st.plotly_chart(fig3, width='stretch')
 
     st.markdown("**Leyenda de clusters:**")
     for k, v in cluster_names.items():
@@ -67,7 +67,7 @@ with tab2:
     df_2024 = df_cluster[df_cluster['year'] == 2024][['city', 'cluster_name']].rename(columns={'cluster_name': 'cluster_2024'})
     trans = df_2020.merge(df_2024, on='city')
     trans['cambio'] = trans['cluster_2020'] != trans['cluster_2024']
-    st.dataframe(trans, use_container_width=True, hide_index=True)
+    st.dataframe(trans, width='stretch', hide_index=True)
     n_cambio = trans['cambio'].sum()
     st.info(f"{n_cambio} de {len(trans)} ciudades cambiaron de cluster entre 2020 y 2024.")
 
@@ -80,7 +80,7 @@ with tab3:
     perfiles_display['tasa_desempleo'] = perfiles_display['tasa_desempleo'].apply(lambda x: f"{x:.1f}%")
     perfiles_display.index = perfiles_display.index.map(cluster_names)
     perfiles_display.index.name = "Cluster"
-    st.dataframe(perfiles_display, use_container_width=True)
+    st.dataframe(perfiles_display, width='stretch')
 
     st.subheader("Radar Comparativo de Clusters")
     df_radar = perfiles.copy()
@@ -90,7 +90,7 @@ with tab3:
         fig4.add_trace(go.Scatterpolar(r=row.values, theta=df_radar_norm.columns,
                                        fill='toself', name=cluster_names.get(idx, str(idx))))
     fig4.update_layout(polar=dict(radialaxis=dict(visible=True, range=[0, 1])), title="Perfil Normalizado de Clusters")
-    st.plotly_chart(fig4, use_container_width=True)
+    st.plotly_chart(fig4, width='stretch')
 
     st.markdown("---")
     st.caption("**Metodología:** Clustering KMeans con K=5 sobre 4 variables estandarizadas "

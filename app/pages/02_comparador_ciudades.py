@@ -49,7 +49,7 @@ with tab1:
     tabla['area_med'] = tabla['area_med'].round(0).astype(int)
     tabla['estrato_med'] = tabla['estrato_med'].round(1)
     tabla['desempleo'] = tabla['desempleo'].apply(lambda x: f"{x:.1f}%")
-    st.dataframe(tabla, use_container_width=True, hide_index=True)
+    st.dataframe(tabla, width='stretch', hide_index=True)
 
     st.info(f"Registros disponibles en {anio_sel}: " + ", ".join([f"{r['city']}: {r['n']:,}" for _, r in tabla.iterrows()]))
     if any(tabla['n'] < 500):
@@ -60,7 +60,7 @@ with tab2:
     fig1 = px.bar(tabla.sort_values('precio_mediano', ascending=True), x='precio_mediano', y='city', orientation='h',
                   title=f"Precio Mediano por Ciudad ({anio_sel})", color='IAH', color_continuous_scale='RdYlGn_r')
     fig1.update_layout(xaxis_title="Precio Mediano (COP)")
-    st.plotly_chart(fig1, use_container_width=True)
+    st.plotly_chart(fig1, width='stretch')
 
     st.subheader("Evolución del IAH")
     df_evol = df[df['city'].isin(ciudades_sel)].groupby(['city', 'year'])['IAH'].median().reset_index()
@@ -70,10 +70,10 @@ with tab2:
     fig2.add_hline(y=10, line_dash="dash", line_color="orange", annotation_text="OCDE 10")
     fig2.add_hline(y=20, line_dash="dash", line_color="red", annotation_text="Crítico 20")
     fig2.update_layout(xaxis=dict(dtick=1))
-    st.plotly_chart(fig2, use_container_width=True)
+    st.plotly_chart(fig2, width='stretch')
 
     st.subheader("Distribución de Precios")
     fig3 = px.box(df_comp, x='city', y='price', color='city',
                   title=f"Distribución de Precios por Ciudad ({anio_sel})",
                   labels={'price': 'Precio (COP)', 'city': 'Ciudad'})
-    st.plotly_chart(fig3, use_container_width=True)
+    st.plotly_chart(fig3, width='stretch')

@@ -38,7 +38,7 @@ with tab1:
     fig.add_hline(y=10, line_dash="dash", line_color="orange", annotation_text="Moderado OCDE (10)")
     fig.add_hline(y=20, line_dash="dash", line_color="red", annotation_text="Crítico (20)")
     fig.update_layout(yaxis_title="IAH (años de salario mínimo)", xaxis=dict(dtick=1))
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width='stretch')
 
     st.subheader("Salario Mínimo vs Precio Mediano")
     sal_anual = df_plot.groupby('year').agg(precio_mediano=('price','median'), salario=('salario_anual','first')).reset_index()
@@ -47,7 +47,7 @@ with tab1:
     fig2.add_trace(go.Scatter(x=sal_anual['year'], y=sal_anual['salario']/1e6, mode='lines+markers', name='Salario Anual (Millones COP)', yaxis='y2'))
     fig2.update_layout(yaxis=dict(title="Precio Mediano (Millones COP)"), yaxis2=dict(title="Salario Anual (Millones COP)", overlaying='y', side='right'),
                        title=f"Precio vs Salario por Año{titulo}", xaxis=dict(dtick=1))
-    st.plotly_chart(fig2, use_container_width=True)
+    st.plotly_chart(fig2, width='stretch')
 
 with tab2:
     st.subheader(f"Indicadores Macroeconómicos{titulo}")
@@ -55,7 +55,7 @@ with tab2:
     fig3 = px.line(macro, x='year', y=['tasa_hipotecaria_anual', 'ipc_var_anual', 'tasa_desempleo'], markers=True,
                    title="Tasa Hipotecaria, IPC y Desempleo", labels={'value': '%', 'variable': 'Indicador'})
     fig3.update_layout(xaxis=dict(dtick=1))
-    st.plotly_chart(fig3, use_container_width=True)
+    st.plotly_chart(fig3, width='stretch')
 
     st.subheader("Precio Nominal vs Real")
     precios = df_plot.groupby('year').agg(nominal=('price','median'), real=('precio_real','median')).reset_index()
@@ -63,7 +63,7 @@ with tab2:
                    title="Precio Mediano: Nominal vs Ajustado por Inflación",
                    labels={'value': 'Precio (COP)', 'variable': 'Tipo'})
     fig4.update_layout(xaxis=dict(dtick=1))
-    st.plotly_chart(fig4, use_container_width=True)
+    st.plotly_chart(fig4, width='stretch')
 
 with tab3:
     st.subheader(f"Distribución de Niveles de Accesibilidad{titulo}")
@@ -75,7 +75,7 @@ with tab3:
                   color_discrete_map={'Accesible': 'green', 'Moderado': 'yellow', 'Elevado': 'orange', 'Crítico': 'red'},
                   category_orders={"nivel_accesibilidad": ["Accesible", "Moderado", "Elevado", "Crítico"]})
     fig5.update_layout(xaxis=dict(dtick=1), yaxis_title="%")
-    st.plotly_chart(fig5, use_container_width=True)
+    st.plotly_chart(fig5, width='stretch')
 
     if ciudad_sel == "Todas":
         st.subheader("Composición por Ciudad (2024)")
@@ -87,7 +87,7 @@ with tab3:
                       labels={'pct': '%', 'city': 'Ciudad'},
                       color_discrete_map={'Accesible': 'green', 'Moderado': 'yellow', 'Elevado': 'orange', 'Crítico': 'red'},
                       category_orders={"nivel_accesibilidad": ["Accesible", "Moderado", "Elevado", "Crítico"]})
-        st.plotly_chart(fig6, use_container_width=True)
+        st.plotly_chart(fig6, width='stretch')
 
 with tab4:
     st.subheader("Tabla Resumen Anual")
@@ -102,4 +102,4 @@ with tab4:
     resumen['precio_m2'] = resumen['precio_m2'].apply(lambda x: f"${x:,.0f}")
     resumen['IAH'] = resumen['IAH'].round(1)
     resumen['ratio_cuota'] = resumen['ratio_cuota'].round(2)
-    st.dataframe(resumen, use_container_width=True, hide_index=True)
+    st.dataframe(resumen, width='stretch', hide_index=True)

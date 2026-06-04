@@ -46,15 +46,17 @@ with st.form("predictor_form"):
         banos = st.number_input("Baños", min_value=1, max_value=8, value=2, step=1)
     with col3:
         anio = st.selectbox("Año", anios, index=len(anios)-1)
-    submitted = st.form_submit_button("Estimar Precio", type="primary", use_container_width=True)
+    submitted = st.form_submit_button("Estimar Precio", type="primary")
 
 if submitted:
     with st.spinner("Estimando precio..."):
         macro_row = macro_vars[(macro_vars['city'] == ciudad) & (macro_vars['year'] == anio)]
         if macro_row.empty:
-            # Fallback: promedio de todas las ciudades para ese año
-            macro_row = macro_vars[macro_vars['year'] == anio].mean().to_frame().T
-            macro_row['city'] = ciudad
+            macro_cols_num = ['ipc_var_anual', 'tasa_hipotecaria_anual', 'tasa_desempleo', 'ipvu_variacion_anual', 'salario_anual']
+            macro_fallback = macro_vars[macro_vars['year'] == anio][macro_cols_num].mean()
+            macro_fallback['city'] = ciudad
+            macro_fallback['year'] = anio
+            macro_row = macro_fallback.to_frame().T
 
         X_input = pd.DataFrame([{
             'area': area, 'rooms': habitaciones, 'bathrooms': banos,
