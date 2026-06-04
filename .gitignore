@@ -9,9 +9,7 @@ build/
 #data/raw/
 #data/processed/
 
-# Modelos (generados por Fase 4)
-models/*.pkl
-!models/.gitkeep
+# Modelos (trackeados via Git LFS)
 
 # Entorno
 .env
