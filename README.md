@@ -4,7 +4,7 @@ Proyecto académico de ciencia de datos para analizar la accesibilidad económic
 
 El proyecto parte de la definición de negocio documentada en [docs/FASE_1_COMPLETA.md](docs/FASE_1_COMPLETA.md): construir un **Indice de Accesibilidad Habitacional (IAH)**, integrar fuentes inmobiliarias y macroeconómicas, entrenar modelos de regresión y clustering, evaluar los resultados contra criterios de éxito y desplegar un dashboard interactivo.
 
-> **Estado actual:** Fases 1, 2 y 3 documentadas. Fases 4, 5 y 6 no han sido ejecutadas; sus documentos son plantillas con campos `[PENDIENTE]`. No hay modelos serializados en `models/` ni URL de producción verificada.
+> **Estado actual:** Proyecto completo (Fases 1–6 ejecutadas). Dashboard Streamlit desplegado. Modelo RF (R²=0.6348) y clustering KMeans K=5 (silueta=0.4874) disponibles en `models/`. Documentación completa en `docs/`. URL del dashboard pendiente de despliegue en Streamlit Cloud.
 
 ---
 
@@ -15,9 +15,9 @@ El proyecto parte de la definición de negocio documentada en [docs/FASE_1_COMPL
 | 1 | Comprensión del negocio | Steve | Completa | [docs/FASE_1_COMPLETA.md](docs/FASE_1_COMPLETA.md) |
 | 2 | Comprensión de los datos | Sofía | Completa | [docs/FASE_2_COMPLETA.md](docs/FASE_2_COMPLETA.md) |
 | 3 | Preparación de los datos | Kukis | Completa; CSV validado para Fase 4 con observación de alcance | [docs/FASE_3_COMPLETA.md](docs/FASE_3_COMPLETA.md) |
-| 4 | Modelado | Steve | Pendiente | [docs/FASE_4_COMPLETA.md](docs/FASE_4_COMPLETA.md) |
-| 5 | Evaluación | Sofía | Pendiente | [docs/FASE_5_COMPLETA.md](docs/FASE_5_COMPLETA.md) |
-| 6 | Despliegue | Kukis | Pendiente | [docs/FASE_6_COMPLETA.md](docs/FASE_6_COMPLETA.md) |
+| 4 | Modelado | Steve | Completa (R²=0.6348, RF+KMeans+DBSCAN+PCA) | [docs/FASE_4_COMPLETA.md](docs/FASE_4_COMPLETA.md) |
+| 5 | Evaluación | Sofía | Completa (4/6 criterios, respuestas a preguntas) | [docs/FASE_5_COMPLETA.md](docs/FASE_5_COMPLETA.md) |
+| 6 | Despliegue | Kukis | Completa (dashboard Streamlit local) | [docs/FASE_6_COMPLETA.md](docs/FASE_6_COMPLETA.md) |
 
 ---
 
@@ -32,7 +32,7 @@ El proyecto parte de la definición de negocio documentada en [docs/FASE_1_COMPL
 3. Segmentar mercados urbanos mediante clustering no supervisado.
 4. Calcular y analizar el ratio cuota/salario frente al umbral financiero del 30%.
 
-Los objetivos 2, 3 y la validación final permanecen pendientes hasta ejecutar las Fases 4 y 5.
+Los objetivos 2, 3 y 4 fueron completados en Fases 4 y 5. Ver `docs/FASE_4_COMPLETA.md` y `docs/FASE_5_COMPLETA.md` para resultados detallados.
 
 ---
 
@@ -99,8 +99,8 @@ Accesibilidad_de_Vivienda_en_Colombia/
 | Hallazgos de preparación | `docs/HALLAZGOS_FASE_3.md` | Disponible |
 | Reporte de limpieza | `data/processed/reporte_limpieza.csv` | Disponible |
 | Dataset integrado | `data/processed/vivienda_colombia_limpio.csv` | Validado: 282.660 registros × 26 columnas |
-| Modelos entrenados | `models/*.pkl` | Pendiente |
-| Dashboard público | URL Streamlit | Pendiente |
+| Modelos entrenados | `models/*.pkl` | RF (R²=0.6348), KMeans K=5 (silueta=0.4874) |
+| Dashboard Streamlit | `app/app.py` | 4 páginas: Nacional, Comparador, Predictor, Segmentos |
 
 ### Observación sobre el dataset procesado
 
@@ -112,9 +112,10 @@ El archivo `data/processed/vivienda_colombia_limpio.csv` fue verificado sin marc
 
 ## Instalación local
 
-1. Clonar el repositorio:
+1. Clonar el repositorio (requiere Git LFS):
 
 ```bash
+git lfs install
 git clone https://github.com/AlexanderPineda25/Accesibilidad_de_Vivienda_en_Colombia
 cd Accesibilidad_de_Vivienda_en_Colombia
 ```
@@ -142,16 +143,18 @@ La app puede abrir sin modelo, pero el predictor de precios permanecerá deshabi
 
 ---
 
-## Criterios de éxito pendientes de evaluación
+## Criterios de éxito — Resultados Finales
 
-| Criterio | Umbral definido en Fase 1 | Estado |
-|---|---:|---|
-| R2 en test para regresión | >= 0,75 | `[PENDIENTE]` |
-| RMSE relativo | < 15% | `[PENDIENTE]` |
-| Coeficiente de silueta | >= 0,45 | `[PENDIENTE]` |
-| Segmentos diferenciables | >= 3 | `[PENDIENTE]` |
-| Preguntas de investigación respondidas | 4 de 4 | `[PENDIENTE]` |
-| Dashboard funcional | filtros ciudad/año/tipo + predictor | `[PENDIENTE]` |
+| Criterio | Umbral Fase 1 | Valor Obtenido | ¿Cumple? |
+|---|---:|---:|---|
+| R2 en test para regresión | >= 0,75 | 0.6348 | ❌ |
+| RMSE relativo | < 15% | 67.86% | ❌ |
+| Coeficiente de silueta | >= 0,45 | 0.4874 | ✅ |
+| Segmentos diferenciables | >= 3 | 5 clusters | ✅ |
+| Preguntas de investigación respondidas | 4 de 4 | 4/4 respondidas | ✅ |
+| Dashboard funcional | filtros + predictor | 4 páginas operativas | ✅ |
+
+Ver `docs/tabla_criterios_exito.csv` para detalle completo.
 
 ---
 

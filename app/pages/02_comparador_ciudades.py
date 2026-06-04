@@ -1,140 +1,79 @@
 import streamlit as st
 import pandas as pd
+import numpy as np
 import plotly.express as px
-import os
+import plotly.graph_objects as go
 
-st.set_page_config(page_title="Comparador de Ciudades", page_icon="📊", layout="wide")
-st.title("📊 Comparador Inmobiliario de Ciudades")
+st.set_page_config(page_title="Comparador de Ciudades", page_icon="🏙️", layout="wide")
+st.title("Comparador de Ciudades")
+st.markdown("Compara indicadores de accesibilidad entre ciudades.")
 
-# ── Carga de datos ────────────────────────────────────────────────────────────
 @st.cache_data
-def cargar_datos():
-    ruta = os.path.join(
-        os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
-        'data', 'processed', 'vivienda_colombia_limpio.csv'
-    )
-    if os.path.exists(ruta):
-        return pd.read_csv(ruta, encoding='utf-8-sig', low_memory=False), ruta
-    return pd.DataFrame(), ruta
+def load_data():
+    return pd.read_csv("data/processed/vivienda_colombia_limpio.csv", encoding="utf-8-sig")
 
-df, ruta_buscada = cargar_datos()
-
-if df.empty:
-    st.error("⚠️ No se encontró el archivo de datos. Completa la Fase 3 primero.")
-    st.info(f"Ruta esperada: `{os.path.normpath(ruta_buscada)}`")
-    st.stop()
-
-# ── Selección de ciudades y año ───────────────────────────────────────────────
+df = load_data()
 ciudades = sorted(df['city'].unique())
-año_max  = int(df['year'].max())
-año_min  = int(df['year'].min())
+anios = sorted(df['year'].unique())
 
-col_c1, col_c2, col_c3 = st.columns([2, 2, 1])
-with col_c1:
-    c1 = st.selectbox("Ciudad A", ciudades, index=0)
-with col_c2:
-    c2 = st.selectbox("Ciudad B", ciudades, index=1 if len(ciudades) > 1 else 0)
-with col_c3:
-    año_sel = st.selectbox("Año de comparación", sorted(df['year'].unique(), reverse=True))
+col1, col2 = st.columns(2)
+with col1:
+    ciudades_sel = st.multiselect("Seleccionar ciudades (máx 4)", ciudades, default=ciudades[:3], max_selections=4)
+with col2:
+    anio_sel = st.select_slider("Año", options=anios, value=anios[-1])
 
-if c1 == c2:
-    st.warning("Selecciona dos ciudades diferentes para comparar.")
+if len(ciudades_sel) < 2:
+    st.warning("Selecciona al menos 2 ciudades para comparar.")
     st.stop()
 
-# ── KPIs comparativos ─────────────────────────────────────────────────────────
-df_comp = df[df['city'].isin([c1, c2]) & (df['year'] == año_sel)]
+df_comp = df[(df['city'].isin(ciudades_sel)) & (df['year'] == anio_sel)]
 
-# Advertencia si poca muestra
-for ciudad in [c1, c2]:
-    n = len(df_comp[df_comp['city'] == ciudad])
-    if n < 500:
-        st.warning(f"⚠️ {ciudad} tiene solo {n} registros en {año_sel}. Las métricas pueden no ser representativas.")
+tab1, tab2 = st.tabs(["Tabla Comparativa", "Gráficos"])
 
-if df_comp.empty:
-    st.warning(f"No hay datos disponibles para {año_sel}. Prueba con otro año.")
-    st.stop()
+with tab1:
+    st.subheader(f"Comparación {anio_sel}")
+    tabla = df_comp.groupby('city').agg(
+        precio_mediano=('price', 'median'),
+        precio_m2=('precio_m2', 'median'),
+        IAH=('IAH', 'median'),
+        ratio_cuota=('ratio_cuota_salario', 'median'),
+        area_med=('area', 'median'),
+        estrato_med=('estrato', 'median'),
+        desempleo=('tasa_desempleo', 'first'),
+        n=('price', 'count')
+    ).reset_index()
+    tabla['precio_mediano'] = tabla['precio_mediano'].apply(lambda x: f"${x:,.0f}")
+    tabla['precio_m2'] = tabla['precio_m2'].apply(lambda x: f"${x:,.0f}")
+    tabla['IAH'] = tabla['IAH'].round(1)
+    tabla['ratio_cuota'] = tabla['ratio_cuota'].round(2)
+    tabla['area_med'] = tabla['area_med'].round(0).astype(int)
+    tabla['estrato_med'] = tabla['estrato_med'].round(1)
+    tabla['desempleo'] = tabla['desempleo'].apply(lambda x: f"{x:.1f}%")
+    st.dataframe(tabla, use_container_width=True, hide_index=True)
 
-st.subheader(f"Métricas clave — {año_sel}")
-col_m1, col_m2 = st.columns(2)
+    st.info(f"Registros disponibles en {anio_sel}: " + ", ".join([f"{r['city']}: {r['n']:,}" for _, r in tabla.iterrows()]))
+    if any(tabla['n'] < 500):
+        st.warning("Alguna(s) ciudad(es) tiene(n) < 500 registros - las estimaciones pueden ser inestables.")
 
-def metricas_ciudad(col, ciudad, df_comp):
-    sub = df_comp[df_comp['city'] == ciudad]
-    with col:
-        st.markdown(f"### 🏙️ {ciudad}")
-        m1, m2 = st.columns(2)
-        m1.metric("Precio Mediano", f"${sub['price'].median()/1e6:.1f}M COP")
-        m2.metric("Precio/m² Mediano", f"${sub['precio_m2'].median()/1e6:.2f}M")
-        m3, m4 = st.columns(2)
-        m3.metric("IAH Mediano", f"{sub['IAH'].median():.1f} años")
-        m4.metric("Ratio Cuota/Salario", f"{sub['ratio_cuota_salario'].median()*100:.1f}%")
+with tab2:
+    st.subheader("Precio Mediano por Ciudad")
+    fig1 = px.bar(tabla.sort_values('precio_mediano', ascending=True), x='precio_mediano', y='city', orientation='h',
+                  title=f"Precio Mediano por Ciudad ({anio_sel})", color='IAH', color_continuous_scale='RdYlGn_r')
+    fig1.update_layout(xaxis_title="Precio Mediano (COP)")
+    st.plotly_chart(fig1, use_container_width=True)
 
-metricas_ciudad(col_m1, c1, df_comp)
-metricas_ciudad(col_m2, c2, df_comp)
+    st.subheader("Evolución del IAH")
+    df_evol = df[df['city'].isin(ciudades_sel)].groupby(['city', 'year'])['IAH'].median().reset_index()
+    fig2 = px.line(df_evol, x='year', y='IAH', color='city', markers=True,
+                   title="IAH Mediano 2020-2024")
+    fig2.add_hline(y=5, line_dash="dash", line_color="green", annotation_text="OCDE 5")
+    fig2.add_hline(y=10, line_dash="dash", line_color="orange", annotation_text="OCDE 10")
+    fig2.add_hline(y=20, line_dash="dash", line_color="red", annotation_text="Crítico 20")
+    fig2.update_layout(xaxis=dict(dtick=1))
+    st.plotly_chart(fig2, use_container_width=True)
 
-st.write("---")
-
-# ── Gráfico 1: Boxplot ratio cuota/salario ────────────────────────────────────
-col_g1, col_g2 = st.columns(2)
-
-with col_g1:
-    st.subheader(f"Esfuerzo de Cuota Mensual — {año_sel}")
-    fig_box = px.box(
-        df_comp, x='city', y='ratio_cuota_salario', color='property_type',
-        labels={'ratio_cuota_salario': 'Cuota / Salario', 'city': 'Ciudad', 'property_type': 'Tipo'},
-        title="Proporción de la cuota hipotecaria sobre el salario mínimo"
-    )
-    fig_box.add_hline(y=0.30, line_dash="dash", line_color="red",
-                      annotation_text="Límite recomendado (30%)")
-    st.plotly_chart(fig_box, use_container_width=True)
-
-with col_g2:
-    st.subheader("Distribución de Precios por Tipo")
-    fig_violin = px.violin(
-        df_comp, x='city', y='price', color='property_type',
-        box=True,
-        labels={'price': 'Precio (COP)', 'city': 'Ciudad', 'property_type': 'Tipo'},
-        title=f"Distribución de precios de venta — {año_sel}"
-    )
-    st.plotly_chart(fig_violin, use_container_width=True)
-
-# ── Gráfico 2: Evolución del IAH en período completo ─────────────────────────
-st.subheader(f"Evolución del IAH — {c1} vs {c2} (período completo)")
-iah_evol = (
-    df[df['city'].isin([c1, c2])]
-    .groupby(['year', 'city'])['IAH']
-    .median()
-    .reset_index()
-)
-fig_linea = px.line(
-    iah_evol, x='year', y='IAH', color='city', markers=True,
-    labels={'IAH': 'IAH mediano (años)', 'year': 'Año', 'city': 'Ciudad'},
-    title="Años de salario mínimo necesarios para comprar vivienda"
-)
-fig_linea.add_hline(y=10, line_dash="dash", line_color="orange",
-                    annotation_text="Seriamente inaccesible OCDE (≥ 10)")
-fig_linea.update_layout(xaxis=dict(dtick=1))
-st.plotly_chart(fig_linea, use_container_width=True)
-
-# ── Tabla comparativa ─────────────────────────────────────────────────────────
-st.subheader("Tabla Comparativa Completa")
-resumen = (
-    df_comp
-    .groupby('city')
-    .agg(
-        Registros=('price', 'count'),
-        Precio_Mediano=('price', 'median'),
-        Precio_m2_Mediano=('precio_m2', 'median'),
-        IAH_Mediano=('IAH', 'median'),
-        Ratio_Cuota=('ratio_cuota_salario', 'median'),
-        Tasa_Desempleo=('tasa_desempleo', 'first'),
-    )
-    .reset_index()
-)
-resumen['Precio_Mediano']   = resumen['Precio_Mediano'].apply(lambda x: f"${x/1e6:.1f}M COP")
-resumen['Precio_m2_Mediano']= resumen['Precio_m2_Mediano'].apply(lambda x: f"${x/1e6:.2f}M/m²")
-resumen['IAH_Mediano']      = resumen['IAH_Mediano'].apply(lambda x: f"{x:.1f} años")
-resumen['Ratio_Cuota']      = resumen['Ratio_Cuota'].apply(lambda x: f"{x*100:.1f}%")
-resumen['Tasa_Desempleo']   = resumen['Tasa_Desempleo'].apply(lambda x: f"{x:.1f}%")
-resumen.columns = ['Ciudad', 'Registros', 'Precio Mediano', 'Precio/m²',
-                   'IAH Mediano', 'Ratio Cuota/Salario', 'Tasa Desempleo']
-st.dataframe(resumen.set_index('Ciudad'), use_container_width=True)
+    st.subheader("Distribución de Precios")
+    fig3 = px.box(df_comp, x='city', y='price', color='city',
+                  title=f"Distribución de Precios por Ciudad ({anio_sel})",
+                  labels={'price': 'Precio (COP)', 'city': 'Ciudad'})
+    st.plotly_chart(fig3, use_container_width=True)

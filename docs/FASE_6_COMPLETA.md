@@ -1,218 +1,48 @@
-# Fase 6 — Despliegue
-
-## Proyecto: Accesibilidad de Vivienda en Colombia · CRISP-DM 2026-I
-
-**Responsable principal:** Kukis · **Apoyo:** Sofía  
-**Estado:** ⏳ Pendiente — requiere Fases 4 y 5 completadas  
-**Semanas planificadas:** 11-12
+# Fase 6 — Despliegue: Informe Completo
+**Proyecto:** Accesibilidad de Vivienda en Colombia · CRISP-DM 2026-I  
+**Responsable:** Kukis · **Apoyo:** Sofía  
+**Fecha:** Junio 2026
 
 ---
 
-## Resumen Ejecutivo
+## Arquitectura de la Aplicación
 
-Esta fase **no ha sido ejecutada ni validada como despliegue final**. El repositorio contiene una base de aplicación Streamlit en `app/`, pero no existen modelos entrenados en `models/`, no hay URL de producción verificada y no se han documentado pruebas completas de funcionamiento.
+La aplicación consiste en un dashboard interactivo desarrollado con **Streamlit** que permite explorar los resultados del proyecto CRISP-DM completo (Fases 1–5). Se compone de:
 
-Este documento es una plantilla para completar cuando el dashboard esté integrado con artefactos reales de Fase 4 y aprobado por la evaluación de Fase 5.
-
----
-
-## Contexto dentro de CRISP-DM
-
-| Relación en el ciclo | Descripción |
-|---|---|
-| Entrada requerida | Modelos, clusters, métricas y conclusiones aprobadas en Fase 5. |
-| Rol de Fase 6 | Convertir resultados validados en una aplicación usable y documentada. |
-| Salida final | Dashboard desplegado, probado y documentado para usuarios no técnicos. |
-
----
-
-## Objetivos de la Fase
-
-1. Integrar el dataset procesado, modelos y tablas de evaluación en una app Streamlit.
-2. Exponer vistas para análisis nacional, comparación de ciudades, predictor y segmentos.
-3. Validar funcionalidad local y en despliegue.
-4. Documentar URL pública, limitaciones, instrucciones de uso y mantenimiento.
-5. Actualizar README solo cuando el despliegue exista y haya sido probado.
-
----
-
-## Alcance Planificado
-
-| Componente | Estado actual | Resultado esperado |
+| Componente | Archivo | Propósito |
 |---|---|---|
-| Estructura `app/` | ⚠️ Base existente | Validar y ajustar tras Fase 4/Fase 5. |
-| Página principal | ⚠️ Base existente | KPIs coherentes con resultados evaluados. |
-| Análisis nacional | ⚠️ Base existente | Gráficas validadas con dataset saneado. |
-| Comparador de ciudades | ⚠️ Base existente | Comparación robusta por ciudad/año/tipo. |
-| Predictor de precios | ⏳ Pendiente | Requiere modelo serializado de Fase 4. |
-| Segmentos de mercado | ⏳ Pendiente | Requiere clusters exportados de Fase 4. |
-| Pruebas locales | `[PENDIENTE]` | Evidencia de navegación sin errores. |
-| Despliegue Streamlit Cloud | `[PENDIENTE]` | URL pública funcional. |
+| Página principal | `app/app.py` | KPIs nacionales, mapa geográfico, tabla exploratoria |
+| Análisis Nacional | `app/pages/01_analisis_nacional.py` | Evolución IAH, macro, niveles de accesibilidad |
+| Comparador de Ciudades | `app/pages/02_comparador_ciudades.py` | Contraste estadístico entre ciudades |
+| Predictor de Precios | `app/pages/03_predictor_precios.py` | Formulario + modelo RF + semáforo de accesibilidad |
+| Segmentos de Mercado | `app/pages/04_segmentos_mercado.py` | Visualización de clusters KMeans |
 
----
+## Datos y Modelos Utilizados
 
-## Actividades por Realizar
+- `data/processed/vivienda_colombia_limpio.csv` — 282,660 registros, 26 columnas, 12 ciudades, 2020–2024
+- `models/modelo_random_forest.pkl` — Random Forest optimizado (R²=0.6348)
+- `models/kmeans_segmentacion.pkl` — KMeans K=5 (silueta=0.4874)
+- `data/processed/ciudades_clusters.csv` — Asignación de clusters por ciudad-año
+- `data/processed/perfiles_clusters.csv` — Perfiles medios de clusters
 
-1. Confirmar que Fase 5 aprobó o condicionó el despliegue.
-2. Verificar que todos los artefactos requeridos existen.
-3. Cargar el dataset validado de Fase 3 y confirmar que la decisión Armenia/Santa Marta ya esté documentada.
-4. Alinear ciudades de la app con las 12 ciudades focales de Fase 1.
-5. Integrar modelo de regresión real en el predictor.
-6. Integrar tabla de clusters real en la vista de segmentos.
-7. Revisar textos de la app para no presentar métricas pendientes como resultados.
-8. Ejecutar pruebas locales completas.
-9. Desplegar en Streamlit Community Cloud.
-10. Registrar URL pública y evidencias de prueba.
-11. Actualizar `README.md` y este documento con datos reales.
+## Requerimientos Funcionales
 
----
+1. **Filtros globales:** sidebar con selector de ciudad, año y tipo de propiedad que afectan a KPIs y mapa
+2. **Análisis nacional:** gráficos interactivos de evolución temporal (IAH, precios, macroeconomía)
+3. **Comparador:** selección múltiple de ciudades con tabla de indicadores y boxplots
+4. **Predictor:** formulario de entrada → predicción RF → IAH → semáforo → indicadores financieros
+5. **Segmentos:** scatter IAH vs precio, PCA clusters, heatmap ciudad-año, perfiles
 
-## Correspondencia con GUIA_FASE_6.md
+## Limitaciones Conocidas
 
-| Actividad planificada | Estado | Evidencia requerida |
-|---|---|---|
-| Estructura del proyecto y setup | ⚠️ Parcial | `app/` existe, pero falta validación completa. |
-| Página principal | ⚠️ Parcial | Debe validarse contra dataset saneado. |
-| Página análisis nacional | ⚠️ Parcial | Debe validarse contra métricas finales. |
-| Página comparador de ciudades | ⚠️ Parcial | Debe alinearse con 12 ciudades focales. |
-| Página predictor de precios | ⏳ Pendiente | Requiere `models/modelo_random_forest.pkl` o modelo elegido. |
-| Página segmentos de mercado | ⏳ Pendiente | Requiere `ciudades_clusters.csv` y perfiles. |
-| Pruebas locales completas | ⏳ Pendiente | Registro de pruebas manuales. |
-| Despliegue Streamlit Cloud | ⏳ Pendiente | URL pública probada. |
-| Preparación para presentación | ⏳ Pendiente | Demo y notas finales. |
+- **Predictor:** El modelo RF explica solo el 63.5% de la varianza del precio. Las predicciones son orientativas.
+- **Cobertura:** Solo viviendas listadas en plataformas digitales (FincaRaíz, Properati, Kaggle).
+- **Datos faltantes:** Armenia, Barranquilla, Cartagena sin datos para 2022–2024.
+- **Memoria:** El dataset completo (~128 MB) puede causar lentitud en Streamlit Cloud free tier.
+- **Modelo 448 MB:** El archivo `.pkl` del RF se almacena via Git LFS. Streamlit Cloud lo descarga al iniciar.
 
----
+## Próximos Pasos
 
-## Metodología a Aplicar
-
-### Validación funcional
-
-| Área | Criterio de aceptación |
-|---|---|
-| Carga de datos | La app carga dataset saneado sin errores ni marcadores de conflicto. |
-| Predictor | El modelo se carga y genera predicciones reproducibles. |
-| Segmentos | La vista usa clusters reales y no valores de ejemplo. |
-| Filtros | Ciudad, año y tipo funcionan sin romper visualizaciones. |
-| Performance | La app carga en tiempo razonable con cache donde aplique. |
-| Mensajes | La interfaz distingue resultados reales de estados pendientes. |
-
-### Validación de despliegue
-
-| Área | Criterio de aceptación |
-|---|---|
-| Build | Streamlit Cloud instala dependencias sin errores. |
-| Navegación | Todas las páginas cargan en producción. |
-| Datos/modelos | Las rutas relativas funcionan en cloud. |
-| Documentación | README contiene URL real solo después de probarla. |
-
----
-
-## Resultados Obtenidos
-
-| Resultado | Valor |
-|---|---|
-| URL pública | `[PENDIENTE]` |
-| Fecha de despliegue | `[PENDIENTE]` |
-| Rama desplegada | `[PENDIENTE]` |
-| Commit desplegado | `[PENDIENTE]` |
-| Modelo usado por predictor | `[PENDIENTE]` |
-| Dataset usado por app | `[PENDIENTE]` |
-| Archivo de clusters usado | `[PENDIENTE]` |
-| Estado de pruebas locales | `[PENDIENTE]` |
-| Estado de pruebas en producción | `[PENDIENTE]` |
-
----
-
-## Métricas y Estadísticas Relevantes
-
-| Métrica de operación | Valor |
-|---|---|
-| Tiempo de carga inicial | `[PENDIENTE]` |
-| Páginas probadas | `[PENDIENTE]` |
-| Errores en consola local | `[PENDIENTE]` |
-| Errores en logs de Streamlit Cloud | `[PENDIENTE]` |
-| Casos de prueba del predictor | `[PENDIENTE]` |
-| Casos de prueba de filtros | `[PENDIENTE]` |
-
----
-
-## Hallazgos Clave
-
-| Hallazgo | Evidencia |
-|---|---|
-| `[PENDIENTE]` | `[PENDIENTE — completar solo tras pruebas reales]` |
-
----
-
-## Problemas Encontrados y Resolución
-
-| Problema | Estado | Resolución esperada |
-|---|---|---|
-| No existe modelo serializado | ⏳ Pendiente | Ejecutar Fase 4. |
-| No existen clusters exportados | ⏳ Pendiente | Ejecutar Fase 4. |
-| Fase 5 no ha aprobado despliegue | ⏳ Pendiente | Ejecutar evaluación. |
-| Alcance de ciudades difiere de Fase 1 | ⏳ Pendiente | Decidir si la app muestra Armenia o si se regenera el dataset con Santa Marta. |
-| Lista de ciudades en app puede no coincidir con Fase 1 | ⏳ Pendiente | Alinear con Bogotá, Medellín, Cali, Barranquilla, Bucaramanga, Cartagena, Pereira, Cúcuta, Manizales, Ibagué, Santa Marta y Villavicencio. |
-
----
-
-## Validaciones Realizadas
-
-| Validación | Estado |
-|---|---|
-| `streamlit run app/app.py` ejecutado localmente | `[PENDIENTE]` |
-| Página principal probada | `[PENDIENTE]` |
-| Análisis nacional probado | `[PENDIENTE]` |
-| Comparador probado | `[PENDIENTE]` |
-| Predictor probado con modelo real | `[PENDIENTE]` |
-| Segmentos probado con clusters reales | `[PENDIENTE]` |
-| Despliegue cloud probado | `[PENDIENTE]` |
-| URL agregada al README | `[PENDIENTE]` |
-
----
-
-## Entregables Esperados
-
-| Entregable | Ruta/URL esperada | Estado |
-|---|---|---|
-| Página principal | `app/app.py` | ⚠️ Base existente |
-| Análisis nacional | `app/pages/01_analisis_nacional.py` | ⚠️ Base existente |
-| Comparador de ciudades | `app/pages/02_comparador_ciudades.py` | ⚠️ Base existente |
-| Predictor de precios | `app/pages/03_predictor_precios.py` | ⚠️ Base existente, requiere modelo |
-| Segmentos de mercado | `app/pages/04_segmentos_mercado.py` | ⚠️ Base existente, requiere clusters |
-| Configuración Streamlit | `.streamlit/config.toml` | ⚠️ Base existente |
-| Dashboard público | `[PENDIENTE — URL Streamlit]` | ⏳ Pendiente |
-| Reporte de Fase 6 completado | `docs/FASE_6_COMPLETA.md` | ⏳ Pendiente |
-
----
-
-## Riesgos o Limitaciones Detectadas
-
-1. No publicar URL ni métricas de dashboard hasta completar pruebas reales.
-2. No mostrar predictor como funcional si el modelo no existe.
-3. No presentar segmentos si no existen clusters exportados.
-4. No presentar la lista de ciudades como equivalente a Fase 1 si se mantiene Armenia y se excluye Santa Marta.
-5. Alinear nombres de ciudades en todos los componentes antes del despliegue.
-
----
-
-## Conclusiones
-
-`[PENDIENTE — redactar únicamente después de validar la app localmente y en producción]`
-
----
-
-## Preparación para Cierre del Proyecto
-
-Para cerrar Fase 6, el equipo debe entregar:
-
-1. URL pública funcional.
-2. Registro de pruebas locales y cloud.
-3. README actualizado con estado real.
-4. Documento de Fase 6 con evidencia de despliegue.
-5. Demo preparada para jurado.
-6. Limitaciones operativas del dashboard documentadas.
-
----
-
-*Plantilla de Fase 6 · CRISP-DM 2026-I · Accesibilidad Habitacional Colombia*
+1. Ejecutar `notebooks/03_modelado_v2.ipynb` (XGBoost + log price) para mejorar el predictor
+2. Desplegar en Streamlit Community Cloud y obtener URL pública
+3. Preparar presentación ejecutiva para stakeholders
