@@ -3,10 +3,10 @@ import pandas as pd
 import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
+import warnings
+warnings.filterwarnings('ignore')
 
 st.set_page_config(page_title="Segmentos de Mercado", page_icon="📊", layout="wide")
-st.title("Segmentos de Mercado")
-st.markdown("Visualización de los clusters de accesibilidad identificados mediante KMeans.")
 
 @st.cache_data
 def load_clusters():
@@ -16,83 +16,97 @@ def load_clusters():
 def load_perfiles():
     return pd.read_csv("data/processed/perfiles_clusters.csv")
 
-df_cluster = load_clusters()
+dfc = load_clusters()
 perfiles = load_perfiles()
 
 cluster_names = {0: "Elevado (IAH 29.2)", 1: "Moderado (IAH 16.2)", 2: "Accesible Relativo (IAH 18.7)", 3: "Elevado (IAH 25.4)", 4: "Accesible (IAH 12.9)"}
-df_cluster['cluster_name'] = df_cluster['cluster'].map(cluster_names)
+dfc['cluster_name'] = dfc['cluster'].map(cluster_names)
 
-st.sidebar.header("Filtros")
-anio_sel = st.sidebar.select_slider("Año", options=sorted(df_cluster['year'].unique()), value=2024)
+st.title("📊 Segmentos de Mercado")
+st.markdown("""
+Utilizamos **KMeans (K=5)** para segmentar las 12 ciudades colombianas según su nivel de accesibilidad. 
+Las variables usadas son: IAH, precio por m², ratio cuota/salario y tasa de desempleo.
 
-tab1, tab2, tab3 = st.tabs(["Scatter IAH vs Precio", "Heatmap Ciudad-Año", "Perfiles de Clusters"])
+**Coeficiente de silueta:** 0.4874 (buena separabilidad). **Varianza explicada PCA:** 97.2%.
+""")
+
+año = st.sidebar.select_slider("Año", options=sorted(dfc['year'].unique()), value=2024)
+
+tab1, tab2, tab3 = st.tabs(["📌 Mapa de Clusters", "🗺️ Evolución Temporal", "📋 Perfiles"])
 
 with tab1:
-    st.subheader("IAH Mediano vs Precio por m²")
-    fig = px.scatter(df_cluster, x='IAH', y='precio_m2', color='cluster_name',
-                     size=[50]*len(df_cluster), hover_name='city', hover_data={'year': True, 'PC1':True, 'PC2':True},
-                     color_discrete_sequence=px.colors.qualitative.Set2,
-                     title="Clusters: IAH vs Precio por m² (cada punto = ciudad-año)")
-    fig.add_hline(y=df_cluster['precio_m2'].median(), line_dash="dot", line_color="gray", annotation_text="Mediana precio/m²")
-    fig.add_vline(x=10, line_dash="dot", line_color="orange", annotation_text="Moderado OCDE")
-    fig.add_vline(x=20, line_dash="dot", line_color="red", annotation_text="Crítico")
-    fig.update_layout(xaxis_title="IAH (años de salario mínimo)", yaxis_title="Precio por m² (COP)")
-    st.plotly_chart(fig, width='stretch')
-
-    st.subheader("Proyección PCA")
-    fig2 = px.scatter(df_cluster, x='PC1', y='PC2', color='cluster_name',
-                      hover_name='city', hover_data={'year': True, 'IAH':True, 'precio_m2':True},
+    st.subheader("IAH vs Precio por m²")
+    fig1 = px.scatter(dfc, x='IAH', y='precio_m2', color='cluster_name',
+                      hover_name='city', hover_data={'year': True, 'IAH': True, 'precio_m2': ':,.0f'},
                       color_discrete_sequence=px.colors.qualitative.Set2,
-                      title="PCA de Clusters (97.2% varianza explicada)")
-    st.plotly_chart(fig2, width='stretch')
+                      title="Cada punto es una ciudad en un año. El color indica su cluster de accesibilidad.",
+                      labels={'IAH': 'Años de salario mínimo', 'precio_m2': 'Precio por m² (COP)', 'cluster_name': 'Cluster'})
+    fig1.add_vline(x=10, line_dash="dot", line_color="orange", annotation_text="Moderado OCDE")
+    fig1.add_vline(x=20, line_dash="dot", line_color="red", annotation_text="Crítico")
+    st.plotly_chart(fig1, use_container_width=True)
+
+    col_a, col_b = st.columns(2)
+    with col_a:
+        st.subheader("Proyección PCA")
+        fig2 = px.scatter(dfc, x='PC1', y='PC2', color='cluster_name',
+                          hover_name='city', hover_data={'year': True, 'IAH': True},
+                          color_discrete_sequence=px.colors.qualitative.Set2,
+                          title="Componentes principales (97.2% de varianza explicada)")
+        st.plotly_chart(fig2, use_container_width=True)
+    with col_b:
+        st.subheader("Ciudades en 2024")
+        d24 = dfc[dfc['year'] == 2024][['city', 'cluster_name']].sort_values('cluster_name')
+        for _, r in d24.iterrows():
+            emoji = {"Elevado": "🔴", "Moderado": "🟡", "Accesible Relativo": "🟠", "Accesible": "🟢"}
+            key = r['cluster_name'].split(" ")[0]
+            st.markdown(f"{emoji.get(key, '⚪')} **{r['city']}** — {r['cluster_name']}")
 
 with tab2:
-    st.subheader("Evolución de Clusters por Ciudad")
-    heat_data = df_cluster.pivot(index='city', columns='year', values='cluster')
-    cluster_labels = {0: "E0", 1: "M1", 2: "AR2", 3: "E3", 4: "A4"}
-    heat_annot = heat_data.map(lambda x: cluster_labels.get(x, ""))
-    fig3 = px.imshow(heat_data.values, x=heat_data.columns, y=heat_data.index,
-                     text_auto=True, color_continuous_scale='Set2',
+    st.subheader("Heatmap Ciudad × Año")
+    hm = dfc.pivot(index='city', columns='year', values='cluster')
+    fig3 = px.imshow(hm.values, x=hm.columns, y=hm.index, text_auto=True,
+                     color_continuous_scale='Set2', aspect="auto",
                      labels=dict(x="Año", y="Ciudad", color="Cluster"),
-                     title="Mapa de Clusters por Ciudad y Año")
+                     title="¿Cómo han cambiado los clusters a lo largo del tiempo?")
     fig3.update_layout(height=500)
-    st.plotly_chart(fig3, width='stretch')
+    st.plotly_chart(fig3, use_container_width=True)
 
-    st.markdown("**Leyenda de clusters:**")
-    for k, v in cluster_names.items():
-        st.markdown(f"- **{cluster_labels[k]}**: {v}")
-
-    st.subheader("Transiciones entre 2020 y 2024")
-    df_2020 = df_cluster[df_cluster['year'] == 2020][['city', 'cluster_name']].rename(columns={'cluster_name': 'cluster_2020'})
-    df_2024 = df_cluster[df_cluster['year'] == 2024][['city', 'cluster_name']].rename(columns={'cluster_name': 'cluster_2024'})
-    trans = df_2020.merge(df_2024, on='city')
-    trans['cambio'] = trans['cluster_2020'] != trans['cluster_2024']
-    st.dataframe(trans, width='stretch', hide_index=True)
-    n_cambio = trans['cambio'].sum()
-    st.info(f"{n_cambio} de {len(trans)} ciudades cambiaron de cluster entre 2020 y 2024.")
+    st.subheader("Transiciones")
+    d20 = dfc[dfc['year'] == 2020][['city', 'cluster_name']].rename(columns={'cluster_name': '2020'})
+    d24 = dfc[dfc['year'] == 2024][['city', 'cluster_name']].rename(columns={'cluster_name': '2024'})
+    tr = d20.merge(d24, on='city')
+    tr['cambio'] = tr['2020'] != tr['2024']
+    st.dataframe(tr, use_container_width=True, hide_index=True)
+    nc = tr['cambio'].sum()
+    if nc > 0:
+        st.info(f"🔄 {nc} de {len(tr)} ciudades cambiaron de cluster entre 2020 y 2024.")
+    else:
+        st.success("✅ Ninguna ciudad cambió de cluster — la segmentación es estable en el tiempo.")
 
 with tab3:
-    st.subheader("Perfiles de Clusters")
-    perfiles_display = perfiles.copy()
-    perfiles_display['IAH'] = perfiles_display['IAH'].round(1)
-    perfiles_display['precio_m2'] = perfiles_display['precio_m2'].apply(lambda x: f"${x:,.0f}")
-    perfiles_display['ratio_cuota_salario'] = perfiles_display['ratio_cuota_salario'].round(2)
-    perfiles_display['tasa_desempleo'] = perfiles_display['tasa_desempleo'].apply(lambda x: f"{x:.1f}%")
-    perfiles_display.index = perfiles_display.index.map(cluster_names)
-    perfiles_display.index.name = "Cluster"
-    st.dataframe(perfiles_display, width='stretch')
+    st.subheader("Perfiles de los 5 Clusters")
+    perf = perfiles.copy()
+    perf.columns = ['IAH', 'Precio m²', 'Ratio Cuota/Salario', 'Tasa Desempleo', 'Ciudades']
+    perf.index = [cluster_names.get(i, str(i)) for i in perf.index]
+    perf['Precio m²'] = perf['Precio m²'].apply(lambda x: f"${x:,.0f}")
+    perf['IAH'] = perf['IAH'].round(1)
+    perf['Tasa Desempleo'] = perf['Tasa Desempleo'].apply(lambda x: f"{x:.1f}%")
+    perf['Ratio Cuota/Salario'] = perf['Ratio Cuota/Salario'].round(2)
+    perf['Ciudades'] = perf['Ciudades'].astype(int)
+    st.dataframe(perf, use_container_width=True)
 
-    st.subheader("Radar Comparativo de Clusters")
-    df_radar = perfiles.copy()
-    df_radar_norm = (df_radar - df_radar.min()) / (df_radar.max() - df_radar.min() + 1e-6)
+    # Radar
+    st.subheader("Radar Comparativo")
+    rn = (perfiles - perfiles.min()) / (perfiles.max() - perfiles.min() + 1e-6)
     fig4 = go.Figure()
-    for idx, row in df_radar_norm.iterrows():
-        fig4.add_trace(go.Scatterpolar(r=row.values, theta=df_radar_norm.columns,
-                                       fill='toself', name=cluster_names.get(idx, str(idx))))
-    fig4.update_layout(polar=dict(radialaxis=dict(visible=True, range=[0, 1])), title="Perfil Normalizado de Clusters")
-    st.plotly_chart(fig4, width='stretch')
+    for idx, row in rn.iterrows():
+        fig4.add_trace(go.Scatterpolar(r=row.values, theta=rn.columns, fill='toself',
+                                       name=cluster_names.get(idx, str(idx))))
+    fig4.update_layout(polar=dict(radialaxis=dict(visible=True, range=[0, 1])),
+                       title="Perfil Normalizado de Clusters")
+    st.plotly_chart(fig4, use_container_width=True)
 
-    st.markdown("---")
-    st.caption("**Metodología:** Clustering KMeans con K=5 sobre 4 variables estandarizadas "
-               "(IAH, precio_m², ratio_cuota_salario, tasa_desempleo) agregadas por ciudad-año. "
-               f"Coeficiente de silueta: 0.4874. Varianza explicada PCA: 97.2%.")
+    st.caption("""
+    **Metodología:** KMeans con K=5, features estandarizadas (IAH, precio_m², ratio_cuota_salario, tasa_desempleo).
+    Silueta = 0.4874. PCA con 97.2% de varianza explicada en 2 componentes.
+    """)
