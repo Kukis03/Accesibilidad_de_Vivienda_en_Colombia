@@ -1,4 +1,4 @@
-# Fase 1 — Comprensión del Negocio
+﻿# Fase 1 — Comprensión del Negocio
 
 ## Proyecto: Accesibilidad de Vivienda en Colombia · CRISP-DM 2026-I
 
@@ -566,3 +566,4 @@ La **Fase 2 — Comprensión de los Datos** puede iniciarse inmediatamente al ci
 
 *Documento de Fase 1 · CRISP-DM 2026-I · Proyecto Accesibilidad Habitacional Colombia — 2020–2025*  
 *Equipo: Steve · Sofía · Kukis*
+

@@ -1,5 +1,5 @@
-# Fase 5 — Evaluación
-## Proyecto: Accesibilidad de Vivienda en Colombia · CRISP-DM 2025-I
+﻿# Fase 5 — Evaluación
+## Proyecto: Accesibilidad de Vivienda en Colombia · CRISP-DM 2026-I
 **Responsable principal:** Sofía · **Apoyo:** Steve  
 **Estado:** ⏳ Pendiente — requiere resultados reales de Fase 4  
 **Notebook asociado:** `notebooks/04_evaluacion.ipynb` *(por ejecutar)*  
@@ -345,5 +345,6 @@ print(df_inviable.sort_values('pct_inviable', ascending=False).round(1))
 
 ---
 
-*Documento de Fase 5 · CRISP-DM 2025-I · Proyecto Accesibilidad Habitacional Colombia*  
+*Documento de Fase 5 · CRISP-DM 2026-I · Proyecto Accesibilidad Habitacional Colombia*  
 *Estado: PLANTILLA — completar con datos reales tras ejecutar la fase*
+

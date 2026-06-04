@@ -1,8 +1,8 @@
 # Proyecto Final — Accesibilidad de Vivienda en Colombia
 ## Metodología CRISP-DM · Análisis Predictivo y Descriptivo
 
-**Asignatura:** Minería de Datos / Ciencia de Datos  
-**Semestre:** 2025-I  
+**Asignatura:** DATA ANALYTICS / Ciencia de Datos  
+**Semestre:** 2026-I  
 **Integrantes:** Steve · Sofía · Kukis  
 **Repositorio:** `https://github.com/AlexanderPineda25/Accesibilidad_de_Vivienda_en_Colombia`
 
@@ -1181,5 +1181,6 @@ El clustering identificará los segmentos 'Crítico' y 'Elevado', y el ratio cuo
 
 ---
 
-*Documento de planificación del proyecto final · Metodología CRISP-DM · Análisis de Datos · 2025-I*  
+*Documento de planificación del proyecto final · Metodología CRISP-DM · Análisis de Datos · 2026-I*  
 *Integrantes: Steve · Sofía · Kukis*
+

@@ -3,9 +3,13 @@ import numpy as np
 import os
 import re
 
-# Directorios
-DIR_RAW = os.path.join("..", "data", "raw")
-DIR_PROCESSED = os.path.join("..", "data", "processed")
+# Directorios robustos a la ubicación de ejecución
+if os.path.exists(os.path.join("data", "raw")):
+    DIR_RAW = os.path.join("data", "raw")
+    DIR_PROCESSED = os.path.join("data", "processed")
+else:
+    DIR_RAW = os.path.join("..", "data", "raw")
+    DIR_PROCESSED = os.path.join("..", "data", "processed")
 os.makedirs(DIR_PROCESSED, exist_ok=True)
 
 COLS_CANONICAS = [
@@ -21,21 +25,35 @@ def registrar_metrica(paso, operacion, df_in, df_out):
     regs_out = len(df_out)
     eliminados = regs_in - regs_out if df_in is not None else 0
     pct = (eliminados / regs_in * 100) if regs_in > 0 else 0
-    
+
+    # Distribución por fuente en la salida (para diagnóstico)
+    dist_fuentes = {}
+    if df_out is not None and 'fuente' in df_out.columns:
+        dist_fuentes = df_out.groupby('fuente').size().to_dict()
+
     reporte_metricas.append({
         'Paso': paso,
         'Operacion': operacion,
         'Regs_Entrada': regs_in,
         'Regs_Salida': regs_out,
         'Regs_Eliminados': eliminados,
-        'Pct_Eliminado': round(pct, 2)
+        'Pct_Eliminado': round(pct, 2),
+        'Dist_Fuentes': str(dist_fuentes)
     })
+
+def diagnostico_por_fuente(df, nombre_paso):
+    """Imprime cuántos registros quedan de cada fuente después de cada paso."""
+    print(f"\n--- Diagnóstico por fuente: {nombre_paso} ---")
+    dist = df.groupby('fuente').size().sort_values(ascending=False)
+    for fuente, n in dist.items():
+        print(f"  {fuente}: {n:,}")
+    print(f"  TOTAL: {len(df):,}")
 
 def cargar_y_canonizar_datasets():
     datasets = []
     
     # A1: Properati Colombia
-    df1 = pd.read_csv(os.path.join(DIR_RAW, "A1_colombia_housing_properties.csv"))
+    df1 = pd.read_csv(os.path.join(DIR_RAW, "A1_colombia_housing_properties.csv"), encoding='utf-8-sig', low_memory=False)
     if 'operation_type' in df1.columns:
         df1 = df1[df1['operation_type'] == 'Venta'].copy()
     if 'l1' in df1.columns:
@@ -59,10 +77,8 @@ def cargar_y_canonizar_datasets():
     df1['fuente'] = 'A1_Properati'
     datasets.append(df1)
     
-    # A2: FincaRaiz Colombia 2023-2024
-    df2 = pd.read_csv(os.path.join(DIR_RAW, "A2_fincaraiz_colombia.csv"))
-    
-    # Fix potential BOM in column names
+    # A2: FincaRaiz Colombia 2023-2024 (B1 Fix: No multiplicar por 1_000_000)
+    df2 = pd.read_csv(os.path.join(DIR_RAW, "A2_fincaraiz_colombia.csv"), encoding='utf-8-sig')
     df2.columns = [c.replace('\ufeff', '') for c in df2.columns]
     
     df2 = df2.rename(columns={
@@ -73,20 +89,23 @@ def cargar_y_canonizar_datasets():
     
     if 'price' in df2.columns:
         df2['price'] = pd.to_numeric(df2['price'].astype(str).str.replace(r'[^\d.]', '', regex=True), errors='coerce')
-        # Check if price needs scaling. The Kaggle dataset says "Precio", let's assume it's raw COP or millions. 
-        # The original script multiplied by 1000000. Let's keep that but handle NaNs.
-        df2['price'] = df2['price'] * 1000000 
+        # B1 Fix: El precio en A2 ya está en COP completos. NO multiplicar por 1_000_000.
     
     df2['fuente'] = 'A2_FincaRaiz_Kaggle'
     datasets.append(df2)
     
-    # A3: Colombia House Prediction
-    df3 = pd.read_csv(os.path.join(DIR_RAW, "A3_colombia_house_prediction.csv"))
+    # A3: Colombia House Prediction (B2 Fix: Asignar city = 'Bogotá', e inferir property_type)
+    df3 = pd.read_csv(os.path.join(DIR_RAW, "A3_colombia_house_prediction.csv"), encoding='utf-8-sig')
     df3.columns = [c.replace('\ufeff', '') for c in df3.columns]
     df3 = df3.rename(columns={
         'valor': 'price', 'area': 'area', 'habitaciones': 'rooms',
-        'banos': 'bathrooms', 'estrato': 'estrato'
+        'banos': 'bathrooms', 'estrato': 'estrato',
+        'latitud': 'lat', 'longitud': 'lon'
     })
+    df3['city'] = 'Bogotá'
+    # Definir property_type usando heurística basada en numeroascensores y area
+    df3['property_type'] = np.where(df3['numeroascensores'].fillna(0) > 0, 'Apartamento', 
+                                    np.where(df3['area'] > 160, 'Casa', 'Apartamento'))
     df3['fuente'] = 'A3_Kaggle'
     datasets.append(df3)
     
@@ -110,7 +129,7 @@ def cargar_y_canonizar_datasets():
     datasets.append(df4)
     
     # A5: Medellín Properties 2023
-    df5 = pd.read_csv(os.path.join(DIR_RAW, "A5_medellin_properties_2023.csv"))
+    df5 = pd.read_csv(os.path.join(DIR_RAW, "A5_medellin_properties_2023.csv"), encoding='utf-8-sig')
     df5.columns = [c.replace('\ufeff', '') for c in df5.columns]
     df5 = df5.rename(columns={
         'price': 'price', 'area': 'area', 'rooms': 'rooms',
@@ -138,15 +157,28 @@ def cargar_y_canonizar_datasets():
     df6['fuente'] = 'A6_Bogota2023_Kaggle'
     datasets.append(df6)
     
-    # A7: Villavicencio Scraping
+    # A7: Villavicencio Scraping (B3 Fix: renombrar columnas y filtrar por Venta/Villavicencio)
     if os.path.exists(os.path.join(DIR_RAW, "A7_fincaraiz_villavicencio_scraping.csv")):
-        df7 = pd.read_csv(os.path.join(DIR_RAW, "A7_fincaraiz_villavicencio_scraping.csv"))
+        df7 = pd.read_csv(os.path.join(DIR_RAW, "A7_fincaraiz_villavicencio_scraping.csv"), encoding='utf-8-sig')
+        df7 = df7.rename(columns={
+            'precio_cop': 'price', 'area_m2': 'area', 'habitaciones': 'rooms',
+            'banos': 'bathrooms', 'tipo_inmueble': 'property_type', 'ciudad': 'city',
+            'fecha_scraping': 'created_on'
+        })
+        if 'tipo_operacion' in df7.columns:
+            df7 = df7[df7['tipo_operacion'] == 'Venta'].copy()
+        df7 = df7[df7['city'].astype(str).str.lower().str.contains('villavicencio', na=False)].copy()
         df7['fuente'] = 'A7_Scraping_Villavicencio'
         datasets.append(df7)
     
-    # A8: Características precios vivienda nueva Bogotá UPZ
+    # A8: Características precios vivienda nueva Bogotá UPZ (B4 Fix: renombrar columnas y asignar city/prop_type)
     if os.path.exists(os.path.join(DIR_RAW, "A8_carac_pre_viv_nueva.csv")):
-        df8 = pd.read_csv(os.path.join(DIR_RAW, "A8_carac_pre_viv_nueva.csv"))
+        df8 = pd.read_csv(os.path.join(DIR_RAW, "A8_carac_pre_viv_nueva.csv"), encoding='utf-8-sig')
+        df8 = df8.rename(columns={
+            'precios': 'price', 'area': 'area', 'alcobas': 'rooms', 'baños': 'bathrooms'
+        })
+        df8['city'] = 'Bogotá'
+        df8['property_type'] = 'Apartamento'
         df8['fuente'] = 'A8_CaracPreVivNueva'
         datasets.append(df8)
     
@@ -172,24 +204,28 @@ TRM_HISTORICA = {
 
 def limpiar_precios_y_monedas(df):
     df = df.copy()
-    
+
     df['created_on'] = pd.to_datetime(df['created_on'], errors='coerce')
     df['year_temp'] = df['created_on'].dt.year.fillna(2023).astype(int)
-    
+
     is_properati = df['fuente'] == 'A1_Properati'
-    
+
     if 'currency' in df.columns:
         is_usd = df['currency'] == 'USD'
         for yr, trm in TRM_HISTORICA.items():
             mask = is_properati & is_usd & (df['year_temp'] == yr)
             df.loc[mask, 'price'] = df.loc[mask, 'price'] * trm
-        
+
     is_cop_m2 = is_properati & (df['price'] < 1000000) & (df['price'] > 5000) & (df['area'] > 10)
     df.loc[is_cop_m2, 'price'] = df.loc[is_cop_m2, 'price'] * df.loc[is_cop_m2, 'area']
-    
+
     df = df[df['price'].notnull()]
     df = df[(df['price'] >= 10000000) & (df['price'] <= 10000000000)]
-    
+
+    # Filtro de área: eliminar valores físicamente imposibles (Fase 2 recomienda 15–800 m²)
+    # Los nulos se conservan — se imputan más adelante en la Sección 8
+    df = df[(df['area'].isna()) | ((df['area'] >= 15) & (df['area'] <= 800))]
+
     df = df.drop(columns=['year_temp'])
     return df
 
@@ -197,25 +233,52 @@ print("2. Limpiando precios y monedas...")
 df_clean_precios = limpiar_precios_y_monedas(df_raw_consolidado)
 registrar_metrica(1, "Limpieza Precios e Invalidez", df_raw_consolidado, df_clean_precios)
 
+# B6 Fix: Diccionario de ciudades que mapea con y sin tildes al nombre canonical
+# Revisión: variantes adicionales detectadas en A1 (Properati) que causaban 35% de pérdida
 MAPA_CIUDADES = {
-    'bogota': 'Bogotá', 'santa fe de bogota': 'Bogotá', 'bogota d.c.': 'Bogotá', 'bogota d. c.': 'Bogotá',
-    'medellin': 'Medellín', 'medelln': 'Medellín',
+    # Bogotá
+    'bogota': 'Bogotá', 'bogotá': 'Bogotá',
+    'santa fe de bogota': 'Bogotá', 'santa fe de bogotá': 'Bogotá',
+    'bogota d.c.': 'Bogotá', 'bogotá d.c.': 'Bogotá',
+    'bogota d. c.': 'Bogotá', 'bogotá d. c.': 'Bogotá',
+    'bogota d.c': 'Bogotá', 'bogotá d.c': 'Bogotá',
+    'distrito capital': 'Bogotá', 'bogota dc': 'Bogotá',
+    # Medellín
+    'medellin': 'Medellín', 'medelln': 'Medellín', 'medellín': 'Medellín',
+    'medellin antioquia': 'Medellín',
+    # Cali
     'cali': 'Cali', 'santiago de cali': 'Cali',
+    'cali valle': 'Cali', 'cali valle del cauca': 'Cali',
+    # Barranquilla
     'barranquilla': 'Barranquilla', 'barranq': 'Barranquilla',
+    'barranquilla atlantico': 'Barranquilla',
+    # Cartagena
     'cartagena': 'Cartagena', 'cartagena de indias': 'Cartagena',
+    'cartagena bolivar': 'Cartagena',
+    # Bucaramanga
     'bucaramanga': 'Bucaramanga', 'bucara': 'Bucaramanga',
-    'pereira': 'Pereira',
-    'manizales': 'Manizales',
-    'armenia': 'Armenia',
-    'cucuta': 'Cúcuta', 'sanjose de cucuta': 'Cúcuta', 'cúcuta': 'Cúcuta',
+    'bucaramanga santander': 'Bucaramanga',
+    # Pereira
+    'pereira': 'Pereira', 'pereira risaralda': 'Pereira',
+    # Manizales
+    'manizales': 'Manizales', 'manizales caldas': 'Manizales',
+    # Armenia
+    'armenia': 'Armenia', 'armenia quindio': 'Armenia', 'armenia quindío': 'Armenia',
+    # Cúcuta
+    'cucuta': 'Cúcuta', 'cúcuta': 'Cúcuta',
+    'sanjose de cucuta': 'Cúcuta', 'san jose de cucuta': 'Cúcuta',
+    'san josé de cúcuta': 'Cúcuta',
+    # Ibagué
     'ibague': 'Ibagué', 'ibagué': 'Ibagué',
-    'villavicencio': 'Villavicencio', 'villavo': 'Villavicencio'
+    # Villavicencio
+    'villavicencio': 'Villavicencio', 'villavo': 'Villavicencio',
+    'villavicencio meta': 'Villavicencio',
 }
 
 def estandarizar_ciudades(df):
     df = df.copy()
-    df['city_raw'] = df['city'].astype(str).str.lower().str.normalize('NFKD')\
-                              .str.encode('ascii', errors='ignore').str.decode('utf-8').str.strip()
+    # B6 Fix: NO usar normalize('NFKD').encode('ascii', errors='ignore')
+    df['city_raw'] = df['city'].astype(str).str.lower().str.strip()
     df['city_clean'] = df['city_raw'].map(MAPA_CIUDADES)
     df = df[df['city_clean'].notnull()].copy()
     df = df.drop(columns=['city', 'city_raw']).rename(columns={'city_clean': 'city'})
@@ -243,9 +306,11 @@ print("4. Aplicando filtro temporal...")
 df_clean_temporal = limpiar_fechas(df_clean_ciudades)
 registrar_metrica(3, "Restriccion Temporal 2019-2024", df_clean_ciudades, df_clean_temporal)
 
+# B8 Fix: Variantes adicionales de tildes y estructuras de conjuntos cerrados
 MAPA_PROPIEDADES = {
     'apartamento': 'Apartamento', 'apto': 'Apartamento', 'apartment': 'Apartamento',
-    'casa': 'Casa', 'house': 'Casa', 'casa lote': 'Casa'
+    'casa': 'Casa', 'house': 'Casa', 'casa lote': 'Casa',
+    'casa con conjunto cerrado': 'Casa', 'casa en conjunto cerrado': 'Casa'
 }
 
 def estandarizar_propiedad(df):
@@ -289,34 +354,90 @@ def eliminar_outliers_grupos(df):
 print("6. Eliminando outliers por grupo...")
 df_clean_outliers = eliminar_outliers_grupos(df_clean_prop)
 registrar_metrica(5, "Filtro IQR Outliers por Grupo", df_clean_prop, df_clean_outliers)
+diagnostico_por_fuente(df_clean_outliers, "Tras outliers IQR")
 
-def eliminar_duplicados(df):
+# Sección 6.5: Pre-imputación de área ANTES de la deduplicación
+# Esto evita que registros con area nula compartan la clave "_-1" y se colapsen masivamente
+def pre_imputar_area(df):
+    """
+    Imputa area nula con la mediana del grupo (city, year, property_type)
+    antes de la deduplicación, para que la clave sea más precisa y no colapsen
+    registros legítimamente distintos que solo carecen de área.
+    """
     df = df.copy()
-    df['dup_key'] = (
-        df['city'].astype(str) + "_" + 
-        np.round(df['price'] / 1000000).astype(str) + "_" + 
-        np.round(df['area'].fillna(-1)).astype(str) + "_" + 
-        df['property_type'].astype(str) + "_" + 
-        df['year'].astype(str) + "_" +
-        df['rooms'].fillna(-1).astype(str) + "_" +
-        df['bathrooms'].fillna(-1).astype(str)
-    )
-    
-    df['fuente_priority'] = df['fuente'].map({
-        'A7_Scraping_Villavicencio': 1, 'A2_FincaRaiz_Kaggle': 2,
-        'A1_Properati': 3, 'A6_Bogota2023_Kaggle': 4,
-        'A5_Medellin_Kaggle': 5, 'A4_Bogota_Kaggle': 6, 'A3_Kaggle': 7,
-        'A8_CaracPreVivNueva': 8
-    }).fillna(10)
-    
-    df = df.sort_values(by='fuente_priority')
-    df = df.drop_duplicates(subset=['dup_key'], keep='first')
-    df = df.drop(columns=['dup_key', 'fuente_priority'])
+    mediana_grupo = df.groupby(['city', 'year', 'property_type'])['area'].transform('median')
+    mediana_tipo  = df.groupby('property_type')['area'].transform('median')
+    df['area'] = df['area'].fillna(mediana_grupo).fillna(mediana_tipo)
+    nulos_rest = df['area'].isna().sum()
+    print(f"  Nulos restantes en area tras pre-imputación: {nulos_rest:,}")
     return df
 
-print("7. Deduplicando registros...")
-df_clean_final = eliminar_duplicados(df_clean_outliers)
-registrar_metrica(6, "Deduplicacion Inter-Dataset", df_clean_outliers, df_clean_final)
+print("6.5. Pre-imputando área para mejorar calidad de la clave de deduplicación...")
+df_clean_outliers = pre_imputar_area(df_clean_outliers)
+
+# Deduplicación v2: no usa fillna(-1) — separa con/sin área para evitar colapso masivo
+# B5 Fix original: se quitaron rooms/bathrooms de la clave.
+# Revisión adicional: se corrige el problema de area.fillna(-1) que causaba 82% de pérdida.
+def eliminar_duplicados_v2(df):
+    """
+    Deduplicación inter-dataset mejorada usando coordenadas para evitar el colapso masivo.
+    - Registros CON área: clave = city + price(1M) + area(m²) + type + year + lat(3dec) + lon(3dec)
+    - Registros SIN área: clave = city + price(5M) + type + year + lat(3dec) + lon(3dec)
+    """
+    df = df.copy()
+
+    prioridad_fuente = {
+        'A7_Scraping_Villavicencio': 1, 'A2_FincaRaiz_Kaggle': 2,
+        'A1_Properati': 3, 'A6_Bogota2023_Kaggle': 4,
+        'A5_Medellin_Kaggle': 5, 'A4_Bogota_Kaggle': 6,
+        'A3_Kaggle': 7, 'A8_CaracPreVivNueva': 8
+    }
+    df['fuente_priority'] = df['fuente'].map(prioridad_fuente).fillna(10)
+
+    # Redondear coordenadas para la clave (los nulos se agrupan en -1.0)
+    df['lat_key'] = df['lat'].round(3).fillna(-1.0)
+    df['lon_key'] = df['lon'].round(3).fillna(-1.0)
+
+    mask_con_area = df['area'].notnull()
+    df_con_area  = df[mask_con_area].copy()
+    df_sin_area  = df[~mask_con_area].copy()
+
+    # Grupo 1: registros con área conocida — clave precisa
+    df_con_area['dup_key'] = (
+        df_con_area['city'].astype(str) + "_" +
+        np.round(df_con_area['price'] / 1_000_000).astype(str) + "_" +
+        np.round(df_con_area['area']).astype(str) + "_" +
+        df_con_area['property_type'].astype(str) + "_" +
+        df_con_area['year'].astype(str) + "_" +
+        df_con_area['lat_key'].astype(str) + "_" +
+        df_con_area['lon_key'].astype(str)
+    )
+    df_con_area = df_con_area.sort_values('fuente_priority')
+    df_con_area = df_con_area.drop_duplicates(subset=['dup_key'], keep='first')
+
+    # Grupo 2: registros sin área — clave más amplia para no sobre-colapsar
+    if len(df_sin_area) > 0:
+        df_sin_area['dup_key'] = (
+            df_sin_area['city'].astype(str) + "_" +
+            (np.round(df_sin_area['price'] / 5_000_000) * 5).astype(str) + "_" +
+            df_sin_area['property_type'].astype(str) + "_" +
+            df_sin_area['year'].astype(str) + "_" +
+            df_sin_area['lat_key'].astype(str) + "_" +
+            df_sin_area['lon_key'].astype(str)
+        )
+        df_sin_area = df_sin_area.sort_values('fuente_priority')
+        df_sin_area = df_sin_area.drop_duplicates(subset=['dup_key'], keep='first')
+
+    df_resultado = pd.concat([df_con_area, df_sin_area], ignore_index=True)
+    df_resultado = df_resultado.drop(columns=['dup_key', 'fuente_priority', 'lat_key', 'lon_key'])
+
+    print(f"  Con área: {len(df_con_area):,} | Sin área: {len(df_sin_area):,} | Total: {len(df_resultado):,}")
+    return df_resultado
+
+print("7. Deduplicando registros (v2 — sin area.fillna(-1))...")
+df_clean_final = eliminar_duplicados_v2(df_clean_outliers)
+registrar_metrica(6, "Deduplicacion Inter-Dataset v2", df_clean_outliers, df_clean_final)
+diagnostico_por_fuente(df_clean_final, "Tras deduplicación v2")
 
 def imputar_valores_faltantes(df):
     df = df.copy()
@@ -342,7 +463,7 @@ def imputar_valores_faltantes(df):
     df['estrato'] = df['estrato'].fillna(mediana_estrato_ciudad).fillna(3).astype(int)
     df['estrato'] = df['estrato'].clip(1, 6).astype(int)
     
-    # Imputar lat/lon faltantes con el centroide de la ciudad
+    # Imputar lat/lon faltantes con el centroide de la ciudad (B7 Fix: Con ciudades bien escritas ahora sí mapea)
     centroides = {
         'Bogotá': (4.6097, -74.0817), 'Medellín': (6.2442, -75.5812),
         'Cali': (3.4516, -76.5320), 'Barranquilla': (10.9685, -74.7813),
@@ -361,6 +482,7 @@ def imputar_valores_faltantes(df):
 print("8. Imputando valores faltantes...")
 df_imputado = imputar_valores_faltantes(df_clean_final)
 
+# B5 mejorado: merge por year y city de desempleo (usando 13_ciudades como primario, nacional como fallback)
 def cargar_e_integrar_macro(df_inmuebles):
     # B3: Salario
     b3 = pd.read_csv(os.path.join(DIR_RAW, "B3_salario_minimo_historico.csv"), encoding='utf-8-sig')
@@ -387,17 +509,19 @@ def cargar_e_integrar_macro(df_inmuebles):
     b2_year = b2.groupby('year')[col_hipotecaria].mean().reset_index()
     b2_year = b2_year.rename(columns={col_hipotecaria: 'tasa_hipotecaria_anual'})
 
-    # B5: Desempleo
+    # B5: Desempleo (B5 mejorado: merge 13 ciudades y nacional)
     b5 = pd.read_csv(os.path.join(DIR_RAW, "B5_geih_empleo_colombia.csv"), encoding='utf-8-sig')
     b5['year'] = pd.to_datetime(b5['fecha'], errors='coerce').dt.year
-    b5_nacional = b5[b5['grupo'] == 'nacional'].groupby('year')['td'].mean().reset_index().rename(columns={'td': 'tasa_desempleo'})
+    b5_13 = b5[b5['grupo'] == '13_ciudades'].groupby('year')['td'].mean().reset_index().rename(columns={'td': 'tasa_desempleo_13'})
+    b5_nac = b5[b5['grupo'] == 'nacional'].groupby('year')['td'].mean().reset_index().rename(columns={'td': 'tasa_desempleo_nac'})
 
     # B1: Indices IPVU e IPVN
     b1 = pd.read_csv(os.path.join(DIR_RAW, "B1_indices_precios_vivienda.csv"), encoding='utf-8-sig')
-    b1.columns = [c.encode('ascii', 'ignore').decode('utf-8') for c in b1.columns]
+    # Fix: NO usar encode('ascii') — corrompe acentos en nombres de columnas de B1
+    b1.columns = [c.strip() for c in b1.columns]
     b1['year'] = pd.to_datetime(b1['fecha'], errors='coerce').dt.year
-    b1_year = b1.groupby('year')[['ipvnbr_ndice_nominal_agregado', 'ipvu_indice_nominal']].mean().reset_index()
-    b1_year['ipvn_variacion_anual'] = b1_year['ipvnbr_ndice_nominal_agregado'].pct_change() * 100
+    b1_year = b1.groupby('year')[['ipvnbr_índice_nominal_agregado', 'ipvu_indice_nominal']].mean().reset_index()
+    b1_year['ipvn_variacion_anual'] = b1_year['ipvnbr_índice_nominal_agregado'].pct_change() * 100
     b1_year['ipvu_variacion_anual'] = b1_year['ipvu_indice_nominal'].pct_change() * 100
 
     # Merge todo
@@ -405,7 +529,10 @@ def cargar_e_integrar_macro(df_inmuebles):
     df_macro = df_macro.merge(b3, on='year', how='left')
     df_macro = df_macro.merge(b4, on='year', how='left')
     df_macro = df_macro.merge(b2_year, on='year', how='left')
-    df_macro = df_macro.merge(b5_nacional, on='year', how='left')
+    df_macro = df_macro.merge(b5_13, on='year', how='left')
+    df_macro = df_macro.merge(b5_nac, on='year', how='left')
+    df_macro['tasa_desempleo'] = df_macro['tasa_desempleo_13'].fillna(df_macro['tasa_desempleo_nac'])
+    df_macro = df_macro.drop(columns=['tasa_desempleo_13', 'tasa_desempleo_nac'])
     df_macro = df_macro.merge(b1_year[['year', 'ipvn_variacion_anual', 'ipvu_variacion_anual']], on='year', how='left')
     
     # Rellenar valores nulos (para evitar que se propaguen)
@@ -484,7 +611,33 @@ columns_to_export = [
 df_final = df_variables[columns_to_export].copy()
 validar_dataset_final(df_final)
 
+# Validación cruzada con IPVN DANE
+def realizar_validacion_ipvn(df):
+    print("\n=== Validación Cruzada con IPVN DANE ===")
+    df_valid = df[df['city'].isin(['Bogotá', 'Medellín'])].copy()
+    
+    # Calcular precio_m2 promedio por ciudad y año
+    df_m2 = df_valid.groupby(['city', 'year'])['precio_m2'].mean().reset_index()
+    
+    # Calcular variación anual propia
+    df_m2['variacion_precio_m2_%'] = df_m2.groupby('city')['precio_m2'].pct_change() * 100
+    
+    # Merge con la variación oficial del IPVN
+    df_ipvn_oficial = df.groupby('year')['ipvn_variacion_anual'].first().reset_index()
+    df_comparativo = df_m2.merge(df_ipvn_oficial, on='year', how='left')
+    
+    print(df_comparativo[['city', 'year', 'precio_m2', 'variacion_precio_m2_%', 'ipvn_variacion_anual']].dropna().to_string(index=False))
+    
+    print("\nDiferencia Promedio vs IPVN Oficial (Bogotá y Medellín):")
+    for city in ['Bogotá', 'Medellín']:
+        sub = df_comparativo[(df_comparativo['city'] == city) & (df_comparativo['variacion_precio_m2_%'].notnull())]
+        diff = np.abs(sub['variacion_precio_m2_%'] - sub['ipvn_variacion_anual']).mean()
+        print(f"  - {city}: {diff:.3f} pp de diferencia promedio")
+
+realizar_validacion_ipvn(df_final)
+
 print("12. Exportando...")
-df_final.to_csv(os.path.join(DIR_PROCESSED, "vivienda_colombia_limpio.csv"), index=False)
-pd.DataFrame(reporte_metricas).to_csv(os.path.join(DIR_PROCESSED, "reporte_limpieza.csv"), index=False)
+# Exportar con encoding='utf-8-sig' para preservar las tildes en Excel
+df_final.to_csv(os.path.join(DIR_PROCESSED, "vivienda_colombia_limpio.csv"), index=False, encoding='utf-8-sig')
+pd.DataFrame(reporte_metricas).to_csv(os.path.join(DIR_PROCESSED, "reporte_limpieza.csv"), index=False, encoding='utf-8-sig')
 print("Archivos exportados exitosamente.")

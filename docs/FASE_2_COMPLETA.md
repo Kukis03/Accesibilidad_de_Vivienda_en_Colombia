@@ -1,5 +1,5 @@
-# Fase 2 — Comprensión de los Datos
-## Proyecto: Accesibilidad de Vivienda en Colombia · CRISP-DM 2025-I
+﻿# Fase 2 — Comprensión de los Datos
+## Proyecto: Accesibilidad de Vivienda en Colombia · CRISP-DM 2026-I
 **Responsable principal:** Sofía · **Apoyo:** Steve  
 **Período de análisis:** 2019 – 2024  
 **Estado:** ✅ Completa y lista para revisión del jurado  
@@ -1756,6 +1756,7 @@ La respuesta preliminar a las 4 preguntas de investigación:
 
 ---
 
-*Documento de Fase 2 · CRISP-DM 2025-I · Proyecto Accesibilidad Habitacional Colombia*  
+*Documento de Fase 2 · CRISP-DM 2026-I · Proyecto Accesibilidad Habitacional Colombia*  
 *Steve (responsable) · Sofía (apoyo) — Repositorio: github.com/[usuario]/proyecto-vivienda-colombia*  
 *Semanas 3–4 del proyecto · Sección 9-bis agregada: estrategia refuerzo Villavicencio (scraping + IPVN DANE + CENAC)*
+

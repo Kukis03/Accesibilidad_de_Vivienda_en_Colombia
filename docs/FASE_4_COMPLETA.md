@@ -1,5 +1,5 @@
-# Fase 4 — Modelado
-## Proyecto: Accesibilidad de Vivienda en Colombia · CRISP-DM 2025-I
+﻿# Fase 4 — Modelado
+## Proyecto: Accesibilidad de Vivienda en Colombia · CRISP-DM 2026-I
 **Responsable principal:** Steve · **Apoyo:** Kukis  
 **Estado:** ⏳ Pendiente — requiere dataset corregido de Fase 3 (8 bugs sin corregir)  
 **Notebook asociado:** `notebooks/03_modelado.ipynb` *(por ejecutar)*  
@@ -420,5 +420,6 @@ print(f"Varianza acumulada (2 componentes): {np.sum(pca.explained_variance_ratio
 
 ---
 
-*Documento de Fase 4 · CRISP-DM 2025-I · Proyecto Accesibilidad Habitacional Colombia*  
+*Documento de Fase 4 · CRISP-DM 2026-I · Proyecto Accesibilidad Habitacional Colombia*  
 *Estado: PLANTILLA — completar con datos reales tras ejecutar la fase*
+
