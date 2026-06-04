@@ -1,4 +1,4 @@
-﻿import streamlit as st
+import streamlit as st
 import pandas as pd
 import numpy as np
 import plotly.express as px
@@ -44,11 +44,7 @@ if df.empty:
     st.stop()
 
 # ── Sidebar ───────────────────────────────────────────────────────────────────
-st.sidebar.image(
-    "https://upload.wikimedia.org/wikipedia/commons/2/2a/Flag_of_Colombia.svg",
-    width=90
-)
-st.sidebar.header("Filtros Generales")
+st.sidebar.markdown("## ⚙️ Filtros Generales")
 
 ciudades_disponibles = sorted(df['city'].unique())
 ciudades_sel = st.sidebar.multiselect(

@@ -4,8 +4,8 @@ import plotly.express as px
 import plotly.graph_objects as go
 import os
 
-st.set_page_config(page_title="Análisis Nacional", page_icon="🇨🇴", layout="wide")
-st.title("🇨🇴 Comportamiento Macroeconómico Nacional")
+st.set_page_config(page_title="Análisis Nacional", page_icon="📈", layout="wide")
+st.title("📈 Comportamiento Macroeconómico Nacional")
 
 # ── Carga de datos ────────────────────────────────────────────────────────────
 @st.cache_data
