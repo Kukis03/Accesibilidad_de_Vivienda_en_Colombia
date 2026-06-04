@@ -1,8 +1,8 @@
-# Fase 1 — Comprensión del Negocio
+﻿# Fase 1 — Comprensión del Negocio
 
 ---
 
-**Proyecto:** Accesibilidad de Vivienda en Colombia · CRISP-DM 2025-I  
+**Proyecto:** Accesibilidad de Vivienda en Colombia · CRISP-DM 2026-I  
 **Equipo:** Steve (responsable) · Sofía · Kukis  
 **Período de análisis:** 2019 – 2024  
 **Estado:** Completa y lista para revisión del jurado
@@ -384,5 +384,6 @@ A cambio se entrega:
 
 ---
 
-*Documento de Fase 1 · CRISP-DM 2025-I · Proyecto Accesibilidad Habitacional Colombia — 2019–2024*  
+*Documento de Fase 1 · CRISP-DM 2026-I · Proyecto Accesibilidad Habitacional Colombia — 2019–2024*  
 *Equipo: Steve · Sofía · Kukis*
+

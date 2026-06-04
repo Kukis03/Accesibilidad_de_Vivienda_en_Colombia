@@ -1,8 +1,8 @@
-# Fase 3 — Hallazgos de Preparación de los Datos
+﻿# Fase 3 — Hallazgos de Preparación de los Datos
 
 ---
 
-**Proyecto:** Accesibilidad de Vivienda en Colombia · CRISP-DM 2025-I  
+**Proyecto:** Accesibilidad de Vivienda en Colombia · CRISP-DM 2026-I  
 **Responsable:** Kukis · **Apoyo:** Steve  
 **Período de análisis:** 2020 – 2024 (rango real confirmado)  
 **Estado:** ✅ Completa — pipeline corregido y ejecutado exitosamente  
@@ -359,6 +359,7 @@ no del inmueble real. Suficiente para mapas de calor por ciudad, no para anális
 
 ---
 
-*Documento de Fase 3 · CRISP-DM 2025-I · Proyecto Accesibilidad Habitacional Colombia — 2020–2024*  
+*Documento de Fase 3 · CRISP-DM 2026-I · Proyecto Accesibilidad Habitacional Colombia — 2020–2024*  
 *Kukis · Steve · Revisión técnica completada el 2026-06-03*  
 *Repositorio: github.com/AlexanderPineda25/Accesibilidad_de_Vivienda_en_Colombia*
+

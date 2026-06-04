@@ -1,4 +1,4 @@
-import streamlit as st
+﻿import streamlit as st
 import pandas as pd
 import numpy as np
 import plotly.express as px
@@ -23,7 +23,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 st.markdown("<h1 class='main-title'>🏠 Accesibilidad de Vivienda en Colombia</h1>", unsafe_allow_html=True)
-st.markdown("<p class='main-sub'>Proyecto CRISP-DM 2025-I · 12 ciudades · 2020–2023 · IAH, precios y variables macroeconómicas</p>", unsafe_allow_html=True)
+st.markdown("<p class='main-sub'>Proyecto CRISP-DM 2026-I · 12 ciudades · 2020–2023 · IAH, precios y variables macroeconómicas</p>", unsafe_allow_html=True)
 
 # ── Carga de datos ────────────────────────────────────────────────────────────
 @st.cache_data
@@ -146,7 +146,7 @@ with tab2:
 
 with tab3:
     st.markdown("""
-    ### Accesibilidad de Vivienda en Colombia · CRISP-DM 2025-I
+    ### Accesibilidad de Vivienda en Colombia · CRISP-DM 2026-I
 
     Este dashboard presenta los resultados del análisis de accesibilidad habitacional
     para **12 ciudades principales de Colombia** durante el período **2020–2023**.
@@ -175,3 +175,4 @@ with tab3:
     Representa los años de salario mínimo que una persona necesitaría para comprar
     la vivienda sin financiación. Umbral OCDE: ≤ 5 años = Accesible.
     """)
+

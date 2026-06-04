@@ -1,5 +1,5 @@
-# Fase 6 — Despliegue
-## Proyecto: Accesibilidad de Vivienda en Colombia · CRISP-DM 2025-I
+﻿# Fase 6 — Despliegue
+## Proyecto: Accesibilidad de Vivienda en Colombia · CRISP-DM 2026-I
 **Responsable principal:** Kukis · **Apoyo:** Sofía  
 **Estado:** ⏳ Pendiente — requiere modelo y segmentos validados de Fases 4 y 5  
 **Semanas:** 10 – 11
@@ -431,7 +431,7 @@ proyecto-vivienda-colombia/
 ## 7. README.md del Repositorio (Plantilla)
 
 ```markdown
-# Accesibilidad de Vivienda en Colombia · CRISP-DM 2025-I
+# Accesibilidad de Vivienda en Colombia · CRISP-DM 2026-I
 
 Proyecto de ciencia de datos que aplica la metodología **CRISP-DM** para estudiar
 la evolución del Índice de Accesibilidad Habitacional (IAH) en 12 capitales de
@@ -518,5 +518,6 @@ La documentación detallada de cada fase CRISP-DM está en `/docs`.
 
 ---
 
-*Documento de Fase 6 · CRISP-DM 2025-I · Proyecto Accesibilidad Habitacional Colombia*  
+*Documento de Fase 6 · CRISP-DM 2026-I · Proyecto Accesibilidad Habitacional Colombia*  
 *Estado: PLANTILLA — completar con datos reales tras ejecutar el despliegue*
+

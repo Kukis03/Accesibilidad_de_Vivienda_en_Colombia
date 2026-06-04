@@ -1,8 +1,8 @@
-# Fase 2 — Hallazgos de Comprensión de los Datos
+﻿# Fase 2 — Hallazgos de Comprensión de los Datos
 
 ---
 
-**Proyecto:** Accesibilidad de Vivienda en Colombia · CRISP-DM 2025-I  
+**Proyecto:** Accesibilidad de Vivienda en Colombia · CRISP-DM 2026-I  
 **Responsable:** Sofía · **Apoyo:** Steve  
 **Período de análisis:** 2019 – 2024  
 **Estado:** ✅ Completa y lista para revisión del jurado  
@@ -334,5 +334,6 @@ de los datasets de listados digitales (FincaRaiz, Properati) frente a estadísti
 
 ---
 
-*Documento de Fase 2 · CRISP-DM 2025-I · Proyecto Accesibilidad Habitacional Colombia — 2019–2024*  
+*Documento de Fase 2 · CRISP-DM 2026-I · Proyecto Accesibilidad Habitacional Colombia — 2019–2024*  
 *Sofía · Steve · Repositorio: github.com/AlexanderPineda25/Accesibilidad_de_Vivienda_en_Colombia*
+

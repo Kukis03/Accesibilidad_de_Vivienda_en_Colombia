@@ -135,5 +135,6 @@ La asignación de responsables asegura la especialización y la revisión cruzad
 * **Kukis** (Líder de Fases 3 y 6): Limpieza e integración de datos macro, construcción de variables derivadas y desarrollo del dashboard multipágina en Streamlit.
 
 ---
-*Proyecto Académico · Minería de Datos 2025-I · Colombia*  
+*Proyecto Académico · DATA ANALYTICS 2026-I · Colombia*  
 *Para mayor detalle técnico y de negocio, por favor consulte los reportes completos en la carpeta [/docs]*
+

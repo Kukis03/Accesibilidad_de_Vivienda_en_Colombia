@@ -1,5 +1,5 @@
-# Fase 3 — Preparación de los Datos
-## Proyecto: Accesibilidad de Vivienda en Colombia · CRISP-DM 2025-I
+﻿# Fase 3 — Preparación de los Datos
+## Proyecto: Accesibilidad de Vivienda en Colombia · CRISP-DM 2026-I
 **Responsable principal:** Kukis · **Apoyo:** Steve  
 **Estado:** ✅ Completo — 8 bugs corregidos y pipeline ejecutado exitosamente.
 **Notebook asociado:** `notebooks/02_preparacion_datos.ipynb` · `notebooks/02_preparacion_datos.py`  
@@ -313,5 +313,6 @@ La inclusión de coordenadas en la clave estabilizó las estimaciones locales. L
 
 ---
 
-*Documento de Fase 3 · CRISP-DM 2025-I · Proyecto Accesibilidad Habitacional Colombia*  
+*Documento de Fase 3 · CRISP-DM 2026-I · Proyecto Accesibilidad Habitacional Colombia*  
 *Revisión técnica y ejecución completadas con éxito el 2026-06-03*
+
