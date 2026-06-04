@@ -84,13 +84,19 @@ def cargar_y_canonizar_datasets():
     df2 = df2.rename(columns={
         'Precio': 'price', 'Area Construida': 'area', 'Habitaciones': 'rooms',
         'Banos': 'bathrooms', 'Tipo Propiedad': 'property_type', 'Ciudad': 'city',
-        'Estrato': 'estrato'
+        'Estrato': 'estrato', 'Fecha Actualizacion': 'created_on'
     })
     
     if 'price' in df2.columns:
         df2['price'] = pd.to_numeric(df2['price'].astype(str).str.replace(r'[^\d.]', '', regex=True), errors='coerce')
         # B1 Fix: El precio en A2 ya está en COP completos. NO multiplicar por 1_000_000.
     
+    # Extraer coordenadas geográficas de FincaRaiz
+    if 'Link Google Maps' in df2.columns:
+        coordenadas = df2['Link Google Maps'].str.extract(r'q=([\d.-]+),([\d.-]+)')
+        df2['lat'] = pd.to_numeric(coordenadas[0], errors='coerce')
+        df2['lon'] = pd.to_numeric(coordenadas[1], errors='coerce')
+
     df2['fuente'] = 'A2_FincaRaiz_Kaggle'
     datasets.append(df2)
     
