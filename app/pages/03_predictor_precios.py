@@ -1,7 +1,5 @@
 import streamlit as st
 import pandas as pd
-import numpy as np
-import plotly.express as px
 import json
 import warnings
 warnings.filterwarnings('ignore')
@@ -15,16 +13,27 @@ def load_data():
 @st.cache_resource
 def load_model():
     import joblib
-    return joblib.load("models/modelo_random_forest.pkl")
+    try:
+        return joblib.load("models/modelo_random_forest.pkl")
+    except FileNotFoundError:
+        st.error("❌ Modelo no encontrado: `models/modelo_random_forest.pkl`. Verifica que Git LFS esté configurado y los archivos se hayan descargado.")
+        return None
 
 @st.cache_data
 def load_features():
-    with open("models/features_order.json") as f:
-        return json.load(f)
+    try:
+        with open("models/features_order.json") as f:
+            return json.load(f)
+    except FileNotFoundError:
+        st.error("❌ Archivo `models/features_order.json` no encontrado.")
+        return None
 
 df = load_data()
 model = load_model()
 features_order = load_features()
+
+if model is None or features_order is None:
+    st.stop()
 
 ciudades = sorted(df['city'].unique())
 anios = sorted(df['year'].unique())
@@ -60,6 +69,7 @@ if ok:
     with st.spinner("Calculando..."):
         macro = macro_vars[(macro_vars['city'] == ciudad) & (macro_vars['year'] == anio)]
         if macro.empty:
+            st.warning(f"⚠️ Datos macroeconómicos no disponibles para {ciudad} {anio}. Usando promedio nacional de {anio} como aproximación.")
             cols_num = ['ipc_var_anual', 'tasa_hipotecaria_anual', 'tasa_desempleo', 'ipvu_variacion_anual', 'salario_anual']
             vals = macro_vars[macro_vars['year'] == anio][cols_num].mean()
             vals['city'] = ciudad
@@ -80,7 +90,7 @@ if ok:
         iah = pred / sal if sal > 0 else 0
         tasa = float(macro['tasa_hipotecaria_anual'].values[0]) / 100
         if tasa > 0:
-            r = tasa / 12
+            r = tasa / 12  # nominal mensual (BanRep tasa nominal anual)
             cuota = (pred * 0.70 * r * (1 + r)**180) / ((1 + r)**180 - 1)
         else:
             cuota = 0
@@ -112,7 +122,7 @@ if ok:
         </div>
         """, unsafe_allow_html=True)
 
-        pct = (df[(df['city'] == ciudad) & (df['year'] == anio)]['price'] < pred).mean() * 100
+        pct = (df[(df['city'] == ciudad) & (df['year'] == anio) & (df['property_type'] == tipo)]['price'] < pred).mean() * 100
         st.info(f"📊 Esta vivienda está en el **percentil {pct:.0f}** de precios en **{ciudad}** ({anio}). "
                 f"Es más cara que el {pct:.0f}% de las viviendas listadas en esa ciudad y año.")
 

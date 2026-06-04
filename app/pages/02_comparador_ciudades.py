@@ -1,8 +1,6 @@
 import streamlit as st
 import pandas as pd
-import numpy as np
 import plotly.express as px
-import plotly.graph_objects as go
 import warnings
 warnings.filterwarnings('ignore')
 
@@ -105,22 +103,22 @@ with tab2:
 
     st.markdown("---")
     st.subheader("💰 ¿En qué ciudades la cuota hipotecaria supera el 30% del salario? (Pregunta P4)")
-    st.markdown("""
+    pct_total = (df['ratio_cuota_salario'] > 0.30).mean() * 100
+    st.markdown(f"""
     El umbral financiero crítico es cuando la cuota mensual supera el **30% del salario mínimo**.
-    En Colombia, **el 100% del mercado supera este umbral** en todos los años analizados.
+    En Colombia, **el {pct_total:.2f}% del mercado supera este umbral** en todos los años analizados.
     """)
-    ratio_all = df.groupby(['city', 'year'])['ratio_cuota_salario'].median().reset_index()
+    ratio_all = df[df['city'].isin(cities_sel)].groupby(['city', 'year'])['ratio_cuota_salario'].median().reset_index()
     ratio_pivot = ratio_all.pivot(index='city', columns='year', values='ratio_cuota_salario')
     fig_heat = px.imshow(ratio_pivot.values,
                          x=ratio_pivot.columns, y=ratio_pivot.index,
-                         color_continuous_scale=['#2E7D32', '#F9A825', '#C62828'],
-                         range_color=[0, 0.6], aspect="auto",
+                         color_continuous_scale='RdYlGn_r',
+                         aspect="auto",
                          labels=dict(x="Año", y="Ciudad", color="Ratio"),
                          title="Ratio Cuota / Salario por Ciudad y Año (rojo > 30%)")
     fig_heat.update_layout(height=450)
     st.plotly_chart(fig_heat, use_container_width=True)
 
-    pct_total = (df['ratio_cuota_salario'] > 0.30).mean() * 100
-    st.error(f"📌 **Hallazgo P4:** El **{pct_total:.0f}%** del mercado de vivienda en Colombia tiene una cuota hipotecaria superior al 30% del salario mínimo. "
+    st.error(f"📌 **Hallazgo P4:** El **{pct_total:.2f}%** del mercado de vivienda en Colombia tiene una cuota hipotecaria superior al 30% del salario mínimo. "
              f"Todas las ciudades en todos los años superan este umbral. El mercado es **financieramente inviable** para un hogar de salario mínimo.")
     st.info("💡 **Implicación:** La política de vivienda debería enfocarse en reducir el precio por m² (especialmente en Bogotá y Medellín) y/o en subsidiar la cuota hipotecaria para hogares de bajos ingresos.")

@@ -1,0 +1,22 @@
+[
+  {
+    "Variable": "bathrooms",
+    "Correlación Pearson": 0.6
+  },
+  {
+    "Variable": "area",
+    "Correlación Pearson": 0.46
+  },
+  {
+    "Variable": "estrato",
+    "Correlación Pearson": 0.43
+  },
+  {
+    "Variable": "tasa_desempleo",
+    "Correlación Pearson": -0.2
+  },
+  {
+    "Variable": "rooms",
+    "Correlación Pearson": 0.18
+  }
+]

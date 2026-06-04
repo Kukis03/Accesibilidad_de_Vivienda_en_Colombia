@@ -50,6 +50,8 @@ El modelo Random Forest (R²=0.6348) identificó que **las características fís
 
 **Resultado:** 4/6 criterios cumplidos. El modelo de regresión no alcanza el umbral de R² ≥ 0.75 ni RMSE rel < 15%.
 
+> **Nota sobre trazabilidad de criterios:** Fase 1 definió originalmente **8 criterios** (4 de negocio + 4 técnicos). De estos, 2 se excluyeron de la evaluación cuantitativa por su naturaleza cualitativa: *"Segmentos diferenciables ≥ 3"* (subsumido por el coeficiente de silueta) y *"Dashboard funcional"* (no evaluable numéricamente). Adicionalmente, 2 criterios de negocio (*"Respuesta a preguntas de investigación"* y *"Relevancia para stakeholders"*) se verifican cualitativamente en las secciones 2-5 de este documento. Se agregó *"CV R² desv std < 0.02"* como control de calidad interna no definido originalmente en Fase 1.
+
 ## 2. Métricas del Modelo de Regresión (Random Forest Optimizado)
 
 | Métrica | Valor |

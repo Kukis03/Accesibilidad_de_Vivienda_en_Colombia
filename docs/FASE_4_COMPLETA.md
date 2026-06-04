@@ -100,7 +100,7 @@ Se entrenaron y compararon modelos de regresión (Ridge, Random Forest) para pre
 |---|---|
 | Número de clusters elegido | **5** |
 | Coeficiente de silueta | **0.4874** |
-| Segmentos | 2 Elevados (IAH 25-29), 3 Moderados (IAH 12-19) |
+| Segmentos | 2 Premium (IAH 25-29), 3 Intermedios (IAH 12-19) |
 | DBSCAN (eps=0.8) | 4 clusters, 8 pts ruido (Bogotá, Cartagena, Medellín, Pereira) |
 | PCA varianza explicada | 97.23% (PC1=70.18%, PC2=27.05%) |
 
@@ -108,11 +108,11 @@ Se entrenaron y compararon modelos de regresión (Ridge, Random Forest) para pre
 
 | Cluster | IAH medio | precio_m2 medio | ratio_cuota_salario | tasa_desempleo | Count | Nombre |
 |---|---:|---:|---:|---:|---:|:---|
-| 0 | 29.23 | $4,597,674 | 2.52 | 15.70 | 6 | Elevado |
-| 1 | 16.24 | $2,144,328 | 1.40 | 15.70 | 18 | Moderado |
-| 2 | 18.66 | $3,376,073 | 2.37 | 10.62 | 12 | Moderado |
-| 3 | 25.43 | — | — | — | — | Elevado |
-| 4 | 12.87 | — | — | — | — | Moderado |
+| 0 | 29.23 | $4,597,674 | 2.52 | 15.70 | 6 | Premium |
+| 1 | 16.24 | $2,144,328 | 1.40 | 15.70 | 18 | Intermedio |
+| 2 | 18.66 | $3,376,073 | 2.37 | 10.62 | 12 | Intermedio-Alto |
+| 3 | 25.35 | $4,904,361 | 3.29 | 10.45 | 6 | Premium |
+| 4 | 12.93 | $2,524,136 | 1.59 | 10.73 | 9 | Intermedio |
 
 ---
 
@@ -134,7 +134,7 @@ Se entrenaron y compararon modelos de regresión (Ridge, Random Forest) para pre
 | Random Forest supera a Ridge en +9.66 pp de R², pero sigue lejos del umbral 0.75 | RF=0.6348 vs Ridge=0.5382 |
 | El RMSE relativo de 67.86% indica que el error de predicción es enorme respecto a la mediana de precios | RMSE relativo: 67.86% vs umbral 15% |
 | Las variables macroeconómicas tienen VIF extremadamente alto (tasa_desempleo=85.5, tasa_hipotecaria=39.0), indicando multicolinealidad severa | VIF reportado en Sección 2 |
-| `tasa_desempleo` y `ipc_var_anual` son las variables más importantes (12% cada una), seguidas de `area` y `estrato` | Feature importance del RF |
+| `bathrooms` (42.2%), `area` (28.0%) y `estrato` (11.3%) son las variables más importantes; el contexto macro aporta <5% | Feature importance del RF (extraída del modelo) |
 | El clustering es sólido: 5 segmentos con silueta de 0.4874, superando el umbral de 0.45 | Silueta confirmada con DBSCAN y PCA |
 | 3 ciudades (Armenia, Barranquilla, Cartagena) solo tienen datos 2020-2021, limitando su representación en clustering | 51 de 60 city-year posibles |
 | DBSCAN identifica Bogotá, Cartagena, Medellín y Pereira como ruido en clustering — mercados atípicos | eps=0.8, min_samples=3 |
@@ -176,9 +176,10 @@ Se entrenaron y compararon modelos de regresión (Ridge, Random Forest) para pre
 
 | Entregable | Ruta | Estado |
 |---|---|---|
-| Notebook de modelado | `notebooks/03_modelado_ejecutado.ipynb` | ✅ Ejecutado |
+| Notebook de modelado | `notebooks/03_modelado.ipynb` | ✅ Ejecutado |
 | Modelo de regresión | `models/modelo_random_forest.pkl` | ✅ 448 MB |
 | Modelo de clustering | `models/kmeans_segmentacion.pkl` | ✅ 1 KB |
+| Pipeline clustering | `models/pipeline_clustering.pkl` | ✅ (scaler+kmeans encapsulados) |
 | Scaler de clustering | `models/scaler_cluster.pkl` | ✅ 1 KB |
 | Orden de features | `models/features_order.json` | ✅ 159 bytes |
 | Clusters ciudad-año | `data/processed/ciudades_clusters.csv` | ✅ 7.6 KB |

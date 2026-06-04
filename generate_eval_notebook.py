@@ -66,8 +66,9 @@ print(f"Test:  {X_test.shape[0]:,}")""")
 
 c("""model_rf = joblib.load('models/modelo_random_forest.pkl')
 print("Modelo RF cargado exitosamente")
-kmeans = joblib.load('models/kmeans_segmentacion.pkl')
-scaler_cluster = joblib.load('models/scaler_cluster.pkl')
+pipeline_cluster = joblib.load('models/pipeline_clustering.pkl')
+scaler_cluster = pipeline_cluster.named_steps['scaler']
+kmeans = pipeline_cluster.named_steps['kmeans']
 print("Modelos de clustering cargados")
 ciudades_clusters = pd.read_csv("data/processed/ciudades_clusters.csv")
 print(f"Tabla de clusters: {ciudades_clusters.shape}")""")
@@ -488,13 +489,13 @@ a("## Sección 7: Validación Final del Proyecto")
 
 c("""print("=== VERIFICACIÓN DE OBJETIVOS ===")
 p1 = "¿Cuántos años de salario equivale el precio?" in open("notebooks/03_modelado.ipynb", encoding="utf-8").read()
-print(f"Pregunta 1 (IAH): {'✅ Respondida' if True else '❌'}")
+print(f"Pregunta 1 (IAH): {'✅ Respondida' if p1 else '❌ No encontrada'}")
 p2 = "feature_importances_" in open("notebooks/03_modelado.ipynb", encoding="utf-8").read()
-print(f"Pregunta 2 (variables predictivas): {'✅ Respondida' if True else '❌'}")
-p3 = "silhouette_score" in open("notebooks/03_modelado_v2.ipynb", encoding="utf-8").read() or True
-print(f"Pregunta 3 (segmentación): {'✅ Respondida' if True else '❌'}")
+print(f"Pregunta 2 (variables predictivas): {'✅ Respondida' if p2 else '❌ No encontrada'}")
+p3 = "silhouette_score" in open("notebooks/03_modelado_v2.ipynb", encoding="utf-8").read()
+print(f"Pregunta 3 (segmentación): {'✅ Respondida' if p3 else '❌ No encontrada'}")
 p4 = "ratio_cuota_salario" in open("notebooks/03_modelado.ipynb", encoding="utf-8").read()
-print(f"Pregunta 4 (cuota hipotecaria): {'✅ Respondida' if True else '❌'}")
+print(f"Pregunta 4 (cuota hipotecaria): {'✅ Respondida' if p4 else '❌ No encontrada'}")
 print("\\n4 preguntas de investigación respondidas con evidencia cuantitativa y gráfica.")""")
 
 c("""print("=== LIMITACIONES DEL PROYECTO ===")

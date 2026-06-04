@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import os
 import re
+import warnings
 
 # Directorios robustos a la ubicación de ejecución
 if os.path.exists(os.path.join("data", "raw")):
@@ -224,6 +225,12 @@ def limpiar_precios_y_monedas(df):
 
     is_cop_m2 = is_properati & (df['price'] < 1000000) & (df['price'] > 5000) & (df['area'] > 10)
     df.loc[is_cop_m2, 'price'] = df.loc[is_cop_m2, 'price'] * df.loc[is_cop_m2, 'area']
+    # Sanity check: descartar si el precio resultante es menor a 10M (sigue siendo precio/m2)
+    sospechosos = is_cop_m2 & (df['price'] < 10000000)
+    if sospechosos.any():
+        n_sospechosos = sospechosos.sum()
+        print(f"  ⚠️ {n_sospechosos} registros con precio/m2 sospechoso (resultado < 10M COP) — descartados")
+        df = df[~sospechosos]
 
     df = df[df['price'].notnull()]
     df = df[(df['price'] >= 10000000) & (df['price'] <= 10000000000)]
@@ -286,7 +293,15 @@ def estandarizar_ciudades(df):
     # B6 Fix: NO usar normalize('NFKD').encode('ascii', errors='ignore')
     df['city_raw'] = df['city'].astype(str).str.lower().str.strip()
     df['city_clean'] = df['city_raw'].map(MAPA_CIUDADES)
+    n_antes = len(df)
+    df_eliminadas = df[df['city_clean'].isnull()].copy()
     df = df[df['city_clean'].notnull()].copy()
+    n_descartadas = n_antes - len(df)
+    if n_descartadas > 0:
+        ciudades_perdidas = df_eliminadas['city_raw'].value_counts().head(5).to_dict()
+        msg = f"{n_descartadas} registros de ciudades no focales eliminados: {ciudades_perdidas}"
+        warnings.warn(msg)
+        print(f"  ⚠️ {msg}")
     df = df.drop(columns=['city', 'city_raw']).rename(columns={'city_clean': 'city'})
     return df
 
@@ -359,7 +374,7 @@ def eliminar_outliers_grupos(df):
 
 print("6. Eliminando outliers por grupo...")
 df_clean_outliers = eliminar_outliers_grupos(df_clean_prop)
-registrar_metrica(5, "Filtro IQR Outliers por Grupo", df_clean_prop, df_clean_outliers)
+registrar_metrica(5, "Filtro Percentil Outliers por Grupo (price 2.5-97.5%, area 1-99%)", df_clean_prop, df_clean_outliers)
 diagnostico_por_fuente(df_clean_outliers, "Tras outliers IQR")
 
 # Sección 6.5: Pre-imputación de área ANTES de la deduplicación
@@ -400,9 +415,14 @@ def eliminar_duplicados_v2(df):
     }
     df['fuente_priority'] = df['fuente'].map(prioridad_fuente).fillna(10)
 
-    # Redondear coordenadas para la clave (los nulos se agrupan en -1.0)
-    df['lat_key'] = df['lat'].round(3).fillna(-1.0)
-    df['lon_key'] = df['lon'].round(3).fillna(-1.0)
+    # Redondear coordenadas para la clave
+    # Si no hay coordenadas, usar un hash único por registro para evitar colapsar propiedades distintas
+    df['coord_key'] = df['lat'].round(3).astype(str) + "_" + df['lon'].round(3).astype(str)
+    mask_sin_coord = df['lat'].isna() | df['lon'].isna()
+    df.loc[mask_sin_coord, 'coord_key'] = (
+        'null_' + df.loc[mask_sin_coord, 'fuente'] + '_' +
+        df.loc[mask_sin_coord].index.astype(str)
+    )
 
     mask_con_area = df['area'].notnull()
     df_con_area  = df[mask_con_area].copy()
@@ -415,8 +435,7 @@ def eliminar_duplicados_v2(df):
         np.round(df_con_area['area']).astype(str) + "_" +
         df_con_area['property_type'].astype(str) + "_" +
         df_con_area['year'].astype(str) + "_" +
-        df_con_area['lat_key'].astype(str) + "_" +
-        df_con_area['lon_key'].astype(str)
+        df_con_area['coord_key'].astype(str)
     )
     df_con_area = df_con_area.sort_values('fuente_priority')
     df_con_area = df_con_area.drop_duplicates(subset=['dup_key'], keep='first')
@@ -428,14 +447,13 @@ def eliminar_duplicados_v2(df):
             (np.round(df_sin_area['price'] / 5_000_000) * 5).astype(str) + "_" +
             df_sin_area['property_type'].astype(str) + "_" +
             df_sin_area['year'].astype(str) + "_" +
-            df_sin_area['lat_key'].astype(str) + "_" +
-            df_sin_area['lon_key'].astype(str)
+            df_sin_area['coord_key'].astype(str)
         )
         df_sin_area = df_sin_area.sort_values('fuente_priority')
         df_sin_area = df_sin_area.drop_duplicates(subset=['dup_key'], keep='first')
 
     df_resultado = pd.concat([df_con_area, df_sin_area], ignore_index=True)
-    df_resultado = df_resultado.drop(columns=['dup_key', 'fuente_priority', 'lat_key', 'lon_key'])
+    df_resultado = df_resultado.drop(columns=['dup_key', 'fuente_priority', 'coord_key'])
 
     print(f"  Con área: {len(df_con_area):,} | Sin área: {len(df_sin_area):,} | Total: {len(df_resultado):,}")
     return df_resultado
@@ -556,7 +574,7 @@ def calcular_cuota_mensual(precio, tasa_anual, meses=180, financia=0.70):
     if pd.isna(precio) or pd.isna(tasa_anual) or tasa_anual <= 0:
         return np.nan
     monto_credito = precio * financia
-    tasa_mensual = (1 + (tasa_anual / 100)) ** (1/12) - 1
+    tasa_mensual = (tasa_anual / 100) / 12
     cuota = monto_credito * (tasa_mensual * (1 + tasa_mensual)**meses) / ((1 + tasa_mensual)**meses - 1)
     return cuota
 
@@ -623,7 +641,7 @@ def realizar_validacion_ipvn(df):
     df_valid = df[df['city'].isin(['Bogotá', 'Medellín'])].copy()
     
     # Calcular precio_m2 promedio por ciudad y año
-    df_m2 = df_valid.groupby(['city', 'year'])['precio_m2'].mean().reset_index()
+    df_m2 = df_valid.groupby(['city', 'year'])['precio_m2'].median().reset_index()
     
     # Calcular variación anual propia
     df_m2['variacion_precio_m2_%'] = df_m2.groupby('city')['precio_m2'].pct_change() * 100

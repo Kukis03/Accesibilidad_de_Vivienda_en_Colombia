@@ -38,8 +38,9 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.20, random
 print(f"Train: {X_train.shape[0]:,}, Test: {X_test.shape[0]:,}")
 
 model_rf = joblib.load('models/modelo_random_forest.pkl')
-kmeans = joblib.load('models/kmeans_segmentacion.pkl')
-scaler_cluster = joblib.load('models/scaler_cluster.pkl')
+pipeline_cluster = joblib.load('models/pipeline_clustering.pkl')
+scaler_cluster = pipeline_cluster.named_steps['scaler']
+kmeans = pipeline_cluster.named_steps['kmeans']
 ciudades_clusters = pd.read_csv("data/processed/ciudades_clusters.csv")
 print("Modelos cargados")
 
@@ -235,7 +236,7 @@ ax.set_xlabel('Porcentaje'); ax.set_ylabel('Ciudad'); ax.set_title('Niveles de A
 ax.legend(title='Nivel', bbox_to_anchor=(1,1))
 plt.tight_layout(); plt.savefig('docs/figures/fig_niveles_accesibilidad.png', dpi=150, bbox_inches='tight'); plt.close()
 
-critica_2024 = df[df['year']==2024].groupby('city')['nivel_accesibilidad'].apply(lambda x: (x=='Critico').mean()*100).sort_values(ascending=False)
+critica_2024 = df[df['year']==2024].groupby('city')['nivel_accesibilidad'].apply(lambda x: (x=='Crítico').mean()*100).sort_values(ascending=False)
 accesible_evo = df[df['nivel_accesibilidad']=='Accesible'].groupby('year').size() / df.groupby('year').size() * 100
 
 precio_anual = df.groupby('year')[['price','precio_real']].median().reset_index()

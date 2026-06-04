@@ -1,8 +1,8 @@
 import streamlit as st
 import pandas as pd
-import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
+import json
 import warnings
 warnings.filterwarnings('ignore')
 
@@ -11,7 +11,7 @@ st.set_page_config(page_title="Análisis Nacional", page_icon="🇨🇴", layout
 @st.cache_data
 def load_data():
     df = pd.read_csv("data/processed/vivienda_colombia_limpio.csv", encoding="utf-8-sig")
-    df['nivel_accesibilidad'] = df['nivel_accesibilidad'].astype(str)
+    df['nivel_accesibilidad'] = df['nivel_accesibilidad'].fillna('Desconocido').astype(str)
     return df
 
 df = load_data()
@@ -98,7 +98,9 @@ with tab3:
                   category_orders={"nivel_accesibilidad": ["Accesible", "Moderado", "Elevado", "Crítico"]})
     fig5.update_layout(xaxis=dict(dtick=1), yaxis_title="% del mercado")
     st.plotly_chart(fig5, use_container_width=True)
-    st.info("📌 **Hallazgo:** El porcentaje de vivienda 'Crítica' (IAH > 20) se mantiene entre 30-50% del mercado. La categoría 'Accesible' nunca supera el 15%.")
+    pct_critica = (df_p['IAH'] > 20).mean() * 100
+    pct_accesible = (df_p['IAH'] <= 5).mean() * 100
+    st.info(f"📌 **Hallazgo:** El **{pct_critica:.1f}%** del mercado es 'Crítico' (IAH > 20). Solo el **{pct_accesible:.1f}%** es 'Accesible' (IAH ≤ 5).")
 
     if ciudad_sel == "Todas":
         st.subheader("Composición por Ciudad (2024)")
@@ -123,12 +125,17 @@ with tab4:
 
     col_a, col_b = st.columns([3, 2])
     with col_a:
-        feat_imp = pd.DataFrame({
-            'variable': ['bathrooms', 'area', 'estrato', 'city_Bogotá', 'rooms', 
-                         'city_Medellín', 'tasa_hipotecaria_anual', 'ipc_var_anual', 
-                         'city_Cali', 'tasa_desempleo'],
-            'importancia': [42.2, 28.0, 11.3, 5.0, 4.2, 1.8, 1.5, 1.2, 1.0, 0.8]
-        })
+        try:
+            with open("models/feature_importances.json") as f:
+                fi_data = json.load(f)
+            feat_imp = pd.DataFrame(fi_data)
+        except (FileNotFoundError, json.JSONDecodeError):
+            feat_imp = pd.DataFrame({
+                'variable': ['bathrooms', 'area', 'estrato', 'city_Bogotá', 'rooms',
+                             'city_Medellín', 'tasa_hipotecaria_anual', 'ipc_var_anual',
+                             'city_Cali', 'tasa_desempleo'],
+                'importancia': [42.2, 28.0, 11.3, 5.0, 4.2, 1.8, 1.5, 1.2, 1.0, 0.8]
+            })
         fig_p2 = px.bar(feat_imp.sort_values('importancia'), x='importancia', y='variable',
                         orientation='h', title="Importancia de Variables en el Modelo RF",
                         labels={'importancia': 'Importancia relativa (%)', 'variable': ''},
@@ -137,21 +144,22 @@ with tab4:
         st.plotly_chart(fig_p2, use_container_width=True)
 
     with col_b:
+        top5 = feat_imp.nlargest(5, 'importancia')
         st.markdown("### Top 5 Variables")
-        st.markdown("""
-        1. 🚿 **bathrooms** — 42.2%
-        2. 📐 **area** — 28.0%
-        3. 🏛️ **estrato** — 11.3%
-        4. 🏙️ **city_Bogotá** — 5.0%
-        5. 🛏️ **rooms** — 4.2%
-        """)
-        st.markdown("**Importancia acumulada top 5: 90.8%**")
+        for i, row in enumerate(top5.itertuples(), 1):
+            st.markdown(f"{i}. **{row.variable}** — {row.importancia:.1f}%")
+        st.markdown(f"**Importancia acumulada top 5: {top5['importancia'].sum():.1f}%**")
         st.markdown("---")
         st.markdown("### Correlación con log(precio)")
-        corr = pd.DataFrame({
-            'Variable': ['bathrooms', 'area', 'estrato', 'tasa_desempleo', 'rooms'],
-            'Correlación Pearson': [0.60, 0.46, 0.43, -0.20, 0.18]
-        })
+        try:
+            with open("models/correlations.json", encoding="utf-8") as f:
+                corr_data = json.load(f)
+            corr = pd.DataFrame(corr_data)
+        except (FileNotFoundError, json.JSONDecodeError):
+            corr = pd.DataFrame({
+                'Variable': ['bathrooms', 'area', 'estrato', 'tasa_desempleo', 'rooms'],
+                'Correlación Pearson': [0.60, 0.46, 0.43, -0.20, 0.18]
+            })
         st.dataframe(corr, use_container_width=True, hide_index=True)
         st.info("📌 **Hallazgo:** Las variables físicas (bathrooms, area, estrato) dominan la predicción con **81.5%** de importancia conjunta. El contexto macro (tasa hipotecaria, IPC, desempleo) aporta menos del **5%**. Esto sugiere que las diferencias de precio entre ciudades están mediadas por la calidad de las viviendas que ofrece cada mercado, no por el entorno macro.")
 

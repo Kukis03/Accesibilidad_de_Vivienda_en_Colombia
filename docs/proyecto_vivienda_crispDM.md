@@ -5,7 +5,7 @@
 **Proyecto:** Accesibilidad de Vivienda en Colombia  
 **Período objetivo:** 2020-2024  
 **Equipo:** Steve · Sofía · Kukis  
-**Última actualización documental:** 2026-06-03
+**Última actualización documental:** 2026-06-04
 
 ---
 
@@ -13,9 +13,13 @@
 
 Este proyecto analiza la accesibilidad económica a la vivienda urbana en Colombia mediante la construcción del **Indice de Accesibilidad Habitacional (IAH)**, una adaptación del Price-to-Income Ratio (PIR) al contexto colombiano usando el salario mínimo legal mensual vigente como proxy de ingreso.
 
-La Fase 1 definió el problema de negocio, el alcance, las 12 ciudades focales, los criterios de éxito y el inventario de 16 fuentes de datos. Las Fases 2 y 3 documentan comprensión y preparación de datos. Las Fases 4, 5 y 6 **no han sido ejecutadas**; por tanto, este documento no reporta métricas de modelos, clusters finales, conclusiones de evaluación ni URL de dashboard.
+La Fase 1 definió el problema de negocio, el alcance, las 12 ciudades focales, los criterios de éxito y el inventario de 16 fuentes de datos. Las Fases 2 y 3 documentan comprensión y preparación de datos. Las **Fases 4, 5 y 6 están completadas**:
 
-> **Estado actual de datos:** `data/processed/vivienda_colombia_limpio.csv` fue validado sin marcadores de conflicto, con 282.660 registros × 26 columnas. Queda pendiente documentar la decisión sobre Armenia vs Santa Marta frente al alcance original de Fase 1.
+- **Fase 4 (Modelado):** Random Forest (R²=0.6348) + KMeans (5 clusters). Modelos exportados a `models/`.
+- **Fase 5 (Evaluación):** 4/6 criterios de éxito cumplidos. Dashboard responde a las 4 preguntas de investigación.
+- **Fase 6 (Despliegue):** Dashboard Streamlit con 5 páginas (Análisis Nacional, Comparador, Predictor, Segmentos, Homepage). Modelo Random Forest cargado vía Git LFS.
+
+> **Estado actual de datos:** `data/processed/vivienda_colombia_limpio.csv` fue validado sin marcadores de conflicto, con 282.660 registros × 26 columnas. Armenia se incorporó al alcance (datos 2020-2021); Santa Marta se excluyó por falta de datos.
 
 ---
 
@@ -39,9 +43,9 @@ La Fase 1 definió el problema de negocio, el alcance, las 12 ciudades focales, 
 | 1 | Comprensión del negocio | Steve | ✅ Completa | `docs/FASE_1_COMPLETA.md` |
 | 2 | Comprensión de los datos | Sofía | ✅ Completa | `docs/FASE_2_COMPLETA.md` |
 | 3 | Preparación de los datos | Kukis | ✅ Completa; caveat de alcance ciudad | `docs/FASE_3_COMPLETA.md` |
-| 4 | Modelado | Steve | ⏳ Pendiente | `docs/FASE_4_COMPLETA.md` |
-| 5 | Evaluación | Sofía | ⏳ Pendiente | `docs/FASE_5_COMPLETA.md` |
-| 6 | Despliegue | Kukis | ⏳ Pendiente | `docs/FASE_6_COMPLETA.md` |
+| 4 | Modelado | Steve | ✅ Completada | `docs/FASE_4_COMPLETA.md` |
+| 5 | Evaluación | Sofía | ✅ Completada | `docs/FASE_5_COMPLETA.md` |
+| 6 | Despliegue | Kukis | ✅ Completada | `docs/GUIA_FASE_6.md` |
 
 ---
 
@@ -99,7 +103,7 @@ Bogotá D.C., Medellín, Cali, Barranquilla, Bucaramanga, Cartagena, Pereira, C�
 | Silueta clustering | >= 0,45 |
 | Segmentos diferenciables | >= 3 |
 
-Estos criterios aún no han sido evaluados porque Fase 4 no se ha ejecutado.
+Estos criterios fueron evaluados en Fase 5 (ver `docs/FASE_5_COMPLETA.md`). Resultado: 4/6 criterios cuantitativos cumplidos. R²=0.6348 (umbral ≥0.75), RMSE rel=67.86% (umbral <15%), silueta=0.4874 (umbral ≥0.45).
 
 ---
 
@@ -161,86 +165,86 @@ El dataset final esperado incluye:
 
 ### Observación actual
 
-El archivo `data/processed/vivienda_colombia_limpio.csv` fue validado con 282.660 registros × 26 columnas, sin marcadores de conflicto y con período 2020-2024. La observación pendiente es de alcance: el CSV incluye Armenia y no incluye Santa Marta, aunque Fase 1 había definido Santa Marta entre las 12 ciudades focales.
+El archivo `data/processed/vivienda_colombia_limpio.csv` fue validado con 282.660 registros × 26 columnas, sin marcadores de conflicto y con período 2020-2024. Decisión de alcance: Armenia se incorporó (datos 2020-2021); Santa Marta se excluyó por falta de datos en las fuentes disponibles.
 
 ---
 
 ## Fase 4 — Modelado
 
-**Estado:** ⏳ Pendiente  
-**Documento plantilla:** `docs/FASE_4_COMPLETA.md`  
+**Estado:** ✅ Completada  
+**Documento:** `docs/FASE_4_COMPLETA.md`  
 **Guía:** `docs/GUIA_FASE_4.md`
 
-### Objetivo planificado
+### Objetivo cumplido
 
-Entrenar modelos de regresión para predicción de precio y modelos de clustering para segmentación de mercados.
+Modelos de regresión (Random Forest, XGBoost v2) y clustering (KMeans, 5 clusters) entrenados y exportados.
 
-### Entregables esperados
+### Entregables
 
-| Entregable | Ruta esperada | Estado |
+| Entregable | Ruta | Estado |
 |---|---|---|
-| Notebook de modelado | `notebooks/03_modelado.ipynb` | `[PENDIENTE]` |
-| Modelo de regresión | `models/modelo_random_forest.pkl` o nombre justificado | `[PENDIENTE]` |
-| Modelo de clustering | `models/kmeans_segmentacion.pkl` | `[PENDIENTE]` |
-| Scaler clustering | `models/scaler_cluster.pkl` | `[PENDIENTE]` |
-| Tabla clusters ciudad-año | `data/processed/ciudades_clusters.csv` | `[PENDIENTE]` |
+| Notebook de modelado v1 | `notebooks/03_modelado.ipynb` | ✅ Ejecutado (RF, R²=0.6348) |
+| Notebook de modelado v2 | `notebooks/03_modelado_v2.ipynb` | ✅ Ejecutado (XGBoost log, R²~0.72) |
+| Modelo de regresión | `models/modelo_random_forest.pkl` | ✅ 448 MB (vía Git LFS) |
+| Modelo XGBoost v2 | `models/modelo_xgboost_v2.pkl` | ✅ (vía Git LFS) |
+| Modelo de clustering | `models/kmeans_segmentacion.pkl` | ✅ 1 KB |
+| Scaler clustering | `models/scaler_cluster.pkl` | ✅ 1 KB |
+| Feature order v1 | `models/features_order.json` | ✅ |
+| Feature order v2 | `models/features_order_v2.json` | ✅ |
+| Feature importances | `models/feature_importances.json` | ✅ |
+| Tabla clusters ciudad-año | `data/processed/ciudades_clusters.csv` | ✅ |
 
-### Métricas pendientes
+### Métricas
 
-| Métrica | Estado |
-|---|---|
-| R2 | `[PENDIENTE]` |
-| RMSE relativo | `[PENDIENTE]` |
-| MAPE | `[PENDIENTE]` |
-| Silueta | `[PENDIENTE]` |
-| Davies-Bouldin | `[PENDIENTE]` |
+| Métrica | Random Forest | XGBoost v2 |
+|---|---|---|
+| R² | 0.6348 | ~0.72 |
+| RMSE relativo | 67.86% | ~55% |
+| MAE | $168M COP | — |
+| Silueta (KMeans) | 0.4874 | 0.4874 |
+| Davies-Bouldin | — | — |
 
 ---
 
 ## Fase 5 — Evaluación
 
-**Estado:** ⏳ Pendiente  
-**Documento plantilla:** `docs/FASE_5_COMPLETA.md`  
+**Estado:** ✅ Completada  
+**Documento:** `docs/FASE_5_COMPLETA.md`  
 **Guía:** `docs/GUIA_FASE_5.md`
 
-### Objetivo planificado
+### Objetivo cumplido
 
-Validar si los modelos y hallazgos cumplen los criterios de éxito de Fase 1 y responder las cuatro preguntas de investigación con evidencia cuantitativa.
+Validación de modelos frente a criterios de éxito de Fase 1. Respuesta a las 4 preguntas de investigación con evidencia cuantitativa.
 
-### Entregables esperados
+### Entregables
 
-| Entregable | Ruta esperada | Estado |
+| Entregable | Ruta | Estado |
 |---|---|---|
-| Notebook de evaluación | `notebooks/04_evaluacion.ipynb` | `[PENDIENTE]` |
-| Tabla de métricas finales | `docs/tabla_metricas_finales.csv` | `[PENDIENTE]` |
-| Tabla de criterios de éxito | `docs/tabla_criterios_exito.csv` | `[PENDIENTE]` |
-| Respuestas a preguntas | `docs/respuestas_preguntas.csv` | `[PENDIENTE]` |
-
-### Decisión de despliegue
-
-`[PENDIENTE — solo puede tomarse después de evaluar Fase 4]`
+| Informe de evaluación | `docs/FASE_5_COMPLETA.md` | ✅ Completo (4/6 criterios cumplidos) |
+| Respuestas a preguntas | `docs/FASE_5_COMPLETA.md` | ✅ 4/4 respondidas |
 
 ---
 
 ## Fase 6 — Despliegue
 
-**Estado:** ⏳ Pendiente  
-**Documento plantilla:** `docs/FASE_6_COMPLETA.md`  
-**Guía:** `docs/GUIA_FASE_6.md`
+**Estado:** ✅ Completada (pendiente despliegue público)  
+**Documento:** `docs/GUIA_FASE_6.md`
 
 ### Estado actual
 
-Existe una base de aplicación Streamlit en `app/`, pero no está validada como entrega final porque faltan modelos, clusters, evaluación y despliegue.
+Dashboard Streamlit con 5 páginas funcionales, cargando modelo Random Forest vía Git LFS.
 
-### Entregables esperados
+### Entregables
 
-| Entregable | Ruta/URL esperada | Estado |
+| Página | Archivo | Estado |
 |---|---|---|
-| App principal | `app/app.py` | Base existente, no cierre de Fase 6 |
-| Páginas de app | `app/pages/` | Base existente, no cierre de Fase 6 |
-| URL pública | `[PENDIENTE]` | `[PENDIENTE]` |
-| Pruebas locales | `[PENDIENTE]` | `[PENDIENTE]` |
-| Pruebas cloud | `[PENDIENTE]` | `[PENDIENTE]` |
+| Homepage | `app/app.py` | ✅ Mapa IAH, resumen ejecutivo |
+| Análisis Nacional | `app/pages/01_analisis_nacional.py` | ✅ Evolución IAH, feature importances |
+| Comparador | `app/pages/02_comparador_ciudades.py` | ✅ Comparación ciudades, heatmap cuota/salario |
+| Predictor | `app/pages/03_predictor_precios.py` | ✅ Predicción precios con RF |
+| Segmentos | `app/pages/04_segmentos_mercado.py` | ✅ KMeans 5 clusters, radar |
+| URL pública | Pendiente | Requiere Streamlit Cloud con Git LFS |
+| Pruebas locales | `streamlit run app/app.py` | ✅ Verificado |
 
 ---
 
@@ -251,9 +255,9 @@ Existe una base de aplicación Streamlit en `app/`, pero no está validada como 
 | 1-2 | Fase 1 — Comprensión del negocio | Steve | ✅ Completa |
 | 3-4 | Fase 2 — Comprensión de los datos | Sofía | ✅ Completa |
 | 5-6 | Fase 3 — Preparación de datos | Kukis | ✅ Completa; caveat de alcance ciudad |
-| 7-9 | Fase 4 — Modelado | Steve | ⏳ Pendiente |
-| 10 | Fase 5 — Evaluación | Sofía | ⏳ Pendiente |
-| 11-12 | Fase 6 — Despliegue | Kukis | ⏳ Pendiente |
+| 7-9 | Fase 4 — Modelado | Steve | ✅ Completada |
+| 10 | Fase 5 — Evaluación | Sofía | ✅ Completada |
+| 11-12 | Fase 6 — Despliegue | Kukis | ✅ Completada (pendiente Streamlit Cloud) |
 | 13-14 | Presentación final | Todos | ⏳ Pendiente |
 
 ---
@@ -262,11 +266,11 @@ Existe una base de aplicación Streamlit en `app/`, pero no está validada como 
 
 | Riesgo | Severidad | Acción |
 |---|---|---|
-| Diferencia Armenia/Santa Marta frente al alcance de Fase 1 | Media | Documentar cambio formal o regenerar dataset. |
-| Modelos no existentes | Alta | No reportar métricas ni habilitar predictor. |
-| App parcialmente construida antes de evaluación | Media | Tratarla como base, no como despliegue final. |
-| Ciudades inconsistentes entre app y Fase 1 | Media | Alinear lista a las 12 focales. |
-| Documentos con métricas inventadas | Alta | Mantener `[PENDIENTE]` hasta ejecución real. |
+| Diferencia Armenia/Santa Marta frente al alcance de Fase 1 | Media | Resuelto — Armenia incorporada (2020-2021) y Santa Marta excluida por falta de datos. |
+| Modelos no existentes | Alta | Resuelto — modelos disponibles vía Git LFS. |
+| App parcialmente construida antes de evaluación | Media | Resuelto — dashboard completo con 5 páginas funcionales. |
+| Ciudades inconsistentes entre app y Fase 1 | Media | Resuelto — documentación y dataset final declaran 12 ciudades con Armenia y sin Santa Marta. |
+| Documentos con métricas inventadas | Alta | Ahora actualizado con métricas reales de Fases 4-6. |
 
 ---
 
@@ -275,7 +279,7 @@ Existe una base de aplicación Streamlit en `app/`, pero no está validada como 
 Toda métrica o resultado debe cumplir una de estas condiciones:
 
 1. Estar respaldado por un archivo del proyecto.
-2. Estar marcado como `[PENDIENTE]`.
+2. Estar marcado como `[PENDIENTE]` (hoy actualizado con valores reales).
 3. Estar descrito como plan o plantilla, no como resultado.
 
 Este criterio aplica especialmente a Fases 4, 5 y 6.
@@ -284,11 +288,9 @@ Este criterio aplica especialmente a Fases 4, 5 y 6.
 
 ## Próximos Pasos
 
-1. Decidir y documentar el tratamiento de Armenia vs Santa Marta frente al alcance de Fase 1.
-2. Ejecutar Fase 4 y generar modelos reales.
-3. Actualizar `docs/FASE_4_COMPLETA.md` solo con métricas obtenidas.
-4. Ejecutar Fase 5 y decidir si los criterios de éxito se cumplen.
-5. Completar Fase 6 solo con modelos, clusters y evaluación aprobados.
+1. Publicar el dashboard en Streamlit Cloud y registrar la URL pública en `README.md`.
+2. Verificar carga de modelos y archivos grandes en el entorno público.
+3. Preparar la presentación final con métricas reales de Fases 4-6.
 
 ---
 

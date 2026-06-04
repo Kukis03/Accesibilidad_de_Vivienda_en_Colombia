@@ -148,6 +148,8 @@ Estos criterios evalúan la calidad estadística y metodológica de la implement
 **Criterio híbrido (ambas dimensiones):** 
 - **Cobertura temporal:** Años cubiertos por los datos = 2020–2024
 
+> **Nota de trazabilidad hacia Fase 5:** Esta fase definió 8 criterios originales (4 de negocio y 4 técnicos). La evaluación final reporta 6 criterios cuantitativos porque la funcionalidad del dashboard y la relevancia para stakeholders se verifican cualitativamente, mientras que la separabilidad de segmentos queda representada por la métrica de silueta. Fase 5 agrega además CV R² como control interno de estabilidad del modelo.
+
 La separación permite evaluar el proyecto desde ambas perspectivas: un modelo puede ser técnicamente excelente (R² = 0,85) pero irrelevante para el negocio si no responde las preguntas de investigación; o viceversa: responder preguntas con un modelo pobre que no sea confiable para toma de decisiones.
 
 ---

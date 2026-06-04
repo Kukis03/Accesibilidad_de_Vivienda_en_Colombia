@@ -2,8 +2,8 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import plotly.express as px
-import plotly.graph_objects as go
 import warnings
+from utils import fmt_cop
 warnings.filterwarnings('ignore')
 
 st.set_page_config(page_title="Accesibilidad de Vivienda en Colombia", page_icon="🏠", layout="wide", initial_sidebar_state="expanded")
@@ -12,12 +12,7 @@ st.set_page_config(page_title="Accesibilidad de Vivienda en Colombia", page_icon
 def load_data():
     return pd.read_csv("data/processed/vivienda_colombia_limpio.csv", encoding="utf-8-sig")
 
-@st.cache_data
-def load_clusters():
-    return pd.read_csv("data/processed/ciudades_clusters.csv")
-
 df = load_data()
-df_clusters = load_clusters()
 
 # ── Sidebar ─────────────────────────────────────────────────────
 st.sidebar.image("https://upload.wikimedia.org/wikipedia/commons/2/21/Flag_of_Colombia.svg", width=60)
@@ -36,6 +31,7 @@ if ciudad_sel != "Todas":
     df_f = df_f[df_f['city'] == ciudad_sel]
 if tipo_sel != "Todos":
     df_f = df_f[df_f['property_type'] == tipo_sel]
+df_f = df_f[df_f['year'] == anio_sel]
 
 # ── Hero ────────────────────────────────────────────────────────
 st.title("🏡 Accesibilidad de Vivienda en Colombia")
@@ -55,19 +51,50 @@ crit = (df_f['IAH'] > 20).mean() * 100
 cuota = (df_f['ratio_cuota_salario'] > 0.30).mean() * 100
 
 k1, k2, k3, k4 = st.columns(4)
-k1.metric("Precio Mediano", f"${pm:,.0f}" if not np.isnan(pm) else "N/A", help="Precio mediano de vivienda en COP")
+k1.metric("Precio Mediano", fmt_cop(pm) if not np.isnan(pm) else "N/A", help="Precio mediano de vivienda en COP")
 k2.metric("IAH Mediano", f"{iah:.1f} años" if not np.isnan(iah) else "N/A", help="Índice de Accesibilidad Habitacional: años de salario mínimo para comprar una vivienda")
 k3.metric("Mercado Crítico", f"{crit:.1f}%" if not np.isnan(crit) else "N/A", help="Porcentaje del mercado con IAH > 20 años (crítico)")
 k4.metric("Cuota >30% Salario", f"{cuota:.1f}%" if not np.isnan(cuota) else "N/A", help="Porcentaje con cuota hipotecaria superior al 30% del salario mínimo")
+
+# ── Distribución de Accesibilidad (Pie Chart) ───────────────────
+st.markdown("---")
+col_pie, col_txt = st.columns([2, 1])
+with col_pie:
+    st.subheader("🍰 Distribución del Mercado por Nivel de Accesibilidad")
+    if not df_f.empty:
+        niv = df_f['nivel_accesibilidad'].value_counts().reset_index()
+        niv.columns = ['Nivel', 'Registros']
+        niv['%'] = (niv['Registros'] / niv['Registros'].sum() * 100).round(1)
+        color_map = {'Accesible': '#2E7D32', 'Moderado': '#F9A825', 'Elevado': '#EF6C00', 'Crítico': '#C62828'}
+        fig_pie = px.pie(niv, values='Registros', names='Nivel',
+                         color='Nivel', color_discrete_map=color_map,
+                         title=f"Composición del mercado en {ciudad_sel} — {anio_sel}",
+                         hole=0.4)
+        fig_pie.update_traces(textposition='inside', textinfo='percent+label')
+        fig_pie.update_layout(legend=dict(orientation='h', yanchor='bottom', y=-0.2))
+        st.plotly_chart(fig_pie, use_container_width=True)
+    else:
+        st.info("Sin datos para los filtros seleccionados.")
+
+with col_txt:
+    st.subheader("📊 Interpretación")
+    st.markdown("""
+    - **Accesible (IAH ≤ 5)** — Cumple estándar OCDE. Prácticamente inexistente en Colombia.
+    - **Moderado (5 < IAH ≤ 10)** — Accesible para ingresos medios-alto.
+    - **Elevado (10 < IAH ≤ 20)** — Requiere ahorro prolongado o doble ingreso.
+    - **Crítico (IAH > 20)** — Inaccesible para la mayoría de hogares.
+    """)
 
 # ── Mapa mejorado ──────────────────────────────────────────────
 st.markdown("---")
 st.subheader("🗺️ Distribución Geográfica")
 st.markdown("Cada punto representa una propiedad listada. El color indica el precio y el tamaño el área construida.")
 
-try:
-    n_sample = min(3000, len(df_f))
-    if n_sample > 0:
+if df_f.empty:
+    st.info("ℹ️ Sin datos para los filtros seleccionados. Ajusta los filtros en el panel lateral.")
+else:
+    try:
+        n_sample = min(3000, len(df_f))
         df_map = df_f.sample(n_sample, random_state=42)
         fig_map = px.scatter_mapbox(
             df_map, lat="lat", lon="lon",
@@ -84,19 +111,20 @@ try:
             coloraxis_colorbar=dict(title="Precio (COP)", tickprefix="$")
         )
         st.plotly_chart(fig_map, use_container_width=True)
-    else:
-        st.warning("No hay datos con los filtros seleccionados.")
-except Exception as e:
-    st.error(f"Error al generar el mapa: {e}")
-    st.info("Usando mapa alternativo sin mapa base...")
-    fig_fallback = px.scatter(df_f.sample(min(500, len(df_f))), x="lon", y="lat", color="price",
-                               hover_name="city", title="Vista simplificada")
-    st.plotly_chart(fig_fallback, use_container_width=True)
+    except Exception as e:
+        st.error(f"Error al generar el mapa: {e}")
+        if not df_f.empty:
+            st.info("Usando mapa alternativo sin mapa base...")
+            fig_fallback = px.scatter(df_f.sample(min(500, len(df_f))), x="lon", y="lat", color="price",
+                                       hover_name="city", title="Vista simplificada")
+            st.plotly_chart(fig_fallback, use_container_width=True)
 
-# ── Insights r├ípidos ────────────────────────────────────────────
+# ── Insights rápidos ───────────────────────────────────────────
 st.markdown("---")
 st.subheader("🔍 Insights Rápidos")
-if ciudad_sel == "Todas":
+if df_f.empty:
+    st.info("No hay registros para resumir con los filtros actuales.")
+elif ciudad_sel == "Todas":
     c_mejor = df_f[df_f['year'] == anio_sel].groupby('city')['IAH'].median().idxmin()
     c_peor = df_f[df_f['year'] == anio_sel].groupby('city')['IAH'].median().idxmax()
     st.markdown(f"""
@@ -108,7 +136,7 @@ if ciudad_sel == "Todas":
 | Mercado con cuota > 30% salario | **{cuota:.0f}%** del total |
 | Viviendas analizadas | **{len(df_f):,}** registros |
 
-💡 **Conclusión:** Ninguna ciudad colombiana cumple el estándar OCDE de accesibilidad (IAH < 5 años). 
+💡 **Conclusión:** A nivel de mediana por ciudad, ninguna cumple el estándar OCDE de accesibilidad (IAH < 5 años). 
 El mercado de vivienda es **financieramente inviable para un hogar de salario mínimo** en su totalidad.
 """)
 else:
@@ -121,7 +149,7 @@ else:
 | Registros analizados | **{len(df_f):,}** |
 """)
 
-# ── Navegaci├│n ─────────────────────────────────────────────────
+# ── Navegación ────────────────────────────────────────────────
 st.markdown("---")
 st.subheader("📂 Explorar en Detalle")
 st.markdown("Usa las páginas del menú lateral para análisis más profundos:")

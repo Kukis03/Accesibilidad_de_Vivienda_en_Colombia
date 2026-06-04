@@ -2,7 +2,7 @@
 
 Este directorio contiene artefactos generados durante las Fases 2 y 3 del proyecto CRISP-DM.
 
-> **Estado actual:** `vivienda_colombia_limpio.csv` fue validado sin marcadores de conflicto, con **282.660 registros × 26 columnas** y período 2020-2024. Antes de modelar, documentar la decisión sobre la inclusión de Armenia y la ausencia de Santa Marta frente al alcance original de Fase 1.
+> **Estado actual:** `vivienda_colombia_limpio.csv` fue validado sin marcadores de conflicto, con **282.660 registros × 26 columnas** y período 2020-2024. **Decisión:** Armenia se incorporó al alcance (datos 2020-2021). Santa Marta se excluyó por falta de datos en las fuentes utilizadas.
 
 ---
 
@@ -36,7 +36,7 @@ Según la validación actual del CSV y `reporte_limpieza.csv`, la salida final d
 | Período objetivo | 2020-2024 |
 | Ciudades en el CSV | 12 |
 
-Antes de cerrar Fase 4, documentar si Armenia se incorpora al alcance o si el dataset se regenera para recuperar Santa Marta.
+Decisión final: **Armenia se incorporó** al alcance (datos disponibles 2020-2021). **Santa Marta no se incluyó** por falta de datos en las fuentes utilizadas. El dataset final tiene 12 ciudades: las 11 originales + Armenia.
 
 ---
 
@@ -49,7 +49,7 @@ Antes de cerrar Fase 4, documentar si Armenia se incorpora al alcance o si el da
 | `rooms` | int/float | Número de habitaciones. |
 | `bathrooms` | int/float | Número de baños. |
 | `property_type` | str | Tipo de propiedad, principalmente `Casa` o `Apartamento`. |
-| `city` | str | Ciudad estandarizada. El CSV actual contiene 12 ciudades: 11 del alcance original más Armenia; Santa Marta no aparece. |
+| `city` | str | Ciudad estandarizada. 12 ciudades: Bogotá, Medellín, Cali, Barranquilla, Bucaramanga, Cartagena, Pereira, Cúcuta, Manizales, Ibagué, Villavicencio, Armenia. Santa Marta no aparece por falta de datos. |
 | `lat` | float | Latitud; puede estar imputada por centroide de ciudad. |
 | `lon` | float | Longitud; puede estar imputada por centroide de ciudad. |
 | `created_on` | datetime/str | Fecha de publicación o extracción cuando existe. |
@@ -81,7 +81,7 @@ Antes de cerrar Fase 4, documentar si Armenia se incorpora al alcance o si el da
 - [x] El período operativo queda acotado a 2020-2024.
 - [x] Las variables críticas para modelado no contienen nulos.
 - [x] Las tildes de ciudades están almacenadas con codepoints correctos; algunas consolas pueden renderizarlas como `�`.
-- [ ] Decidir y documentar el tratamiento de Armenia vs Santa Marta frente al alcance de Fase 1.
+- [x] Decisión: Armenia se incorporó (datos 2020-2021); Santa Marta excluida por falta de datos.
 
 ---
 

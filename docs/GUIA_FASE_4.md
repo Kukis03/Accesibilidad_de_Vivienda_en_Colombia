@@ -2,7 +2,7 @@
 ## Notebook: `notebooks/03_modelado.ipynb`
 **Responsable:** Steve · **Apoyo:** Kukis  
 **Insumo:** `data/processed/vivienda_colombia_limpio.csv`  
-**Estado:** ✅ Completada — commit `ac11de7`  
+**Estado:** ✅ Completada — commit `e1d8867`  
 **Semanas:** 7–8
 
 ---

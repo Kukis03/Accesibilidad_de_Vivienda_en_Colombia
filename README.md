@@ -4,7 +4,7 @@ Proyecto académico de ciencia de datos para analizar la accesibilidad económic
 
 El proyecto parte de la definición de negocio documentada en [docs/FASE_1_COMPLETA.md](docs/FASE_1_COMPLETA.md): construir un **Indice de Accesibilidad Habitacional (IAH)**, integrar fuentes inmobiliarias y macroeconómicas, entrenar modelos de regresión y clustering, evaluar los resultados contra criterios de éxito y desplegar un dashboard interactivo.
 
-> **Estado actual:** Proyecto completo (Fases 1–6 ejecutadas). Dashboard Streamlit desplegado. Modelo RF (R²=0.6348) y clustering KMeans K=5 (silueta=0.4874) disponibles en `models/`. Documentación completa en `docs/`. URL del dashboard pendiente de despliegue en Streamlit Cloud.
+> **Estado actual:** Proyecto completo (Fases 1–6 ejecutadas). Dashboard Streamlit completo en local; URL pública pendiente de despliegue en Streamlit Cloud. Modelo RF (R²=0.6348) y clustering KMeans K=5 (silueta=0.4874) disponibles en `models/`. Documentación completa en `docs/`.
 
 ---
 
@@ -84,7 +84,7 @@ Accesibilidad_de_Vivienda_en_Colombia/
 └── requirements.txt
 ```
 
-> **Nota de estado:** `app/` contiene una base de dashboard Streamlit, pero Fase 6 no está cerrada ni desplegada. El predictor espera `models/modelo_random_forest.pkl`, archivo que aún no existe porque Fase 4 no ha sido ejecutada.
+> **Nota de estado:** `app/` contiene el dashboard Streamlit completo (Fase 6). El modelo `models/modelo_random_forest.pkl` (448 MB) está disponible vía Git LFS. Pendiente despliegue en Streamlit Cloud.
 
 ---
 
@@ -100,13 +100,13 @@ Accesibilidad_de_Vivienda_en_Colombia/
 | Reporte de limpieza | `data/processed/reporte_limpieza.csv` | Disponible |
 | Dataset integrado | `data/processed/vivienda_colombia_limpio.csv` | Validado: 282.660 registros × 26 columnas |
 | Modelos entrenados | `models/*.pkl` | RF (R²=0.6348), KMeans K=5 (silueta=0.4874) |
-| Dashboard Streamlit | `app/app.py` | 4 páginas: Nacional, Comparador, Predictor, Segmentos |
+| Dashboard Streamlit | `app/app.py` | 5 páginas: Homepage + Nacional, Comparador, Predictor, Segmentos |
 
 ### Observación sobre el dataset procesado
 
 El archivo `data/processed/vivienda_colombia_limpio.csv` fue verificado sin marcadores de conflicto de git, con **282.660 registros × 26 columnas**, período 2020-2024 y nulos críticos en cero.
 
-> **Caveat de alcance:** el CSV actual contiene **Armenia** y no contiene **Santa Marta**, mientras Fase 1 definió Santa Marta dentro de las 12 ciudades focales. Antes de cerrar Fase 4/Fase 5, el equipo debe decidir si incorpora formalmente Armenia o si regenera el dataset para respetar la lista original.
+> **Decisión de alcance:** Armenia se incorporó formalmente (datos disponibles 2020-2021). Santa Marta se excluyó por falta de datos en las fuentes disponibles. El dataset final contiene 12 ciudades.
 
 ---
 
@@ -139,7 +139,7 @@ pip install -r requirements.txt
 streamlit run app/app.py
 ```
 
-La app puede abrir sin modelo, pero el predictor de precios permanecerá deshabilitado hasta completar Fase 4.
+La app carga con el modelo Random Forest (R²=0.6348) para el predictor de precios.
 
 ---
 

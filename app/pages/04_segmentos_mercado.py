@@ -19,7 +19,7 @@ def load_perfiles():
 dfc = load_clusters()
 perfiles = load_perfiles()
 
-cluster_names = {0: "Elevado (IAH 29.2)", 1: "Moderado (IAH 16.2)", 2: "Accesible Relativo (IAH 18.7)", 3: "Elevado (IAH 25.4)", 4: "Accesible (IAH 12.9)"}
+cluster_names = {0: "Premium (IAH 29.2)", 1: "Intermedio (IAH 16.2)", 2: "Intermedio-Alto (IAH 18.7)", 3: "Premium (IAH 25.4)", 4: "Intermedio-Bajo (IAH 12.9)"}
 dfc['cluster_name'] = dfc['cluster'].map(cluster_names)
 
 st.title("📊 Segmentos de Mercado")
@@ -30,7 +30,7 @@ Las variables usadas son: IAH, precio por m², ratio cuota/salario y tasa de des
 **Coeficiente de silueta:** 0.4874 (buena separabilidad). **Varianza explicada PCA:** 97.2%.
 """)
 
-año = st.sidebar.select_slider("Año", options=sorted(dfc['year'].unique()), value=2024)
+
 
 tab1, tab2, tab3 = st.tabs(["📌 Mapa de Clusters", "🗺️ Evolución Temporal", "📋 Perfiles"])
 
@@ -55,11 +55,10 @@ with tab1:
         st.plotly_chart(fig2, use_container_width=True)
     with col_b:
         st.subheader("Ciudades en 2024")
-        d24 = dfc[dfc['year'] == 2024][['city', 'cluster_name']].sort_values('cluster_name')
+        cluster_emoji = {0: "🔴", 1: "🟡", 2: "🟠", 3: "🔴", 4: "🟢"}
+        d24 = dfc[dfc['year'] == 2024][['city', 'cluster', 'cluster_name']].sort_values('cluster_name')
         for _, r in d24.iterrows():
-            emoji = {"Elevado": "🔴", "Moderado": "🟡", "Accesible Relativo": "🟠", "Accesible": "🟢"}
-            key = r['cluster_name'].split(" ")[0]
-            st.markdown(f"{emoji.get(key, '⚪')} **{r['city']}** — {r['cluster_name']}")
+            st.markdown(f"{cluster_emoji.get(r['cluster'], '⚪')} **{r['city']}** — {r['cluster_name']}")
 
 with tab2:
     st.subheader("Heatmap Ciudad × Año")
@@ -86,18 +85,22 @@ with tab2:
 with tab3:
     st.subheader("Perfiles de los 5 Clusters")
     perf = perfiles.copy()
-    perf.columns = ['IAH', 'Precio m²', 'Ratio Cuota/Salario', 'Tasa Desempleo', 'Ciudades']
+    perf = perf.set_index('cluster')
+    perf.columns = ['IAH', 'Precio m²', 'Ratio Cuota/Salario', 'Tasa Desempleo', 'Registros']
     perf.index = [cluster_names.get(i, str(i)) for i in perf.index]
     perf['Precio m²'] = perf['Precio m²'].apply(lambda x: f"${x:,.0f}")
     perf['IAH'] = perf['IAH'].round(1)
     perf['Tasa Desempleo'] = perf['Tasa Desempleo'].apply(lambda x: f"{x:.1f}%")
     perf['Ratio Cuota/Salario'] = perf['Ratio Cuota/Salario'].round(2)
-    perf['Ciudades'] = perf['Ciudades'].astype(int)
+    perf['Registros'] = perf['Registros'].astype(int)
     st.dataframe(perf, use_container_width=True)
 
     # Radar
     st.subheader("Radar Comparativo")
-    rn = (perfiles - perfiles.min()) / (perfiles.max() - perfiles.min() + 1e-6)
+    features_radar = ['IAH', 'precio_m2', 'ratio_cuota_salario', 'tasa_desempleo']
+    radar_labels = {'IAH': 'IAH', 'precio_m2': 'Precio m²', 'ratio_cuota_salario': 'Cuota/Salario', 'tasa_desempleo': 'Desempleo'}
+    rn = (perfiles[features_radar] - perfiles[features_radar].min()) / (perfiles[features_radar].max() - perfiles[features_radar].min() + 1e-6)
+    rn = rn.rename(columns=radar_labels)
     fig4 = go.Figure()
     for idx, row in rn.iterrows():
         fig4.add_trace(go.Scatterpolar(r=row.values, theta=rn.columns, fill='toself',

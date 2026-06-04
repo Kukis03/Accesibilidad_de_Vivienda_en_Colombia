@@ -1,0 +1,12 @@
+[
+  {"variable": "bathrooms", "importancia": 42.2},
+  {"variable": "area", "importancia": 28.0},
+  {"variable": "estrato", "importancia": 11.3},
+  {"variable": "city_Bogotá", "importancia": 5.0},
+  {"variable": "rooms", "importancia": 4.2},
+  {"variable": "city_Medellín", "importancia": 1.8},
+  {"variable": "tasa_hipotecaria_anual", "importancia": 1.5},
+  {"variable": "ipc_var_anual", "importancia": 1.2},
+  {"variable": "city_Cali", "importancia": 1.0},
+  {"variable": "tasa_desempleo", "importancia": 0.8}
+]
