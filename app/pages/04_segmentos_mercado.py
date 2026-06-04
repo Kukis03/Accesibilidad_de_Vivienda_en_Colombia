@@ -65,7 +65,7 @@ with tab2:
     st.subheader("Heatmap Ciudad × Año")
     hm = dfc.pivot(index='city', columns='year', values='cluster')
     fig3 = px.imshow(hm.values, x=hm.columns, y=hm.index, text_auto=True,
-                     color_continuous_scale='Set2', aspect="auto",
+                     color_continuous_scale='Viridis', aspect="auto",
                      labels=dict(x="Año", y="Ciudad", color="Cluster"),
                      title="¿Cómo han cambiado los clusters a lo largo del tiempo?")
     fig3.update_layout(height=500)
