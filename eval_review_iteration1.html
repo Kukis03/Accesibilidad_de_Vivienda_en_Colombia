@@ -1,0 +1,1325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Eval Review</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600&family=Lora:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js" integrity="sha384-EnyY0/GSHQGSxSgMwaIPzSESbqoOLSexfnSMN2AP+39Ckmn92stwABZynq1JyzdT" crossorigin="anonymous"></script>
+  <style>
+    :root {
+      --bg: #faf9f5;
+      --surface: #ffffff;
+      --border: #e8e6dc;
+      --text: #141413;
+      --text-muted: #b0aea5;
+      --accent: #d97757;
+      --accent-hover: #c4613f;
+      --green: #788c5d;
+      --green-bg: #eef2e8;
+      --red: #c44;
+      --red-bg: #fceaea;
+      --header-bg: #141413;
+      --header-text: #faf9f5;
+      --radius: 6px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Lora', Georgia, serif;
+      background: var(--bg);
+      color: var(--text);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ---- Header ---- */
+    .header {
+      background: var(--header-bg);
+      color: var(--header-text);
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
+    }
+    .header h1 {
+      font-family: 'Poppins', sans-serif;
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+    .header .instructions {
+      font-size: 0.8rem;
+      opacity: 0.7;
+      margin-top: 0.25rem;
+    }
+    .header .progress {
+      font-size: 0.875rem;
+      opacity: 0.8;
+      text-align: right;
+    }
+
+    /* ---- Main content ---- */
+    .main {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1.5rem 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    /* ---- Sections ---- */
+    .section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      flex-shrink: 0;
+    }
+    .section-header {
+      font-family: 'Poppins', sans-serif;
+      padding: 0.75rem 1rem;
+      font-size: 0.75rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border);
+      background: var(--bg);
+    }
+    .section-body {
+      padding: 1rem;
+    }
+
+    /* ---- Config badge ---- */
+    .config-badge {
+      display: inline-block;
+      padding: 0.2rem 0.625rem;
+      border-radius: 9999px;
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      margin-left: 0.75rem;
+      vertical-align: middle;
+    }
+    .config-badge.config-primary {
+      background: rgba(33, 150, 243, 0.12);
+      color: #1976d2;
+    }
+    .config-badge.config-baseline {
+      background: rgba(255, 193, 7, 0.15);
+      color: #f57f17;
+    }
+
+    /* ---- Prompt ---- */
+    .prompt-text {
+      white-space: pre-wrap;
+      font-size: 0.9375rem;
+      line-height: 1.6;
+    }
+
+    /* ---- Outputs ---- */
+    .output-file {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .output-file + .output-file {
+      margin-top: 1rem;
+    }
+    .output-file-header {
+      padding: 0.5rem 0.75rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      font-family: 'SF Mono', SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .output-file-header .dl-btn {
+      font-size: 0.7rem;
+      color: var(--accent);
+      text-decoration: none;
+      cursor: pointer;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-weight: 500;
+      opacity: 0.8;
+    }
+    .output-file-header .dl-btn:hover {
+      opacity: 1;
+      text-decoration: underline;
+    }
+    .output-file-content {
+      padding: 0.75rem;
+      overflow-x: auto;
+    }
+    .output-file-content pre {
+      font-size: 0.8125rem;
+      line-height: 1.5;
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-family: 'SF Mono', SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace;
+    }
+    .output-file-content img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 4px;
+    }
+    .output-file-content iframe {
+      width: 100%;
+      height: 600px;
+      border: none;
+    }
+    .output-file-content table {
+      border-collapse: collapse;
+      font-size: 0.8125rem;
+      width: 100%;
+    }
+    .output-file-content table td,
+    .output-file-content table th {
+      border: 1px solid var(--border);
+      padding: 0.375rem 0.5rem;
+      text-align: left;
+    }
+    .output-file-content table th {
+      background: var(--bg);
+      font-weight: 600;
+    }
+    .output-file-content .download-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--accent);
+      text-decoration: none;
+      font-size: 0.875rem;
+      cursor: pointer;
+    }
+    .output-file-content .download-link:hover {
+      background: var(--border);
+    }
+    .empty-state {
+      color: var(--text-muted);
+      font-style: italic;
+      padding: 2rem;
+      text-align: center;
+    }
+
+    /* ---- Feedback ---- */
+    .prev-feedback {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 0.625rem 0.75rem;
+      margin-top: 0.75rem;
+      font-size: 0.8125rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+    .prev-feedback-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 0.25rem;
+      color: var(--text-muted);
+    }
+    .feedback-textarea {
+      width: 100%;
+      min-height: 100px;
+      padding: 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-family: inherit;
+      font-size: 0.9375rem;
+      line-height: 1.5;
+      resize: vertical;
+      color: var(--text);
+    }
+    .feedback-textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+    .feedback-status {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 0.5rem;
+      min-height: 1.1em;
+    }
+
+    /* ---- Grades (collapsible) ---- */
+    .grades-toggle {
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      user-select: none;
+    }
+    .grades-toggle:hover {
+      color: var(--accent);
+    }
+    .grades-toggle .arrow {
+      margin-right: 0.5rem;
+      transition: transform 0.15s;
+      font-size: 0.75rem;
+    }
+    .grades-toggle .arrow.open {
+      transform: rotate(90deg);
+    }
+    .grades-content {
+      display: none;
+      margin-top: 0.75rem;
+    }
+    .grades-content.open {
+      display: block;
+    }
+    .grades-summary {
+      font-size: 0.875rem;
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .grade-badge {
+      display: inline-block;
+      padding: 0.125rem 0.5rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .grade-pass { background: var(--green-bg); color: var(--green); }
+    .grade-fail { background: var(--red-bg); color: var(--red); }
+    .assertion-list {
+      list-style: none;
+    }
+    .assertion-item {
+      padding: 0.625rem 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.8125rem;
+    }
+    .assertion-item:last-child { border-bottom: none; }
+    .assertion-status {
+      font-weight: 600;
+      margin-right: 0.5rem;
+    }
+    .assertion-status.pass { color: var(--green); }
+    .assertion-status.fail { color: var(--red); }
+    .assertion-evidence {
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      margin-top: 0.25rem;
+      padding-left: 1.5rem;
+    }
+
+    /* ---- View tabs ---- */
+    .view-tabs {
+      display: flex;
+      gap: 0;
+      padding: 0 2rem;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .view-tab {
+      font-family: 'Poppins', sans-serif;
+      padding: 0.625rem 1.25rem;
+      font-size: 0.8125rem;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      background: none;
+      color: var(--text-muted);
+      border-bottom: 2px solid transparent;
+      transition: all 0.15s;
+    }
+    .view-tab:hover { color: var(--text); }
+    .view-tab.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+    .view-panel { display: none; }
+    .view-panel.active { display: flex; flex-direction: column; flex: 1; overflow: hidden; }
+
+    /* ---- Benchmark view ---- */
+    .benchmark-view {
+      padding: 1.5rem 2rem;
+      overflow-y: auto;
+      flex: 1;
+    }
+    .benchmark-table {
+      border-collapse: collapse;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 0.8125rem;
+      width: 100%;
+      margin-bottom: 1.5rem;
+    }
+    .benchmark-table th, .benchmark-table td {
+      padding: 0.625rem 0.75rem;
+      text-align: left;
+      border: 1px solid var(--border);
+    }
+    .benchmark-table th {
+      font-family: 'Poppins', sans-serif;
+      background: var(--header-bg);
+      color: var(--header-text);
+      font-weight: 500;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .benchmark-table tr:hover { background: var(--bg); }
+    .benchmark-table tr.benchmark-row-with { background: rgba(33, 150, 243, 0.06); }
+    .benchmark-table tr.benchmark-row-without { background: rgba(255, 193, 7, 0.06); }
+    .benchmark-table tr.benchmark-row-with:hover { background: rgba(33, 150, 243, 0.12); }
+    .benchmark-table tr.benchmark-row-without:hover { background: rgba(255, 193, 7, 0.12); }
+    .benchmark-table tr.benchmark-row-avg { font-weight: 600; border-top: 2px solid var(--border); }
+    .benchmark-table tr.benchmark-row-avg.benchmark-row-with { background: rgba(33, 150, 243, 0.12); }
+    .benchmark-table tr.benchmark-row-avg.benchmark-row-without { background: rgba(255, 193, 7, 0.12); }
+    .benchmark-delta-positive { color: var(--green); font-weight: 600; }
+    .benchmark-delta-negative { color: var(--red); font-weight: 600; }
+    .benchmark-notes {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem;
+    }
+    .benchmark-notes h3 {
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.875rem;
+      margin-bottom: 0.75rem;
+    }
+    .benchmark-notes ul {
+      list-style: disc;
+      padding-left: 1.25rem;
+    }
+    .benchmark-notes li {
+      font-size: 0.8125rem;
+      line-height: 1.6;
+      margin-bottom: 0.375rem;
+    }
+    .benchmark-empty {
+      color: var(--text-muted);
+      font-style: italic;
+      text-align: center;
+      padding: 3rem;
+    }
+
+    /* ---- Navigation ---- */
+    .nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 2rem;
+      border-top: 1px solid var(--border);
+      background: var(--surface);
+      flex-shrink: 0;
+    }
+    .nav-btn {
+      font-family: 'Poppins', sans-serif;
+      padding: 0.5rem 1.25rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      cursor: pointer;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--text);
+      transition: all 0.15s;
+    }
+    .nav-btn:hover:not(:disabled) {
+      background: var(--bg);
+      border-color: var(--text-muted);
+    }
+    .nav-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+    .done-btn {
+      font-family: 'Poppins', sans-serif;
+      padding: 0.5rem 1.5rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      color: var(--text);
+      cursor: pointer;
+      font-size: 0.875rem;
+      font-weight: 500;
+      transition: all 0.15s;
+    }
+    .done-btn:hover {
+      background: var(--bg);
+      border-color: var(--text-muted);
+    }
+    .done-btn.ready {
+      border: none;
+      background: var(--accent);
+      color: white;
+      font-weight: 600;
+    }
+    .done-btn.ready:hover {
+      background: var(--accent-hover);
+    }
+    /* ---- Done overlay ---- */
+    .done-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 100;
+      justify-content: center;
+      align-items: center;
+    }
+    .done-overlay.visible {
+      display: flex;
+    }
+    .done-card {
+      background: var(--surface);
+      border-radius: 12px;
+      padding: 2rem 3rem;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      max-width: 500px;
+    }
+    .done-card h2 {
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
+    .done-card p {
+      color: var(--text-muted);
+      margin-bottom: 1.5rem;
+      line-height: 1.5;
+    }
+    .done-card .btn-row {
+      display: flex;
+      gap: 0.5rem;
+      justify-content: center;
+    }
+    .done-card button {
+      padding: 0.5rem 1.25rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      cursor: pointer;
+      font-size: 0.875rem;
+    }
+    .done-card button:hover {
+      background: var(--bg);
+    }
+    /* ---- Toast ---- */
+    .toast {
+      position: fixed;
+      bottom: 5rem;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--header-bg);
+      color: var(--header-text);
+      padding: 0.625rem 1.25rem;
+      border-radius: var(--radius);
+      font-size: 0.875rem;
+      opacity: 0;
+      transition: opacity 0.3s;
+      pointer-events: none;
+      z-index: 200;
+    }
+    .toast.visible {
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+  <div id="app" style="height:100vh; display:flex; flex-direction:column;">
+    <div class="header">
+      <div>
+        <h1>Eval Review: <span id="skill-name"></span></h1>
+        <div class="instructions">Review each output and leave feedback below. Navigate with arrow keys or buttons. When done, copy feedback and paste into Claude Code.</div>
+      </div>
+      <div class="progress" id="progress"></div>
+    </div>
+
+    <!-- View tabs (only shown when benchmark data exists) -->
+    <div class="view-tabs" id="view-tabs" style="display:none;">
+      <button class="view-tab active" onclick="switchView('outputs')">Outputs</button>
+      <button class="view-tab" onclick="switchView('benchmark')">Benchmark</button>
+    </div>
+
+    <!-- Outputs panel (qualitative review) -->
+    <div class="view-panel active" id="panel-outputs">
+    <div class="main">
+      <!-- Prompt -->
+      <div class="section">
+        <div class="section-header">Prompt <span class="config-badge" id="config-badge" style="display:none;"></span></div>
+        <div class="section-body">
+          <div class="prompt-text" id="prompt-text"></div>
+        </div>
+      </div>
+
+      <!-- Outputs -->
+      <div class="section">
+        <div class="section-header">Output</div>
+        <div class="section-body" id="outputs-body">
+          <div class="empty-state">No output files found</div>
+        </div>
+      </div>
+
+      <!-- Previous Output (collapsible) -->
+      <div class="section" id="prev-outputs-section" style="display:none;">
+        <div class="section-header">
+          <div class="grades-toggle" onclick="togglePrevOutputs()">
+            <span class="arrow" id="prev-outputs-arrow">&#9654;</span>
+            Previous Output
+          </div>
+        </div>
+        <div class="grades-content" id="prev-outputs-content"></div>
+      </div>
+
+      <!-- Grades (collapsible) -->
+      <div class="section" id="grades-section" style="display:none;">
+        <div class="section-header">
+          <div class="grades-toggle" onclick="toggleGrades()">
+            <span class="arrow" id="grades-arrow">&#9654;</span>
+            Formal Grades
+          </div>
+        </div>
+        <div class="grades-content" id="grades-content"></div>
+      </div>
+
+      <!-- Feedback -->
+      <div class="section">
+        <div class="section-header">Your Feedback</div>
+        <div class="section-body">
+          <textarea
+            class="feedback-textarea"
+            id="feedback"
+            placeholder="What do you think of this output? Any issues, suggestions, or things that look great?"
+          ></textarea>
+          <div class="feedback-status" id="feedback-status"></div>
+          <div class="prev-feedback" id="prev-feedback" style="display:none;">
+            <div class="prev-feedback-label">Previous feedback</div>
+            <div id="prev-feedback-text"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="nav" id="outputs-nav">
+      <button class="nav-btn" id="prev-btn" onclick="navigate(-1)">&#8592; Previous</button>
+      <button class="done-btn" id="done-btn" onclick="showDoneDialog()">Submit All Reviews</button>
+      <button class="nav-btn" id="next-btn" onclick="navigate(1)">Next &#8594;</button>
+    </div>
+    </div><!-- end panel-outputs -->
+
+    <!-- Benchmark panel (quantitative stats) -->
+    <div class="view-panel" id="panel-benchmark">
+      <div class="benchmark-view" id="benchmark-content">
+        <div class="benchmark-empty">No benchmark data available. Run a benchmark to see quantitative results here.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Done overlay -->
+  <div class="done-overlay" id="done-overlay">
+    <div class="done-card">
+      <h2>Review Complete</h2>
+      <p>Your feedback has been saved. Go back to your Claude Code session and tell Claude you're done reviewing.</p>
+      <div class="btn-row">
+        <button onclick="closeDoneDialog()">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // ---- Embedded data (injected by generate_review.py) ----
+    const EMBEDDED_DATA = {"skill_name": "crisp-dm-project-documenter", "runs": [{"id": "eval-0-trazabilidad-fase3-with_skill", "prompt": "Audita FASE_3_COMPLETA.md contra GUIA_FASE_3.md y genera tabla de trazabilidad completa", "eval_id": 0, "outputs": [{"name": "result.md", "type": "text", "content": "# Auditor\u00eda FASE_3_COMPLETA.md vs GUIA_FASE_3.md\n## Proyecto: Accesibilidad de Vivienda en Colombia \u00b7 CRISP-DM 2025-I\n**Auditor:** crisp-dm-project-documenter \u00b7 **Fecha de auditor\u00eda:** 2026-06-03  \n**Documento auditado:** `docs/FASE_3_COMPLETA.md` (285 l\u00edneas)  \n**Documento de referencia:** `docs/GUIA_FASE_3.md`  \n**Estado del pipeline:** \u26a0\ufe0f Ejecutado con 8 bugs \u2014 54,904 registros (vs ~250K\u2013370K esperados)\n\n---\n\n## Resumen Ejecutivo\n\nLa Fase 3 est\u00e1 documentada de manera **s\u00f3lida y honesta** para una ejecuci\u00f3n con bugs conocidos. El documento registra fielmente lo ocurrido: el pipeline corri\u00f3, produjo 54,904 registros en lugar de los ~250K\u2013370K esperados, y el equipo identific\u00f3 y catalog\u00f3 los 8 bugs con precisi\u00f3n. La cobertura de actividades planificadas es alta \u2014 la mayor\u00eda de las secciones del GUIA tienen evidencia clara en el COMPLETA.\n\n**Hallazgos principales:**\n- **Cumplimiento general: 73% completo, 6.5% parcial, 9.3% bugs documentados, 8.3% gaps sin documentar**\n- El documento destaca por la calidad de su secci\u00f3n de bugs (\u00a78), que mapea exactamente causa, fuente, impacto en registros y correcci\u00f3n requerida\n- La Secci\u00f3n 16 (Proyecciones) est\u00e1 correctamente marcada como estimaciones no obtenidas \u2014 integridad documental preservada\n- Los gaps cr\u00edticos son la validaci\u00f3n cruzada IPVN/DANE, la integraci\u00f3n granular de B5 por ciudad, y las secciones de Conclusiones y Preparaci\u00f3n para Fase 4 que faltan\n- El documento est\u00e1 **truncado** al final (\u00a717 Entregables incompleta)\n\n---\n\n## Tabla de Trazabilidad Completa\n\n### Secci\u00f3n 1: Setup y Carga de Datos\n\n| Actividad Planificada (GUIA) | Estado | Evidencia en COMPLETA | Secci\u00f3n |\n|-----------------------------|--------|----------------------|---------|\n| Importar pandas, numpy, os, re | \u2705 Completo | Impl\u00edcito en funcionamiento del pipeline; columnas can\u00f3nicas definidas | \u00a71 |\n| Definir `DIR_RAW`, `DIR_PROCESSED` | \u2705 Completo | Archivos exportados a rutas esperadas confirman esto | \u00a713 |\n| Crear `data/processed/` con `os.makedirs` | \u2705 Completo | Dataset exportado a `data/processed/vivienda_colombia_limpio.csv` | \u00a713 |\n| Definir `COLS_CANONICAS` (13 columnas) | \u2705 Completo | Lista expl\u00edcita en \u00a71 con las 13 columnas exactas | \u00a71 |\n| Definir `TRM_HISTORICA` por a\u00f1o | \u2705 Completo | Conversi\u00f3n USD\u2192COP en A1 ejecutada (\u00a72) | \u00a72 |\n| Crear funci\u00f3n `registrar_metrica()` | \u2705 Completo | `reporte_limpieza.csv` generado (\u00a713, \u00a717) | \u00a713 |\n| A1 Properati \u2014 filtrar Venta, renombrar | \u2705 Completo | \"[x] A1 Properati \u2014 filtrado por operation_type == 'Venta'\" | \u00a71 |\n| \u26a0\ufe0f A2 FincaRaiz \u2014 NO multiplicar \u00d71M | \u274c No evidenciado | Bug B1 documentado: precio S\u00cd fue multiplicado \u00d71M (bug presente) | \u00a72, \u00a78 |\n| \u26a0\ufe0f A3 HousePrediction \u2014 asignar `city = 'Bogot\u00e1'` | \u274c No evidenciado | Bug B2 documentado: city y property_type no asignados | \u00a78 |\n| A4 Bogot\u00e1 \u2014 mapeo difuso | \u2705 Completo | \"[x] A4 Bogot\u00e1 \u2014 mapeo difuso de columnas, asignada city = 'Bogot\u00e1'\" | \u00a71 |\n| A5 Medell\u00edn \u2014 renombrar columnas | \u2705 Completo | \"[x] A5 Medell\u00edn \u2014 renombrado desde price, baths, neighbourhood, stratum\" | \u00a71 |\n| A6 Bogot\u00e1 2023 \u2014 mapeo difuso | \u2705 Completo | \"[x] A6 Bogot\u00e1 2023 \u2014 mapeo difuso de columnas\" | \u00a71 |\n| \u26a0\ufe0f A7 Villavicencio \u2014 agregar renombre | \u274c No evidenciado | Bug B3 documentado: renombre no implementado | \u00a71, \u00a78 |\n| \u26a0\ufe0f A8 Caracol UPZ \u2014 agregar renombre + city | \u274c No evidenciado | Bug B4 documentado: renombre no implementado | \u00a71, \u00a78 |\n| Agregar columnas faltantes como NaN | \u2705 Completo | \"[x] Columnas faltantes completadas como NaN y datasets concatenados\" | \u00a71 |\n| Concatenar con `pd.concat` usando COLS_CANONICAS | \u2705 Completo | \"Resultado: 880,865 registros consolidados\" | \u00a71 |\n| Imprimir total registros (~880K) | \u2705 Completo | 880,865 reportados (dentro del rango esperado) | \u00a71 |\n| Registrar m\u00e9trica en reporte_limpieza.csv | \u2705 Completo | reporte_limpieza.csv generado | \u00a713 |\n\n**Cumplimiento Secci\u00f3n 1: 13/18 completo (72%) \u00b7 0 parcial \u00b7 4 no evidenciado (bugs conocidos)**\n\n---\n\n### Secci\u00f3n 2: Limpieza de Precios y Monedas\n\n| Actividad Planificada (GUIA) | Estado | Evidencia en COMPLETA | Secci\u00f3n |\n|-----------------------------|--------|----------------------|---------|\n| Extraer a\u00f1o temporal desde `created_on` | \u2705 Completo | \"[x] Extracci\u00f3n de a\u00f1o temporal desde created_on\" | \u00a72 |\n| Convertir USD\u2192COP en A1 si hay columna `currency` | \u2705 Completo | \"[x] Conversi\u00f3n USD\u2192COP en Properati (A1) usando TRM hist\u00f3rica\" | \u00a72 |\n| Detectar y corregir precios en COP/m\u00b2 | \u2705 Completo | \"[x] Detecci\u00f3n y correcci\u00f3n de precios en COP/m\u00b2\" | \u00a72 |\n| Eliminar registros con `price` nulo | \u2705 Completo | \"[x] Eliminaci\u00f3n de price nulo, price < 10M y price > 10,000M\" | \u00a72 |\n| Eliminar `price < 10,000,000` | \u2705 Completo | Mismo \u00edtem anterior | \u00a72 |\n| Eliminar `price > 10,000,000,000` | \u2705 Completo | Mismo \u00edtem anterior | \u00a72 |\n| Imprimir registros restantes | \u2705 Completo | \"Registros tras limpieza: 734,258\" | \u00a72 |\n| Registrar m\u00e9trica | \u2705 Completo | reporte_limpieza.csv generado | \u00a713 |\n\n**Cumplimiento Secci\u00f3n 2: 8/8 completo (100%)**\n\n> \u26a0\ufe0f **Nota:** El 100% de acciones se ejecutaron, pero el Bug B1 (A2 x1M) caus\u00f3 que 142,730 registros v\u00e1lidos fueran eliminados por superar el l\u00edmite de $10,000M en este paso.\n\n---\n\n### Secci\u00f3n 3: Estandarizaci\u00f3n de Ciudades\n\n| Actividad Planificada (GUIA) | Estado | Evidencia en COMPLETA | Secci\u00f3n |\n|-----------------------------|--------|----------------------|---------|\n| Definir `MAPA_CIUDADES` con variantes \u2192 12 ciudades | \u2705 Completo | \"[x] Diccionario MAPA_CIUDADES con 24 variantes \u2192 12 ciudades can\u00f3nicas\" | \u00a73 |\n| \u26a0\ufe0f NO usar `normalize('NFKD').encode('ascii')` | \u274c No evidenciado | Bug B6: S\u00cd se us\u00f3 ese m\u00e9todo, corrompiendo tildes | \u00a73, \u00a78 |\n| Normalizar con `.str.lower().str.strip()` (UTF-8) | \u274c No evidenciado | Bug B6: implementaci\u00f3n incorrecta | \u00a73, \u00a78 |\n| Aplicar mapa de ciudades | \u2705 Completo | Filtro aplicado, 325,554 registros restantes | \u00a73 |\n| Filtrar: solo 12 ciudades can\u00f3nicas | \u2705 Completo | \"Registros tras filtro de ciudades: 325,554\" | \u00a73 |\n| Renombrar columna limpia a `city` | \u2705 Completo | Columna `city` presente en shape final (26 columnas) | \u00a713 |\n| Imprimir distribuci\u00f3n por ciudad | \u2705 Completo | Tabla distribuci\u00f3n por ciudad en \u00a714 | \u00a714 |\n| Registrar m\u00e9trica | \u2705 Completo | reporte_limpieza.csv generado | \u00a713 |\n\n**Cumplimiento Secci\u00f3n 3: 5/8 completo (62.5%) \u00b7 0 parcial \u00b7 2 no evidenciado (bug B6)**\n\n---\n\n### Secci\u00f3n 4: Filtro Temporal (2019\u20132024)\n\n| Actividad Planificada (GUIA) | Estado | Evidencia en COMPLETA | Secci\u00f3n |\n|-----------------------------|--------|----------------------|---------|\n| Convertir `created_on` a datetime con `errors='coerce'` | \u2705 Completo | \"[x] Conversi\u00f3n de created_on a datetime\" | \u00a74 |\n| Extraer columna `year` | \u2705 Completo | Columna `year` confirmada en schema de 26 columnas | \u00a713 |\n| Imputar `year` nulo usando a\u00f1o t\u00edpico por fuente | \u2705 Completo | \"[x] Imputaci\u00f3n de a\u00f1o faltante por fuente\" | \u00a74 |\n| Filtrar a\u00f1o entre 2019 y 2024 | \u2705 Completo | \"[x] Filtro 2019\u20132024\" \u2014 0 registros eliminados | \u00a74 |\n| Imprimir distribuci\u00f3n por a\u00f1o | \u2705 Completo | Tabla de distribuci\u00f3n por a\u00f1o en \u00a714 | \u00a714 |\n| Registrar m\u00e9trica | \u2705 Completo | reporte_limpieza.csv generado | \u00a713 |\n\n**Cumplimiento Secci\u00f3n 4: 6/6 completo (100%)**\n\n> **Nota:** El filtro pas\u00f3 correctamente, pero 2024 no est\u00e1 representado porque fue eliminado en \u00a72 por el Bug B1 (precios de A2 para 2024 fueron inflados artificialmente).\n\n---\n\n### Secci\u00f3n 5: Estandarizaci\u00f3n de Tipo de Propiedad\n\n| Actividad Planificada (GUIA) | Estado | Evidencia en COMPLETA | Secci\u00f3n |\n|-----------------------------|--------|----------------------|---------|\n| Definir `MAPA_PROPIEDADES` para 'Casa' y 'Apartamento' | \u2705 Completo | \"[x] Diccionario MAPA_PROPIEDADES \u2192 solo 'Casa' y 'Apartamento'\" | \u00a75 |\n| \u26a0\ufe0f Incluir `'casa con conjunto cerrado': 'Casa'` | \u274c No evidenciado | Bug B8: variante no incluida, 30 registros perdidos | \u00a75, \u00a78 |\n| Normalizar columna: min\u00fasculas, strip | \u2705 Completo | Mapa aplicado exitosamente | \u00a75 |\n| Aplicar mapa; conservar solo 'Casa' y 'Apartamento' | \u2705 Completo | \"Registros tras filtro de tipo: 285,705\" | \u00a75 |\n| Imprimir distribuci\u00f3n por tipo | \u26a0\ufe0f Parcial | No hay tabla expl\u00edcita de distribuci\u00f3n Casa/Apartamento en el COMPLETA | \u00a75 |\n| Registrar m\u00e9trica | \u2705 Completo | reporte_limpieza.csv generado | \u00a713 |\n\n**Cumplimiento Secci\u00f3n 5: 4/6 completo (67%) \u00b7 1/6 parcial \u00b7 1/6 no evidenciado (bug B8)**\n\n---\n\n### Secci\u00f3n 6: Eliminaci\u00f3n de Outliers por Grupo (IQR)\n\n| Actividad Planificada (GUIA) | Estado | Evidencia en COMPLETA | Secci\u00f3n |\n|-----------------------------|--------|----------------------|---------|\n| Agrupar por `['city', 'year', 'property_type']` | \u2705 Completo | \"[x] Agrupaci\u00f3n por (city, year, property_type)\" | \u00a76 |\n| Grupos \u226510: percentiles 2.5\u201397.5 de `price` | \u2705 Completo | \"[x] Percentiles 2.5\u201397.5 para price\" | \u00a76 |\n| Grupos \u226510: percentiles 1\u201399 de `area` | \u2705 Completo | \"[x] Percentiles 1\u201399 para area (solo donde no es nulo)\" | \u00a76 |\n| Conservar grupos <10 sin filtrar | \u2705 Completo | \"[x] Grupos < 10 registros conservados sin filtrar\" | \u00a76 |\n| Imprimir registros restantes | \u2705 Completo | \"Registros tras IQR: 272,044\" | \u00a76 |\n| Registrar m\u00e9trica | \u2705 Completo | reporte_limpieza.csv generado | \u00a713 |\n\n**Cumplimiento Secci\u00f3n 6: 6/6 completo (100%)**\n\n---\n\n### Secci\u00f3n 7: Deduplicaci\u00f3n Inter-Dataset\n\n| Actividad Planificada (GUIA) | Estado | Evidencia en COMPLETA | Secci\u00f3n |\n|-----------------------------|--------|----------------------|---------|\n| \u26a0\ufe0f `dup_key` SOLO con city+price+area+type+year | \u274c No evidenciado | Bug B5: dup_key incluy\u00f3 rooms y bathrooms \u2014 causa principal de p\u00e9rdida masiva | \u00a77, \u00a78 |\n| \u26a0\ufe0f NO incluir `rooms` ni `bathrooms` | \u274c No evidenciado | Bug B5 documentado expl\u00edcitamente | \u00a77, \u00a78 |\n| Definir orden de prioridad de fuentes | \u26a0\ufe0f Parcial | Orden definido en COMPLETA (A7>A2>A1...) difiere del GUIA (A2>A7>A1...); sin justificaci\u00f3n | \u00a77 |\n| Ordenar por prioridad; `drop_duplicates(keep='first')` | \u2705 Completo | Deduplicaci\u00f3n ejecutada (con bug) | \u00a77 |\n| Eliminar columnas temporales | \u2705 Completo | Shape final de 26 columnas coherente | \u00a713 |\n| Imprimir registros finales (~250K\u2013370K) | \u26a0\ufe0f Parcial | Imprimi\u00f3 54,904 \u2014 muy por debajo de lo esperado (bug confirmado) | \u00a77 |\n| Registrar m\u00e9trica | \u2705 Completo | reporte_limpieza.csv generado | \u00a713 |\n\n**Cumplimiento Secci\u00f3n 7: 3/7 completo (43%) \u00b7 2/7 parcial \u00b7 2/7 no evidenciado (bug B5)**\n\n> \u26a0\ufe0f **Gap de aclaraci\u00f3n:** La diferencia en el orden de prioridad de fuentes (COMPLETA: A7>A2; GUIA: A2>A7) no est\u00e1 justificada en el documento. Requiere aclaraci\u00f3n del equipo.\n\n---\n\n### Secci\u00f3n 8: Imputaci\u00f3n de Valores Faltantes\n\n| Actividad Planificada (GUIA) | Estado | Evidencia en COMPLETA | Secci\u00f3n |\n|-----------------------------|--------|----------------------|---------|\n| `area` \u2014 mediana `(city, year, property_type)` | \u2705 Completo | \"[x] area \u2014 mediana de (city, year, property_type); fallback mediana global\" | \u00a79 |\n| `rooms` \u2014 mediana `(city, property_type)`; fallback=3 | \u2705 Completo | \"[x] rooms \u2014 mediana de (city, property_type); fallback = 3; clip(lower=1)\" | \u00a79 |\n| `bathrooms` \u2014 mediana `(city, property_type)`; fallback=2 | \u2705 Completo | \"[x] bathrooms \u2014 mediana de (city, property_type); fallback = 2; clip(lower=1)\" | \u00a79 |\n| `estrato` \u2014 mediana `(city, barrio)` \u2192 `city` \u2192 fallback=3 | \u2705 Completo | \"[x] estrato \u2014 mediana (city, barrio) \u2192 mediana city \u2192 fallback = 3; clip(1,6)\" | \u00a79 |\n| \u26a0\ufe0f `lat`/`lon` \u2014 imputar centroide ANTES de exportar | \u274c No evidenciado | Bug B7: imputaci\u00f3n definida pero no ejecutada antes de exportar; 17,628 nulos (32%) | \u00a79, \u00a78 |\n| Verificar 0 nulos en columnas cr\u00edticas | \u2705 Completo | \"0 nulos en columnas cr\u00edticas (price, area, rooms, bathrooms, city, property_type, estrato)\" | \u00a79 |\n| Imprimir tabla de nulos antes/despu\u00e9s | \u26a0\ufe0f Parcial | Resultado mencionado (0 nulos en cr\u00edticas) pero no hay tabla expl\u00edcita antes/despu\u00e9s | \u00a79 |\n\n**Cumplimiento Secci\u00f3n 8: 5/7 completo (71%) \u00b7 1/7 parcial \u00b7 1/7 no evidenciado (bug B7)**\n\n---\n\n### Secci\u00f3n 9: Integraci\u00f3n de Variables Macroecon\u00f3micas\n\n| Actividad Planificada (GUIA) | Estado | Evidencia en COMPLETA | Secci\u00f3n |\n|-----------------------------|--------|----------------------|---------|\n| Cargar B3 \u2014 salario m\u00ednimo | \u2705 Completo | \"[x] B3 \u2014 salario m\u00ednimo por a\u00f1o\" | \u00a710 |\n| Cargar B4 \u2014 IPC anual con ipc_base2018 | \u2705 Completo | \"[x] B4 \u2014 IPC anual con ipc_base2018 calculado iterativamente\" | \u00a710 |\n| Cargar B2 \u2014 tasa hipotecaria | \u2705 Completo | \"[x] B2 \u2014 tasa hipotecaria (promedio anual de tasa de colocaci\u00f3n)\" | \u00a710 |\n| Cargar B1 \u2014 IPVU/IPVN | \u2705 Completo | \"[x] B1 \u2014 IPVU e IPVN con variaci\u00f3n anual\" | \u00a710 |\n| \u26a0\ufe0f Cargar B5 \u2014 merge por `(year, city)`; fallback nacional | \u26a0\ufe0f Parcial | B5 cargado a nivel nacional; merge granular por ciudad no implementado | \u00a710 |\n| Construir `df_macro` y merge con inmuebles (left join) | \u2705 Completo | \"Cobertura: 100% de registros con variables macroecon\u00f3micas\" | \u00a710 |\n| Merge adicional por `(year, city)` si B5 tiene datos por ciudad | \u274c No evidenciado | Documentado como pendiente: \"podr\u00eda integrarse por (year, city)\" | \u00a710 |\n| Imputar `tasa_desempleo` nula con promedio del a\u00f1o | \u2705 Completo | B5 integrado; 100% cobertura macro | \u00a710 |\n| Verificar cobertura del merge | \u2705 Completo | \"100% de registros con variables macroecon\u00f3micas\" | \u00a710 |\n\n**Cumplimiento Secci\u00f3n 9: 6/9 completo (67%) \u00b7 1/9 parcial \u00b7 1/9 no evidenciado**\n\n---\n\n### Secci\u00f3n 10: Construcci\u00f3n de Variables Derivadas\n\n| Actividad Planificada (GUIA) | Estado | Evidencia en COMPLETA | Secci\u00f3n |\n|-----------------------------|--------|----------------------|---------|\n| `salario_anual = salario_mensual \u00d7 12` | \u2705 Completo | \"[x] salario_anual = salario_mensual \u00d7 12\" | \u00a711 |\n| `IAH = price / salario_anual` | \u2705 Completo | \"[x] IAH = price / salario_anual\"; promedio 33.3 a\u00f1os en \u00a711 | \u00a711 |\n| `precio_real = price / (ipc_base2018 / 100)` | \u2705 Completo | \"[x] precio_real = price / (ipc_base2018 / 100)\"; promedio 470.9M en \u00a711 | \u00a711 |\n| `precio_m2 = price / area` | \u2705 Completo | \"[x] precio_m2 = price / area\"; promedio 4.52M en \u00a711 | \u00a711 |\n| Implementar `calcular_cuota_mensual()` con amortizaci\u00f3n francesa | \u2705 Completo | \"[x] cuota_mensual \u2014 amortizaci\u00f3n francesa (70% financiado, 15 a\u00f1os, tasa EA\u2192mensual)\" | \u00a711 |\n| Calcular `cuota_mensual` por fila | \u2705 Completo | Estad\u00edsticas de cuota_mensual en \u00a711 (promedio 4.37M) | \u00a711 |\n| `ratio_cuota_salario = cuota_mensual / salario_mensual` | \u2705 Completo | \"[x] ratio_cuota_salario = cuota_mensual / salario_mensual\" | \u00a711 |\n| `nivel_accesibilidad` con 4 categor\u00edas | \u2705 Completo | \"[x] nivel_accesibilidad \u2014 'Accesible', 'Moderado', 'Elevado', 'Cr\u00edtico'\" | \u00a711 |\n| Imprimir estad\u00edsticas descriptivas | \u2705 Completo | Tabla de estad\u00edsticas descriptivas con 5 variables en \u00a711 | \u00a711 |\n\n**Cumplimiento Secci\u00f3n 10: 9/9 completo (100%)**\n\n---\n\n### Secci\u00f3n 11: Validaci\u00f3n del Dataset Final\n\n| Actividad Planificada (GUIA) | Estado | Evidencia en COMPLETA | Secci\u00f3n |\n|-----------------------------|--------|----------------------|---------|\n| Verificar 0 nulos en columnas cr\u00edticas | \u2705 Completo | \"[x] Sin nulos en columnas cr\u00edticas\" | \u00a712 |\n| Verificar `price > 0` | \u2705 Completo | \"[x] price > 0, area > 0\" | \u00a712 |\n| Verificar `area > 0` | \u2705 Completo | Mismo \u00edtem | \u00a712 |\n| Verificar `rooms >= 1` y `bathrooms >= 1` | \u2705 Completo | \"[x] rooms >= 1, bathrooms >= 1\" | \u00a712 |\n| Verificar `city` en 12 ciudades can\u00f3nicas | \u2705 Completo | \"[x] city en 12 ciudades can\u00f3nicas\" | \u00a712 |\n| Verificar `year` entre 2019 y 2024 | \u2705 Completo | \"[x] year entre 2019 y 2024\" | \u00a712 |\n| Verificar `estrato` entre 1 y 6 | \u2705 Completo | \"[x] estrato entre 1 y 6\" | \u00a712 |\n| Imprimir validaci\u00f3n aprobada con shape final | \u2705 Completo | Shape: 54,904 \u00d7 26 confirmado | \u00a713 |\n| Validaci\u00f3n cruzada IPVN DANE \u2014 calcular variaci\u00f3n precio_m2 | \u274c No evidenciado | \"[ ] \u274c Validaci\u00f3n cruzada con IPVN DANE \u2014 no implementada en el c\u00f3digo\" | \u00a712 |\n| Documentar diferencia vs IPVN DANE (esperado < 0.5 pp) | \u274c No evidenciado | Pendiente; depende de validaci\u00f3n anterior | \u00a712 |\n\n**Cumplimiento Secci\u00f3n 11: 8/10 completo (80%) \u00b7 0 parcial \u00b7 2 no evidenciado**\n\n---\n\n### Secci\u00f3n 12: Exportaci\u00f3n\n\n| Actividad Planificada (GUIA) | Estado | Evidencia en COMPLETA | Secci\u00f3n |\n|-----------------------------|--------|----------------------|---------|\n| \u26a0\ufe0f Exportar con `encoding='utf-8-sig'` (con BOM) | \u26a0\ufe0f Parcial | Dataset exportado, pero encoding corrupto por bug B6 | \u00a713 |\n| Crear `data/processed/README.md` | \u2705 Completo | \"[x] Metadatos data/processed/README.md\" | \u00a713 |\n| Guardar `data/processed/reporte_limpieza.csv` | \u2705 Completo | \"[x] Reporte de limpieza data/processed/reporte_limpieza.csv\" | \u00a713 |\n| Imprimir confirmaci\u00f3n: nombre y shape | \u2705 Completo | \"Shape final: 54,904 filas \u00d7 26 columnas (16 MB)\" | \u00a713 |\n\n**Cumplimiento Secci\u00f3n 12: 3/4 completo (75%) \u00b7 1/4 parcial**\n\n---\n\n### Secci\u00f3n 13: Preparaci\u00f3n para GitHub\n\n| Actividad Planificada (GUIA) | Estado | Evidencia en COMPLETA | Secci\u00f3n |\n|-----------------------------|--------|----------------------|---------|\n| Verificar sin rutas absolutas | \u26a0\ufe0f Parcial | No hay evidencia expl\u00edcita en COMPLETA; asumido en script de 490 l\u00edneas | \u00a717 |\n| Ejecutar script completo sin errores | \u2705 Completo | Pipeline corri\u00f3 y produjo CSV de 54,904 registros | \u00a713 |\n| Verificar 26 columnas y sin nulos en cr\u00edticas | \u2705 Completo | \"26 columnas ... 0 nulos en cr\u00edticas\" | \u00a713 |\n| Verificar encoding: tildes preservadas | \u274c No evidenciado | Bug B6: tildes corruptas (confirmado en \u00a73 y \u00a78) | \u00a73, \u00a78 |\n| Verificar que 2024 est\u00e9 presente | \u274c No evidenciado | \"2024: 0 registros\" \u2014 falla por Bug B1 | \u00a714 |\n| Confirmar `.gitignore` excluye `data/raw/` | \u274c No evidenciado | No mencionado en COMPLETA | \u2014 |\n| `git add` de archivos | \u274c No evidenciado | No mencionado en COMPLETA | \u2014 |\n| Commit: \"fix: Fase 3 - pipeline corregido\" | \u274c No evidenciado | No mencionado en COMPLETA | \u2014 |\n| Push a rama `development` | \u274c No evidenciado | No mencionado en COMPLETA | \u2014 |\n| Actualizar `docs/FASE_3_COMPLETA.md` tras ejecuci\u00f3n | \u2705 Completo | El propio documento es evidencia de esta actualizaci\u00f3n | \u00a71\u2013\u00a717 |\n\n**Cumplimiento Secci\u00f3n 13: 3/10 completo (30%) \u00b7 1/10 parcial \u00b7 6/10 no evidenciado**\n\n> **Nota:** Las actividades de Git (add, commit, push) son procedimientos de entrega que no se documentan dentro del FASE_COMPLETA.md \u2014 viven en el historial de commits del repositorio. Su ausencia en el documento no implica que no se realizaron.\n\n---\n\n## Resumen de Cumplimiento por Secci\u00f3n\n\n| Secci\u00f3n | Total | \u2705 Completo | \u26a0\ufe0f Parcial | \u274c No evidenciado | % Cumplimiento |\n|---------|-------|-----------|-----------|------------------|----------------|\n| \u00a71 Setup y Carga de Datos | 18 | 13 | 0 | 4 (bugs B1\u2013B4) | 72% |\n| \u00a72 Limpieza de Precios | 8 | 8 | 0 | 0 | 100% |\n| \u00a73 Estandarizaci\u00f3n Ciudades | 8 | 5 | 0 | 2 (bug B6) | 62% |\n| \u00a74 Filtro Temporal | 6 | 6 | 0 | 0 | 100% |\n| \u00a75 Tipo de Propiedad | 6 | 4 | 1 | 1 (bug B8) | 67% |\n| \u00a76 Outliers IQR | 6 | 6 | 0 | 0 | 100% |\n| \u00a77 Deduplicaci\u00f3n | 7 | 3 | 2 | 2 (bug B5) | 43% |\n| \u00a78 Imputaci\u00f3n Faltantes | 7 | 5 | 1 | 1 (bug B7) | 71% |\n| \u00a79 Variables Macroecon\u00f3micas | 9 | 6 | 1 | 1 | 67% |\n| \u00a710 Variables Derivadas | 9 | 9 | 0 | 0 | 100% |\n| \u00a711 Validaci\u00f3n Dataset | 10 | 8 | 0 | 2 (IPVN DANE) | 80% |\n| \u00a712 Exportaci\u00f3n | 4 | 3 | 1 | 0 | 75% |\n| \u00a713 Preparaci\u00f3n GitHub | 10 | 3 | 1 | 6 | 30% |\n| **TOTAL** | **108** | **79** | **7** | **19** | **73%** |\n\n---\n\n## An\u00e1lisis de Cobertura Ajustada\n\nAl separar los \"no evidenciados\" en dos categor\u00edas:\n\n| Categor\u00eda | Actividades | % del total |\n|-----------|-------------|-------------|\n| \u2705 Completo con evidencia | 79 | 73.1% |\n| \u26a0\ufe0f Parcial | 7 | 6.5% |\n| \u274c Bug conocido y documentado | 10 | 9.3% |\n| \u274c Gap sin documentar | 9 | 8.3% |\n| **Cobertura documental efectiva** (completo + bug documentado) | **89** | **82.4%** |\n\n**La cobertura real del COMPLETA contra el GUIA es 82.4%** cuando se considera que los bugs est\u00e1n expl\u00edcitamente reconocidos y catalogados con plan de correcci\u00f3n.\n\n---\n\n## Gaps Cr\u00edticos Identificados\n\n### Gap 1 \u2014 Validaci\u00f3n Cruzada IPVN/DANE (Alta prioridad)\n- **Qu\u00e9 falta:** Calcular variaci\u00f3n anual de `precio_m2` por ciudad y comparar contra `ipvn_variacion_anual`\n- **Por qu\u00e9 importa:** Es la \u00fanica verificaci\u00f3n de calibraci\u00f3n externa del dataset \u2014 sin ella no hay certeza de que los precios sean realistas\n- **Acci\u00f3n:** Implementar en el pipeline antes de considerarlo completo (con o sin bugs corregidos)\n- **Secci\u00f3n GUIA:** \u00a711 (Validaci\u00f3n cruzada IPVN DANE)\n\n### Gap 2 \u2014 Integraci\u00f3n B5 por Ciudad (Media prioridad)\n- **Qu\u00e9 falta:** Merge de tasa de desempleo por `(year, city)` en lugar de solo nacional\n- **Por qu\u00e9 importa:** El desempleo var\u00eda significativamente entre ciudades colombianas; usar valor nacional introduce sesgo en el IAH\n- **Acci\u00f3n:** Verificar si B5 tiene granularidad de ciudad; si s\u00ed, implementar el merge adicional\n- **Secci\u00f3n GUIA:** \u00a79 (B5 por ciudad)\n\n### Gap 3 \u2014 Orden de Prioridad de Fuentes en Deduplicaci\u00f3n (Baja prioridad / Aclaraci\u00f3n requerida)\n- **Qu\u00e9 falta:** Justificaci\u00f3n de por qu\u00e9 el COMPLETA usa A7>A2>A1... en lugar de A2>A7>A1... del GUIA\n- **Por qu\u00e9 importa:** El orden afecta qu\u00e9 versi\u00f3n de un duplicado se conserva\n- **Acci\u00f3n:** Confirmar si el orden del COMPLETA fue intencional y actualizar el GUIA si es as\u00ed\n- **Secci\u00f3n GUIA:** \u00a77\n\n### Gap 4 \u2014 Tabla de Nulos Antes/Despu\u00e9s en Imputaci\u00f3n (Baja prioridad)\n- **Qu\u00e9 falta:** Tabla expl\u00edcita mostrando conteo de nulos antes y despu\u00e9s de imputaci\u00f3n por columna\n- **Por qu\u00e9 importa:** Evidencia auditable del proceso de imputaci\u00f3n\n- **Acci\u00f3n:** Agregar al documento (puede ser retroactiva si se tiene el log del pipeline)\n\n### Gap 5 \u2014 Distribuci\u00f3n por Tipo de Propiedad (Baja prioridad)\n- **Qu\u00e9 falta:** Tabla o resumen de distribuci\u00f3n Casa vs Apartamento en \u00a75\n- **Acci\u00f3n:** Agregar al documento (dato disponible desde el pipeline ejecutado)\n\n---\n\n## Evaluaci\u00f3n de Integridad Documental\n\n| Criterio | Resultado |\n|---------|-----------|\n| Datos fabricados detectados | \u2705 Ninguno \u2014 todas las cifras corresponden al pipeline ejecutado |\n| Proyecciones marcadas como estimaciones | \u2705 Secci\u00f3n 16 correctamente etiquetada como \"no son datos obtenidos\" |\n| Bugs documentados con impacto cuantificado | \u2705 Tabla de 8 bugs con filas afectadas y correcci\u00f3n espec\u00edfica |\n| Advertencia de no iniciar Fase 4 | \u2705 Expl\u00edcita: \"No iniciar Fase 4 hasta corregir los bugs\" |\n| M\u00e9tricas de IAH con sesgo documentado | \u2705 Nota en \u00a711 explica sesgo de Properati y proyecci\u00f3n post-correcci\u00f3n |\n| Separaci\u00f3n real vs proyectado | \u2705 Consistente en todo el documento |\n\nEl documento muestra **alta integridad documental**: no presenta ninguna de las se\u00f1ales de alerta definidas en la SKILL (m\u00e9tricas irreales, resultados completados sin ejecutar, datos fabricados). Es un ejemplo de documentaci\u00f3n honesta de una ejecuci\u00f3n fallida.\n\n---\n\n## Estructura vs. Estructura Obligatoria CRISP-DM\n\n| Secci\u00f3n Obligatoria (SKILL) | Presente en COMPLETA | Observaci\u00f3n |\n|-----------------------------|---------------------|-------------|\n| Resumen Ejecutivo | \u26a0\ufe0f Parcial | La Introducci\u00f3n cumple esta funci\u00f3n pero no usa ese encabezado |\n| Contexto dentro de CRISP-DM | \u26a0\ufe0f Parcial | Mencionado brevemente en introducci\u00f3n; no es secci\u00f3n dedicada |\n| Objetivos de la Fase | \u274c No expl\u00edcito | El encabezado del GUIA cita el objetivo pero no hay secci\u00f3n en COMPLETA |\n| Alcance Ejecutado | \u2705 Completo | \u00a7\u00a71\u201314 documentan el alcance ejecutado |\n| Actividades Realizadas | \u2705 Completo | \u00a7\u00a71\u201313 con checklists |\n| Correspondencia con GUIA_FASE_3.md | \u26a0\ufe0f Parcial | \u00a715 tiene checklist de correcciones pendientes pero no tabla de trazabilidad formal |\n| Metodolog\u00eda Aplicada | \u2705 Completo | Cada secci\u00f3n documenta la metodolog\u00eda |\n| Resultados Obtenidos | \u2705 Completo | \u00a714 con tablas de distribuci\u00f3n |\n| M\u00e9tricas y Estad\u00edsticas | \u2705 Completo | \u00a711 y \u00a714 |\n| Hallazgos Clave | \u26a0\ufe0f Parcial | Los bugs son los hallazgos principales; no hay secci\u00f3n expl\u00edcita de \"Hallazgos Clave\" |\n| Problemas Encontrados y Resoluci\u00f3n | \u2705 Completo | \u00a78 y \u00a715 con tabla completa de bugs y correcciones |\n| Validaciones Realizadas | \u2705 Completo | \u00a712 |\n| Entregables Generados | \u26a0\ufe0f Parcial | \u00a717 presente pero **truncada** (archivo termina a mitad de tabla) |\n| Riesgos o Limitaciones Detectadas | \u2705 Completo | \u00a716 (proyecciones y limitaciones) |\n| Conclusiones | \u274c No evidenciado | No hay secci\u00f3n de Conclusiones |\n| Preparaci\u00f3n para la Siguiente Fase | \u274c No evidenciado | No hay secci\u00f3n expl\u00edcita (\u00a715 es checklist de fixes, no prerrequisitos para Fase 4) |\n\n---\n\n## Estado de los 8 Bugs (Trazabilidad Bug-Correcci\u00f3n)\n\n| Bug ID | Nombre | Documentado en COMPLETA | Plan de Correcci\u00f3n | Impacto si No se Corrige |\n|--------|--------|------------------------|-------------------|--------------------------|\n| B1 | A2 precio \u00d7 1,000,000 | \u2705 \u00a72 y \u00a78 | Quitar `* 1000000` en l\u00ednea 78 | Pierde 2024; 142,730 reg; sesgo hacia Properati |\n| B2 | A3 sin city/property_type | \u2705 \u00a71 y \u00a78 | Asignar `city = 'Bogot\u00e1'` y property_type | Pierde ~145,000 registros de Bogot\u00e1 |\n| B3 | A7 sin renombre | \u2705 \u00a71 y \u00a78 | Agregar diccionario de renombre | Pierde ~900 registros de Villavicencio |\n| B4 | A8 sin renombre | \u2705 \u00a71 y \u00a78 | Agregar renombre + `city = 'Bogot\u00e1'` | Pierde 32 registros |\n| B5 | Dedup incluye rooms/bathrooms | \u2705 \u00a77 y \u00a78 | Clave solo: city+price+area+type+year | Pierde ~171,000 registros por sobre-deduplicaci\u00f3n |\n| B6 | Encoding ascii corrompe tildes | \u2705 \u00a73 y \u00a78 | No forzar ascii; usar UTF-8 | Nombres de ciudad ilegibles en CSV |\n| B7 | lat/lon nulos no imputados | \u2705 \u00a79 y \u00a78 | Imputar centroides antes de exportar | 32% nulos en coordenadas (17,628 filas) |\n| B8 | 'casa con conjunto cerrado' faltante | \u2705 \u00a75 y \u00a78 | Agregar al MAPA_PROPIEDADES | Pierde ~30 registros de A6 |\n\n**Todos los 8 bugs est\u00e1n correctamente documentados en el COMPLETA con causa, fuente, impacto cuantificado y correcci\u00f3n espec\u00edfica.**\n\n---\n\n## Recomendaciones Prioritarias\n\n### Inmediatas (antes de re-ejecutar el pipeline)\n1. **Agregar secci\u00f3n \"Conclusiones\"** \u2014 resumir el estado actual, decisi\u00f3n de no avanzar a Fase 4, y criterios de aceptaci\u00f3n del pipeline corregido\n2. **Agregar secci\u00f3n \"Preparaci\u00f3n para Fase 4\"** \u2014 listar expl\u00edcitamente qu\u00e9 entregables necesita Fase 4 y qu\u00e9 condiciones debe cumplir el dataset corregido (umbral de registros, 2024 presente, tildes correctas, 0 nulos en lat/lon)\n3. **Completar \u00a717 Entregables** \u2014 el archivo est\u00e1 truncado; completar la tabla de entregables con estado de cada artefacto\n4. **Implementar validaci\u00f3n IPVN/DANE** \u2014 incluso con el dataset con bugs, la comparaci\u00f3n porcentual ser\u00eda valiosa para establecer una l\u00ednea base\n\n### Post-correcci\u00f3n de bugs\n5. **Reemplazar \u00a716 con valores reales** tras re-ejecutar el pipeline corregido\n6. **Agregar tabla de nulos antes/despu\u00e9s** en \u00a79 (imputaci\u00f3n)\n7. **Agregar tabla de distribuci\u00f3n Casa/Apartamento** en \u00a75\n8. **Justificar orden de prioridad** A7>A2 en \u00a77 o alinearlo con el GUIA (A2>A7)\n\n---\n\n*Auditor\u00eda generada por: crisp-dm-project-documenter*  \n*Archivos auditados: `docs/FASE_3_COMPLETA.md` vs `docs/GUIA_FASE_3.md`*  \n*Proyecto: Accesibilidad de Vivienda en Colombia \u00b7 CRISP-DM 2025-I*\n"}], "grading": {"eval_id": 0, "configuration": "with_skill", "expectations": [{"text": "El output contiene una tabla markdown con columnas Actividad Planificada, Estado, Evidencia y Secci\u00f3n", "passed": true, "evidence": "16 matches for 'Actividad Planificada|Estado|Evidencia' found in output; full traceability table with all 4 columns present across multiple sections"}, {"text": "Todos los estados usan solo los valores permitidos: \u2705 Completo, \u26a0\ufe0f Parcial, \u274c No evidenciado, \u23f3 Pendiente", "passed": true, "evidence": "Output uses \u2705, \u26a0\ufe0f, \u274c emoji states consistently; no non-standard status values found"}, {"text": "Las actividades listadas corresponden a actividades reales del GUIA_FASE", "passed": true, "evidence": "References \u00a72 through \u00a713 sections explicitly; activities cited match GUIA_FASE_3.md structure (Carga, Limpieza, Ciudades, Filtro, Dedup, etc.)"}, {"text": "Incluye porcentaje o conteo de actividades completadas vs. planificadas", "passed": true, "evidence": "States '73% complete, 82.4% effective coverage' with breakdown by section"}], "pass_rate": 1.0}}, {"id": "eval-0-trazabilidad-fase3-without_skill", "prompt": "Audita FASE_3_COMPLETA.md contra GUIA_FASE_3.md y genera tabla de trazabilidad completa", "eval_id": 0, "outputs": [{"name": "result.md", "type": "text", "content": "# Auditor\u00eda Fase 3 \u2014 Tabla de Trazabilidad Completa\n## Proyecto: Accesibilidad de Vivienda en Colombia \u00b7 CRISP-DM 2025-I\n**Documento auditado:** `docs/FASE_3_COMPLETA.md`  \n**Gu\u00eda de referencia:** `docs/GUIA_FASE_3.md`  \n**Fecha de auditor\u00eda:** 2026-06-03  \n**Pipeline ejecutado:** S\u00ed \u2014 54,904 registros (con 8 bugs activos)\n\n---\n\n## Metodolog\u00eda de Auditor\u00eda\n\nCada actividad de la GUIA_FASE_3.md se contrasta contra la evidencia reportada en FASE_3_COMPLETA.md. Los estados posibles son:\n\n| S\u00edmbolo | Estado | Significado |\n|---------|--------|-------------|\n| \u2705 | Completado | La actividad fue ejecutada y el resultado est\u00e1 documentado |\n| \u26a0\ufe0f | Completado con bug | La actividad se ejecut\u00f3 pero con un defecto identificado |\n| \u274c | Pendiente | La actividad a\u00fan no se ha realizado |\n| \ud83d\udd36 | Parcial | La actividad se ejecut\u00f3 de forma incompleta |\n\n---\n\n## Tabla de Trazabilidad\n\n### Secci\u00f3n 1 \u2014 Setup y Carga de Datos\n\n| # | Actividad (GUIA_FASE_3) | Estado | Evidencia en FASE_3_COMPLETA | Observaciones |\n|---|------------------------|--------|------------------------------|---------------|\n| 1.1 | Importar pandas, numpy, os, re | \u2705 Completado | Notebook `02_preparacion_datos.py` (490 l\u00edneas) implementado | Impl\u00edcito en ejecuci\u00f3n del pipeline |\n| 1.2 | Definir `DIR_RAW` y `DIR_PROCESSED` | \u2705 Completado | Dataset exportado a `data/processed/vivienda_colombia_limpio.csv` | Impl\u00edcito en la exportaci\u00f3n exitosa |\n| 1.3 | Crear `data/processed/` con `os.makedirs` | \u2705 Completado | Reporte de limpieza y metadatos exportados | Impl\u00edcito en la exportaci\u00f3n exitosa |\n| 1.4 | Definir `COLS_CANONICAS` (13 columnas) | \u2705 Completado | Sec. 1: esquema can\u00f3nico definido con las 13 columnas exactas | Columnas listadas en FASE_3_COMPLETA \u00a71 |\n| 1.5 | Definir `TRM_HISTORICA` por a\u00f1o (2015\u20132024) | \u2705 Completado | Sec. 2: conversi\u00f3n USD\u2192COP en Properati A1 usando TRM hist\u00f3rica | Referenciada como aplicada |\n| 1.6 | Crear funci\u00f3n `registrar_metrica()` | \u2705 Completado | `data/processed/reporte_limpieza.csv` generado | Impl\u00edcito en la existencia del reporte |\n| 1.7 | **A1 Properati** \u2014 filtrar `Venta`, renombrar al esquema can\u00f3nico | \u2705 Completado | Sec. 1: `[x] A1 Properati \u2014 filtrado por operation_type == 'Venta'` | 42,680 reg. supervivientes (77.7%) |\n| 1.8 | **A2 FincaRaiz** \u2014 renombrar; NO multiplicar \u00d71,000,000 | \u26a0\ufe0f Completado con bug | Sec. 1: renombrado ejecutado; Sec. 2/8: Bug B1 \u2014 precio multiplicado \u00d71,000,000 | Bug B1 activo: elimina 142,730 registros incluyendo datos de 2024 |\n| 1.9 | **A3 HousePrediction** \u2014 renombrar; asignar `city = 'Bogot\u00e1'` | \u26a0\ufe0f Completado con bug | Sec. 1: renombrado ejecutado; Bug B2: sin city ni property_type asignados | Bug B2 activo: pierde ~145,000 registros |\n| 1.10 | **A4 Bogot\u00e1** \u2014 mapeo difuso; `city = 'Bogot\u00e1'` | \u2705 Completado | Sec. 1: `[x] A4 Bogot\u00e1 \u2014 mapeo difuso de columnas, asignada city = 'Bogot\u00e1'` | 4,999 reg. supervivientes (9.1%) |\n| 1.11 | **A5 Medell\u00edn** \u2014 renombrar columnas; `city = 'Medell\u00edn'` | \u2705 Completado | Sec. 1: `[x] A5 Medell\u00edn \u2014 renombrado desde price, baths, neighbourhood, stratum` | 6,734 reg. supervivientes (12.3%) |\n| 1.12 | **A6 Bogot\u00e1 2023** \u2014 mapeo difuso; `city = 'Bogot\u00e1'` | \u2705 Completado | Sec. 1: `[x] A6 Bogot\u00e1 2023 \u2014 mapeo difuso, asignada city = 'Bogot\u00e1'` | 491 reg. supervivientes (0.9%) |\n| 1.13 | **A7 Villavicencio** \u2014 agregar renombre de columnas | \u274c Pendiente | Sec. 1: `[ ] \u26a0\ufe0f A7 Villavicencio \u2014 pendiente: agregar renombre de columnas` | Bug B3: ~900 registros perdidos |\n| 1.14 | **A8 Caracol UPZ** \u2014 agregar renombre + `city = 'Bogot\u00e1'` | \u274c Pendiente | Sec. 1: `[ ] \u26a0\ufe0f A8 Caracol UPZ \u2014 pendiente: agregar renombre de columnas y asignar city` | Bug B4: 32 registros perdidos |\n| 1.15 | Agregar columnas faltantes como NaN antes de concatenar | \u2705 Completado | Sec. 1: `[x] Columnas faltantes completadas como NaN y datasets concatenados` | Confirmado |\n| 1.16 | Concatenar con `pd.concat` usando solo `COLS_CANONICAS` | \u2705 Completado | Sec. 1: 880,865 registros consolidados | Resultado documentado |\n| 1.17 | Imprimir total registros (~880,000 esperado) | \u2705 Completado | Sec. 1: **Resultado: 880,865 registros consolidados** | Cifra real obtenida: 880,865 |\n| 1.18 | Registrar m\u00e9trica en reporte_limpieza.csv | \u2705 Completado | `data/processed/reporte_limpieza.csv` existe | Impl\u00edcito en entregables \u00a717 |\n\n---\n\n### Secci\u00f3n 2 \u2014 Limpieza de Precios y Monedas\n\n| # | Actividad (GUIA_FASE_3) | Estado | Evidencia en FASE_3_COMPLETA | Observaciones |\n|---|------------------------|--------|------------------------------|---------------|\n| 2.1 | Extraer a\u00f1o temporal desde `created_on` para TRM | \u2705 Completado | Sec. 2: `[x] Extracci\u00f3n de a\u00f1o temporal desde created_on` | Confirmado |\n| 2.2 | Convertir precios USD \u2192 COP en Properati A1 | \u2705 Completado | Sec. 2: `[x] Conversi\u00f3n USD \u2192 COP en Properati (A1) usando TRM hist\u00f3rica` | Confirmado |\n| 2.3 | Detectar y corregir precios en COP/m\u00b2 | \u2705 Completado | Sec. 2: `[x] Detecci\u00f3n y correcci\u00f3n de precios en COP/m\u00b2` | Confirmado |\n| 2.4 | Eliminar registros con `price` nulo | \u2705 Completado | Sec. 2: `[x] Eliminaci\u00f3n de price nulo, price < 10M y price > 10,000M` | Incluido en el paso combinado |\n| 2.5 | Eliminar registros con `price < 10,000,000` | \u2705 Completado | Sec. 2: incluido en paso de eliminaci\u00f3n combinado | Confirmado |\n| 2.6 | Eliminar registros con `price > 10,000,000,000` | \u26a0\ufe0f Completado con bug | Eliminaci\u00f3n aplicada; Bug B1 hace que todos los registros de A2 superen el l\u00edmite artificialmente | Bug B1: los 142,830 registros de A2 eliminados por precios inflados x1,000,000 |\n| 2.7 | Imprimir registros restantes | \u2705 Completado | Sec. 2: **Registros tras limpieza: 734,258** | Cifra real obtenida |\n| 2.8 | Registrar m\u00e9trica | \u2705 Completado | Reporte de limpieza generado | Impl\u00edcito |\n\n---\n\n### Secci\u00f3n 3 \u2014 Estandarizaci\u00f3n de Ciudades\n\n| # | Actividad (GUIA_FASE_3) | Estado | Evidencia en FASE_3_COMPLETA | Observaciones |\n|---|------------------------|--------|------------------------------|---------------|\n| 3.1 | Definir `MAPA_CIUDADES` con variantes \u2192 12 ciudades focales | \u2705 Completado | Sec. 3: `[x] Diccionario MAPA_CIUDADES con 24 variantes \u2192 12 ciudades can\u00f3nicas` | 24 variantes mapeadas |\n| 3.2 | **NO** usar `encode('ascii', errors='ignore')` \u2014 mantener UTF-8 | \u274c Pendiente | Sec. 3: `[ ] \u26a0\ufe0f Bug: normalizaci\u00f3n us\u00f3 encode('ascii', errors='ignore')` | Bug B6 activo: tildes corruptas en C\u00facuta, Ibagu\u00e9, Medell\u00edn, Bogot\u00e1 |\n| 3.3 | Normalizar con `.str.lower().str.strip()` | \u26a0\ufe0f Completado con bug | Normalizaci\u00f3n aplicada pero con encoding incorrecto (B6) | Funciona pero produce nombres de ciudad corruptos |\n| 3.4 | Aplicar mapa de ciudades | \u2705 Completado | Sec. 3: mapa aplicado | Confirmado |\n| 3.5 | Filtrar y conservar solo las 12 ciudades can\u00f3nicas | \u2705 Completado | Sec. 3: `[x] Filtro: solo registros en las 12 ciudades focales` | P\u00e9rdida 55.7% por municipios no focales (Envigado, Ch\u00eda, Jamund\u00ed, etc.) |\n| 3.6 | Renombrar columna limpia a `city` | \u2705 Completado | Columna `city` presente en las 26 columnas del dataset final | Confirmado |\n| 3.7 | Imprimir distribuci\u00f3n por ciudad | \u2705 Completado | Sec. 14: tabla completa con las 12 ciudades y registros | Datos reales documentados |\n| 3.8 | Registrar m\u00e9trica | \u2705 Completado | Sec. 3: **Registros tras filtro de ciudades: 325,554** | Cifra real obtenida |\n\n---\n\n### Secci\u00f3n 4 \u2014 Filtro Temporal (2019\u20132024)\n\n| # | Actividad (GUIA_FASE_3) | Estado | Evidencia en FASE_3_COMPLETA | Observaciones |\n|---|------------------------|--------|------------------------------|---------------|\n| 4.1 | Convertir `created_on` a datetime con `errors='coerce'` | \u2705 Completado | Sec. 4: `[x] Conversi\u00f3n de created_on a datetime` | Confirmado |\n| 4.2 | Extraer columna `year` | \u2705 Completado | Sec. 4: columna `year` presente en las 26 columnas del dataset | Confirmado |\n| 4.3 | Imputar `year` nulo por fuente | \u2705 Completado | Sec. 4: `[x] Imputaci\u00f3n de a\u00f1o faltante por fuente` | Confirmado |\n| 4.4 | Filtrar registros con `year` entre 2019 y 2024 | \u2705 Completado | Sec. 4: `[x] Filtro 2019\u20132024` | 0 registros eliminados \u2014 todos en rango |\n| 4.5 | Imprimir distribuci\u00f3n por a\u00f1o | \u2705 Completado | Sec. 14: tabla de distribuci\u00f3n por a\u00f1o (2020\u20132023) | 2024 ausente por Bug B1; 2019 no existe en ninguna fuente |\n| 4.6 | Registrar m\u00e9trica | \u2705 Completado | Sec. 4: **Registros tras filtro temporal: 325,554** | Sin cambio tras el filtro |\n\n---\n\n### Secci\u00f3n 5 \u2014 Estandarizaci\u00f3n de Tipo de Propiedad\n\n| # | Actividad (GUIA_FASE_3) | Estado | Evidencia en FASE_3_COMPLETA | Observaciones |\n|---|------------------------|--------|------------------------------|---------------|\n| 5.1 | Definir `MAPA_PROPIEDADES` \u2192 'Casa' y 'Apartamento' | \u2705 Completado | Sec. 5: `[x] Diccionario MAPA_PROPIEDADES \u2192 solo 'Casa' y 'Apartamento'` | Confirmado |\n| 5.2 | **Incluir** `'casa con conjunto cerrado': 'Casa'` en el mapa | \u274c Pendiente | Sec. 5: `[ ] \u26a0\ufe0f Variante 'casa con conjunto cerrado' de A6 no estaba en el mapa` | Bug B8 activo: 30 registros de A6 perdidos |\n| 5.3 | Normalizar: min\u00fasculas, strip | \u2705 Completado | Normalizaci\u00f3n aplicada (impl\u00edcita en el funcionamiento del mapa) | Confirmado |\n| 5.4 | Aplicar mapa; conservar solo 'Casa' y 'Apartamento' | \u26a0\ufe0f Completado con bug | Mapa aplicado pero falta variante de A6 (B8) | 30 registros adicionales perdidos por B8 |\n| 5.5 | Imprimir distribuci\u00f3n por tipo | \u2705 Completado | Pipeline ejecutado con resultados documentados | Impl\u00edcito en ejecuci\u00f3n completa |\n| 5.6 | Registrar m\u00e9trica | \u2705 Completado | Sec. 5: **Registros tras filtro de tipo: 285,705** | Cifra real obtenida |\n\n---\n\n### Secci\u00f3n 6 \u2014 Eliminaci\u00f3n de Outliers por Grupo (IQR)\n\n| # | Actividad (GUIA_FASE_3) | Estado | Evidencia en FASE_3_COMPLETA | Observaciones |\n|---|------------------------|--------|------------------------------|---------------|\n| 6.1 | Agrupar por `['city', 'year', 'property_type']` | \u2705 Completado | Sec. 6: `[x] Agrupaci\u00f3n por (city, year, property_type)` | Confirmado |\n| 6.2 | Percentiles 2.5\u201397.5 para `price` en grupos \u2265 10 | \u2705 Completado | Sec. 6: `[x] Percentiles 2.5\u201397.5 para price` | Confirmado |\n| 6.3 | Percentiles 1\u201399 para `area` donde no sea nulo | \u2705 Completado | Sec. 6: `[x] Percentiles 1\u201399 para area (solo donde no es nulo)` | Confirmado |\n| 6.4 | Conservar grupos < 10 registros sin filtrar | \u2705 Completado | Sec. 6: `[x] Grupos < 10 registros conservados sin filtrar` | Confirmado |\n| 6.5 | Imprimir registros restantes | \u2705 Completado | Sec. 6: **Registros tras IQR: 272,044** | Cifra real obtenida |\n| 6.6 | Registrar m\u00e9trica | \u2705 Completado | M\u00e9trica documentada | Confirmado |\n\n---\n\n### Secci\u00f3n 7 \u2014 Deduplicaci\u00f3n Inter-Dataset\n\n| # | Actividad (GUIA_FASE_3) | Estado | Evidencia en FASE_3_COMPLETA | Observaciones |\n|---|------------------------|--------|------------------------------|---------------|\n| 7.1 | **Construir `dup_key` SOLO con** city+price+area+type+year | \u274c Pendiente | Sec. 7: `[ ] \u26a0\ufe0f Bug: dup_key incluy\u00f3 rooms y bathrooms adem\u00e1s de los campos previstos` | Bug B5 activo: causa la mayor p\u00e9rdida de datos del pipeline |\n| 7.2 | **NO incluir** `rooms` ni `bathrooms` en la clave | \u274c Pendiente | Bug B5 confirma que rooms y bathrooms fueron incluidos incorrectamente | Elimina 79.8% de registros (217,140) en lugar del ~15\u201320% esperado |\n| 7.3 | Definir orden de prioridad de fuentes | \u26a0\ufe0f Completado con bug | Sec. 7: `[x] Prioridad: A7 > A2 > A1 > A6 > A5 > A4 > A3 > A8`; GUIA define A2 > A7 | Discrepancia menor en orden; GUIA prioriza A2 sobre A7 |\n| 7.4 | Ordenar por prioridad; `drop_duplicates(keep='first')` | \u26a0\ufe0f Completado con bug | Deduplicaci\u00f3n ejecutada pero con clave sobre-especificada (B5) | L\u00f3gica correcta, clave incorrecta |\n| 7.5 | Eliminar columnas temporales | \u2705 Completado | Dataset final no contiene columna `dup_key` | Confirmado |\n| 7.6 | Imprimir registros finales (~250K\u2013370K esperado) | \u26a0\ufe0f Completado con bug | Sec. 7: **Registros tras deduplicaci\u00f3n: 54,904** (vs ~250K esperados) | Bug B5 es el responsable principal del bajo volumen final |\n| 7.7 | Registrar m\u00e9trica | \u2705 Completado | Dataset final documentado con 54,904 registros | Confirmado |\n\n---\n\n### Secci\u00f3n 8 \u2014 Imputaci\u00f3n de Valores Faltantes\n\n| # | Actividad (GUIA_FASE_3) | Estado | Evidencia en FASE_3_COMPLETA | Observaciones |\n|---|------------------------|--------|------------------------------|---------------|\n| 8.1 | `area` \u2014 mediana (city, year, property_type); fallback global | \u2705 Completado | Sec. 9: `[x] area \u2014 mediana de (city, year, property_type); fallback mediana global` | Confirmado |\n| 8.2 | `rooms` \u2014 mediana (city, property_type); fallback = 3; clip(\u22651) | \u2705 Completado | Sec. 9: `[x] rooms \u2014 mediana (city, property_type); fallback = 3; clip(lower=1)` | Confirmado |\n| 8.3 | `bathrooms` \u2014 mediana (city, property_type); fallback = 2; clip(\u22651) | \u2705 Completado | Sec. 9: `[x] bathrooms \u2014 mediana (city, property_type); fallback = 2; clip(lower=1)` | Confirmado |\n| 8.4 | `estrato` \u2014 mediana (city, barrio) \u2192 mediana city \u2192 fallback = 3 | \u2705 Completado | Sec. 9: `[x] estrato \u2014 mediana (city, barrio) \u2192 mediana city \u2192 fallback = 3; clip(1, 6)` | Confirmado |\n| 8.5 | **`lat`/`lon`** \u2014 imputar por centroide ANTES de exportar | \u274c Pendiente | Sec. 9: `[ ] \u26a0\ufe0f lat/lon \u2014 imputaci\u00f3n definida pero no se ejecuta antes de la exportaci\u00f3n` | Bug B7 activo: 17,628 nulos (32%) en coordenadas exportadas |\n| 8.6 | Verificar 0 nulos en columnas cr\u00edticas | \u2705 Completado | Sec. 9: **0 nulos en price, area, rooms, bathrooms, city, property_type, estrato** | lat/lon excluidas del conjunto \"cr\u00edticas\" en la validaci\u00f3n actual |\n| 8.7 | Imprimir tabla de nulos antes/despu\u00e9s | \u2705 Completado | Resultados de imputaci\u00f3n documentados | Confirmado |\n\n---\n\n### Secci\u00f3n 9 \u2014 Integraci\u00f3n de Variables Macroecon\u00f3micas\n\n| # | Actividad (GUIA_FASE_3) | Estado | Evidencia en FASE_3_COMPLETA | Observaciones |\n|---|------------------------|--------|------------------------------|---------------|\n| 9.1 | Cargar B3 \u2014 salario m\u00ednimo por a\u00f1o | \u2705 Completado | Sec. 10: `[x] B3 \u2014 salario m\u00ednimo por a\u00f1o` | Confirmado |\n| 9.2 | Cargar B4 \u2014 IPC anual con `ipc_base2018` iterativo | \u2705 Completado | Sec. 10: `[x] B4 \u2014 IPC anual con ipc_base2018 calculado iterativamente` | Confirmado |\n| 9.3 | Cargar B2 \u2014 tasa hipotecaria (promedio anual) | \u2705 Completado | Sec. 10: `[x] B2 \u2014 tasa hipotecaria (promedio anual de tasa de colocaci\u00f3n)` | Confirmado |\n| 9.4 | Cargar B1 \u2014 IPVU/IPVN con variaci\u00f3n anual | \u2705 Completado | Sec. 10: `[x] B1 \u2014 IPVU e IPVN con variaci\u00f3n anual` | Confirmado |\n| 9.5 | **Cargar B5** \u2014 merge por (year, city); fallback nacional | \ud83d\udd36 Parcial | Sec. 10: `[x] B5 \u2014 desempleo (merge a nivel nacional)`; mejora granular `[ ] \u26a0\ufe0f` pendiente | Implementado solo a nivel nacional; merge por (year, city) pendiente |\n| 9.6 | Construir `df_macro`: merge B3+B4+B2+B1+B5 por `year` | \u2705 Completado | Sec. 10: integraci\u00f3n ejecutada \u2014 cobertura 100% | Confirmado |\n| 9.7 | Merge principal por `year` (left join) | \u2705 Completado | Sec. 10: **Cobertura: 100% de registros con variables macroecon\u00f3micas** | Confirmado |\n| 9.8 | Merge adicional por (year, city) si B5 tiene datos | \u274c Pendiente | Sec. 10: mejora pendiente expl\u00edcita; en checklist \u00a715 como \"B5 mejorado\" | Pendiente como mejora |\n| 9.9 | Imputar `tasa_desempleo` nula con promedio del a\u00f1o | \u2705 Completado | Cobertura 100% implica imputaci\u00f3n aplicada | Confirmado |\n| 9.10 | Verificar cobertura e imprimir % | \u2705 Completado | Sec. 10: cobertura 100% documentada | Confirmado |\n\n---\n\n### Secci\u00f3n 10 \u2014 Construcci\u00f3n de Variables Derivadas\n\n| # | Actividad (GUIA_FASE_3) | Estado | Evidencia en FASE_3_COMPLETA | Observaciones |\n|---|------------------------|--------|------------------------------|---------------|\n| 10.1 | `salario_anual = salario_mensual \u00d7 12` | \u2705 Completado | Sec. 11: `[x] salario_anual = salario_mensual \u00d7 12` | Confirmado |\n| 10.2 | `IAH = price / salario_anual` | \u2705 Completado | Sec. 11: `[x] IAH = price / salario_anual` | Promedio actual: 33.3 a\u00f1os (sesgado por bugs B1/B2) |\n| 10.3 | `precio_real = price / (ipc_base2018 / 100)` | \u2705 Completado | Sec. 11: `[x] precio_real = price / (ipc_base2018 / 100)` | Promedio: 470.9M COP |\n| 10.4 | `precio_m2 = price / area` | \u2705 Completado | Sec. 11: `[x] precio_m2 = price / area` | Promedio: 4.52M COP/m\u00b2 |\n| 10.5 | Implementar `calcular_cuota_mensual()` con amortizaci\u00f3n francesa | \u2705 Completado | Sec. 11: `[x] cuota_mensual \u2014 amortizaci\u00f3n francesa (70%, 15 a\u00f1os, tasa EA\u2192mensual)` | F\u00f3rmula correctamente implementada |\n| 10.6 | Calcular `cuota_mensual` por fila | \u2705 Completado | Sec. 11: promedio = 4.37M COP | Confirmado |\n| 10.7 | `ratio_cuota_salario = cuota_mensual / salario_mensual` | \u2705 Completado | Sec. 11: `[x] ratio_cuota_salario = cuota_mensual / salario_mensual` | Promedio: 3.20 |\n| 10.8 | `nivel_accesibilidad` con 4 categor\u00edas | \u2705 Completado | Sec. 11: `[x] nivel_accesibilidad \u2014 'Accesible', 'Moderado', 'Elevado', 'Cr\u00edtico'` | Sec. 14: distribuci\u00f3n por nivel documentada |\n| 10.9 | Imprimir estad\u00edsticas descriptivas | \u2705 Completado | Sec. 11: tabla con promedio, mediana, desv. est. de 5 variables | Datos reales obtenidos (sesgados por dominancia de A1 Properati) |\n\n---\n\n### Secci\u00f3n 11 \u2014 Validaci\u00f3n del Dataset Final\n\n| # | Actividad (GUIA_FASE_3) | Estado | Evidencia en FASE_3_COMPLETA | Observaciones |\n|---|------------------------|--------|------------------------------|---------------|\n| 11.1 | Verificar 0 nulos en columnas cr\u00edticas | \u2705 Completado | Sec. 12: `[x] Sin nulos en columnas cr\u00edticas` | lat/lon con 32% nulos no catalogadas como \"cr\u00edticas\" |\n| 11.2 | Verificar `price > 0` | \u2705 Completado | Sec. 12: `[x] price > 0, area > 0` | Confirmado |\n| 11.3 | Verificar `area > 0` | \u2705 Completado | Sec. 12: `[x] price > 0, area > 0` | Confirmado |\n| 11.4 | Verificar `rooms >= 1` y `bathrooms >= 1` | \u2705 Completado | Sec. 12: `[x] rooms >= 1, bathrooms >= 1` | Confirmado |\n| 11.5 | Verificar `city` en las 12 ciudades can\u00f3nicas | \u2705 Completado | Sec. 12: `[x] city en 12 ciudades can\u00f3nicas` | Confirmado |\n| 11.6 | Verificar `year` entre 2019 y 2024 | \u2705 Completado | Sec. 12: `[x] year entre 2019 y 2024` | Dataset real cubre 2020\u20132023 por efecto de bugs B1/B2 |\n| 11.7 | Verificar `estrato` entre 1 y 6 | \u2705 Completado | Sec. 12: `[x] estrato entre 1 y 6` | Confirmado |\n| 11.8 | Imprimir validaci\u00f3n aprobada con shape final | \u2705 Completado | Sec. 13: **54,904 filas \u00d7 26 columnas** | Confirmado |\n| 11.9 | **Validaci\u00f3n cruzada IPVN DANE** \u2014 variaci\u00f3n anual precio_m2 | \u274c Pendiente | Sec. 12: `[ ] \u274c Validaci\u00f3n cruzada con IPVN DANE \u2014 no implementada` | Listado en checklist \u00a715 |\n| 11.10 | Comparar contra `ipvn_variacion_anual` del B1 | \u274c Pendiente | No implementado | Dependiente de 11.9 |\n\n---\n\n### Secci\u00f3n 12 \u2014 Exportaci\u00f3n\n\n| # | Actividad (GUIA_FASE_3) | Estado | Evidencia en FASE_3_COMPLETA | Observaciones |\n|---|------------------------|--------|------------------------------|---------------|\n| 12.1 | Exportar con `encoding='utf-8-sig'` para preservar tildes | \u26a0\ufe0f Completado con bug | Sec. 13: CSV exportado; Bug B6 activo corrompe tildes en nombres de ciudad | El archivo existe pero ciudades con caracteres corruptos |\n| 12.2 | Crear `data/processed/README.md` | \u2705 Completado | Sec. 13: `[x] Metadatos data/processed/README.md` | Confirmado |\n| 12.3 | Guardar `data/processed/reporte_limpieza.csv` | \u2705 Completado | Sec. 13: `[x] Reporte de limpieza data/processed/reporte_limpieza.csv` | Confirmado |\n| 12.4 | Imprimir confirmaci\u00f3n con nombre y shape | \u2705 Completado | Shape: 54,904 \u00d7 26, tama\u00f1o 16 MB documentado | Confirmado |\n\n---\n\n### Secci\u00f3n 13 \u2014 Preparaci\u00f3n para GitHub\n\n| # | Actividad (GUIA_FASE_3) | Estado | Evidencia en FASE_3_COMPLETA | Observaciones |\n|---|------------------------|--------|------------------------------|---------------|\n| 13.1 | Verificar sin rutas absolutas | \u274c Pendiente | No hay evidencia expl\u00edcita de esta verificaci\u00f3n | No documentado en FASE_3_COMPLETA |\n| 13.2 | Ejecutar script completo sin errores | \u2705 Completado | Pipeline ejecutado produciendo 54,904 registros | Ejecutado (con bugs pero sin crash) |\n| 13.3 | Verificar 26 columnas y 0 nulos en cr\u00edticas | \u2705 Completado | Sec. 13: 26 columnas confirmadas; nulos en cr\u00edticas = 0 | Confirmado |\n| 13.4 | Verificar encoding: tildes preservadas | \u274c Pendiente | Bug B6 activo: tildes corruptas en el CSV actual | Bloqueado por correcci\u00f3n de B6 |\n| 13.5 | Verificar que 2024 est\u00e9 presente | \u274c Pendiente | Sec. 14: 2024 = 0 registros | Bloqueado por correcci\u00f3n de B1 |\n| 13.6 | Confirmar `.gitignore` excluye `data/raw/` | \u274c Pendiente | No hay evidencia en FASE_3_COMPLETA | No documentado |\n| 13.7 | `git add` notebooks y data/processed | \u274c Pendiente | No hay evidencia de commit | Pendiente correcci\u00f3n completa |\n| 13.8 | Commit: \"fix: Fase 3 - pipeline corregido\" | \u274c Pendiente | Requiere aplicar los 8 bugs primero | Pendiente correcci\u00f3n completa |\n| 13.9 | Push a rama `development` | \u274c Pendiente | No hay evidencia de push | Pendiente |\n| 13.10 | Actualizar `docs/FASE_3_COMPLETA.md` con resultados reales | \u274c Pendiente | FASE_3_COMPLETA documenta ejecuci\u00f3n con bugs; pendiente re-ejecuci\u00f3n | Pendiente correcci\u00f3n completa |\n\n---\n\n## Resumen Ejecutivo de Trazabilidad\n\n### Conteo por Estado\n\n| Estado | Actividades | % del Total |\n|--------|-------------|-------------|\n| \u2705 Completado | 55 | 63.2% |\n| \u26a0\ufe0f Completado con bug | 9 | 10.3% |\n| \u274c Pendiente | 18 | 20.7% |\n| \ud83d\udd36 Parcial | 1 | 1.1% |\n| **TOTAL auditadas** | **83** | **100%** |\n\n---\n\n### Resumen de los 8 Bugs y su Trazabilidad\n\n| Bug | Secci\u00f3n GUIA | Actividades Afectadas | Estado | Impacto en Registros |\n|-----|-------------|----------------------|--------|----------------------|\n| B1 \u2014 A2 precio \u00d71,000,000 | Sec. 1 / Sec. 2 | 1.8, 2.6 | \u274c Correcci\u00f3n pendiente | \u2212142,730 reg (incluye 2024) |\n| B2 \u2014 A3 sin city ni property_type | Sec. 1 | 1.9 | \u274c Correcci\u00f3n pendiente | \u2212~145,000 reg |\n| B3 \u2014 A7 sin renombre de columnas | Sec. 1 | 1.13 | \u274c Correcci\u00f3n pendiente | \u2212~900 reg |\n| B4 \u2014 A8 sin renombre ni city | Sec. 1 | 1.14 | \u274c Correcci\u00f3n pendiente | \u221232 reg |\n| B5 \u2014 Dedup con rooms/bathrooms | Sec. 7 | 7.1, 7.2 | \u274c Correcci\u00f3n pendiente | \u2212~217,140 reg (mayor impacto) |\n| B6 \u2014 Encoding ascii corrompe tildes | Sec. 3 / Sec. 12 | 3.2, 3.3, 12.1, 13.4 | \u274c Correcci\u00f3n pendiente | Calidad: nombres de ciudad ilegibles |\n| B7 \u2014 lat/lon sin imputar | Sec. 8 | 8.5 | \u274c Correcci\u00f3n pendiente | 32% nulos (17,628 filas) |\n| B8 \u2014 'casa con conjunto cerrado' faltante | Sec. 5 | 5.2, 5.4 | \u274c Correcci\u00f3n pendiente | \u221230 reg de A6 |\n\n---\n\n### Actividades Pendientes Prioritarias (por impacto)\n\n| Prioridad | Actividad | Bug | Impacto estimado |\n|-----------|-----------|-----|-----------------|\n| 1 \u2014 Cr\u00edtico | Simplificar `dup_key`: eliminar rooms/bathrooms de la clave | B5 | +~217,140 registros recuperados |\n| 2 \u2014 Cr\u00edtico | Asignar `city = 'Bogot\u00e1'` a A3; definir property_type | B2 | +~145,000 registros |\n| 3 \u2014 Alto | Quitar \u00d71,000,000 en A2; recuperar datos de 2024 | B1 | +~142,730 registros |\n| 4 \u2014 Medio | Agregar renombre de columnas para A7 (Villavicencio) | B3 | +~900 registros |\n| 5 \u2014 Medio | Imputar lat/lon por centroide antes de exportar | B7 | 0% nulos en coordenadas |\n| 6 \u2014 Medio | Cambiar normalizaci\u00f3n de ciudades a UTF-8 puro | B6 | Calidad: tildes preservadas |\n| 7 \u2014 Bajo | Agregar 'casa con conjunto cerrado' a MAPA_PROPIEDADES | B8 | +~30 registros de A6 |\n| 8 \u2014 Bajo | Agregar renombre de columnas para A8 (Caracol UPZ) | B4 | +32 registros |\n| 9 \u2014 Mejora | Integrar B5 por (year, city) en lugar de solo nacional | \u2014 | Mayor granularidad en desempleo |\n| 10 \u2014 Mejora | Implementar validaci\u00f3n cruzada IPVN DANE | \u2014 | Validaci\u00f3n de calidad del modelo de precios |\n| 11 \u2014 Entrega | Verificar rutas absolutas, .gitignore, commit y push | \u2014 | Entrega limpia en `development` |\n\n---\n\n### Estado General de la Fase 3\n\n| Dimensi\u00f3n | Estado Actual | Estado Objetivo |\n|-----------|--------------|-----------------|\n| Pipeline implementado | \u2705 S\u00cd \u2014 490 l\u00edneas, 13 secciones | Ya completado |\n| Ejecuci\u00f3n sin crash | \u2705 S\u00cd \u2014 corre hasta el final | Ya completado |\n| Volumen de datos | \u26a0\ufe0f 54,904 (17.4% del esperado) | ~250,000\u2013370,000 tras corregir bugs |\n| Fuentes supervivientes | \u26a0\ufe0f 4 de 8 (A1, A4, A5, A6) | 7 de 8 (A1\u2013A7 excepto A8) |\n| Cobertura temporal | \u26a0\ufe0f 2020\u20132023 (sin 2024) | 2020\u20132024 |\n| Nulos en columnas cr\u00edticas | \u2705 0 nulos | 0 nulos (mantener) |\n| Nulos en lat/lon | \u274c 32% (17,628 filas) | 0% tras correcci\u00f3n B7 |\n| Tildes en ciudades | \u274c Corruptas (bug B6) | Preservadas |\n| Validaci\u00f3n IPVN DANE | \u274c No implementada | Implementada |\n| Entregables commiteados a GitHub | \u274c No hay evidencia | Push a rama `development` |\n\n---\n\n> **Conclusi\u00f3n:** El pipeline de Fase 3 est\u00e1 estructuralmente completo y ejecutable en sus 13 secciones. Los 8 bugs son defectos puntuales de configuraci\u00f3n \u2014 una multiplicaci\u00f3n err\u00f3nea (B1), asignaciones faltantes de ciudad/tipo (B2, B3, B4), una clave de deduplicaci\u00f3n sobre-especificada (B5), un par\u00e1metro de encoding incorrecto (B6), una imputaci\u00f3n de coordenadas fuera de lugar (B7), y una variante de tipo faltante en el mapa (B8). Ninguno requiere reescribir la l\u00f3gica central. Corregir los 8 bugs se estima en 2\u20134 horas de trabajo y recuperar\u00e1 el 82.6% del volumen faltante (~195,000\u2013315,000 registros adicionales). **No iniciar Fase 4 hasta aplicar las correcciones y re-ejecutar el pipeline.**\n"}], "grading": {"eval_id": 0, "configuration": "without_skill", "expectations": [{"text": "El output contiene una tabla markdown con columnas Actividad Planificada, Estado, Evidencia y Secci\u00f3n", "passed": true, "evidence": "19 matches found; table present with columns including Actividad Planificada, Estado"}, {"text": "Todos los estados usan solo los valores permitidos: \u2705 Completo, \u26a0\ufe0f Parcial, \u274c No evidenciado, \u23f3 Pendiente", "passed": false, "evidence": "Uses different status values: 'Completado', 'Completado con bug', 'Pendiente', 'Parcial' instead of the standardized \u2705/\u26a0\ufe0f/\u274c/\u23f3 format"}, {"text": "Las actividades listadas corresponden a actividades reales del GUIA_FASE", "passed": true, "evidence": "References section numbers and activities from GUIA; 83 activities audited from actual GUIA content"}, {"text": "Incluye porcentaje o conteo de actividades completadas vs. planificadas", "passed": true, "evidence": "Provides table with counts: 55 Completado (63.2%), 9 con bug (10.3%), 18 Pendiente (20.7%)"}], "pass_rate": 0.75}}, {"id": "eval-1-plantilla-fase4-with_skill", "prompt": "Transforma FASE_4_COMPLETA.md en plantilla profesional eliminando datos fabricados y reemplazando con [PENDIENTE]", "eval_id": 1, "outputs": [{"name": "FASE_4_COMPLETA_template.md", "type": "text", "content": "# Fase 4 \u2014 Modelado\n## Proyecto: Accesibilidad de Vivienda en Colombia \u00b7 CRISP-DM 2025-I\n**Responsable principal:** Steve \u00b7 **Apoyo:** Kukis  \n**Estado:** \u23f3 Pendiente \u2014 requiere dataset corregido de Fase 3 (8 bugs sin corregir)  \n**Notebook asociado:** `notebooks/03_modelado.ipynb` *(por ejecutar)*  \n**Semanas:** 7 \u2013 8\n\n> \u26a0\ufe0f **Aviso de integridad documental:** Esta fase **no ha sido ejecutada**. El documento describe el dise\u00f1o metodol\u00f3gico planificado y el c\u00f3digo previsto para implementaci\u00f3n. Todos los campos de resultados, m\u00e9tricas, tablas comparativas y hallazgos est\u00e1n marcados expl\u00edcitamente como `[PENDIENTE]` y deber\u00e1n completarse \u00fanicamente tras la ejecuci\u00f3n real del notebook. Cualquier valor num\u00e9rico presentado aqu\u00ed es **fabricado** y ha sido eliminado de esta versi\u00f3n de plantilla.\n\n---\n\n### Resumen Ejecutivo\n\n> \u23f3 **Pendiente \u2014 completar tras ejecutar la fase.**\n\nEsta secci\u00f3n resumir\u00e1 los resultados clave obtenidos en la Fase 4 una vez ejecutada: rendimiento del modelo de regresi\u00f3n seleccionado, n\u00famero de segmentos de mercado identificados, y principales hallazgos sobre la estructura del mercado inmobiliario colombiano.\n\n**Modelo de regresi\u00f3n seleccionado:** `[PENDIENTE \u2014 determinar tras comparar Ridge vs Random Forest]`  \n**M\u00e9trica principal de regresi\u00f3n (R\u00b2):** `[PENDIENTE]`  \n**M\u00e9trica secundaria (MAPE):** `[PENDIENTE]`%  \n**K \u00f3ptimo de clustering:** `[PENDIENTE]`  \n**Coeficiente de silueta:** `[PENDIENTE]`\n\n---\n\n### Contexto dentro de CRISP-DM\n\nLa Fase 4 (Modelado) es el n\u00facleo anal\u00edtico del ciclo CRISP-DM. Recibe como entrada el dataset limpio producido por la Fase 3 y genera los artefactos que la Fase 5 (Evaluaci\u00f3n) validar\u00e1 contra los criterios de negocio definidos en la Fase 1.\n\n| Fase anterior | Esta fase | Fase siguiente |\n|---------------|-----------|----------------|\n| Fase 3 \u2014 Preparaci\u00f3n de Datos | **Fase 4 \u2014 Modelado** | Fase 5 \u2014 Evaluaci\u00f3n |\n| `data/processed/vivienda_colombia_limpio.csv` | Entrenamiento de modelos supervisados y no supervisados | Validaci\u00f3n de m\u00e9tricas contra KPIs de Fase 1 |\n\n**Conexi\u00f3n con preguntas de investigaci\u00f3n:**\n- \u00bfQu\u00e9 factores estructurales y macroecon\u00f3micos explican el precio de vivienda? \u2192 Respuesta v\u00eda Random Forest + importancia de variables\n- \u00bfExisten segmentos diferenciados de mercados inmobiliarios en Colombia? \u2192 Respuesta v\u00eda KMeans + DBSCAN\n- \u00bfC\u00f3mo ha evolucionado la accesibilidad habitacional por ciudad entre 2019\u20132024? \u2192 Respuesta v\u00eda an\u00e1lisis de transici\u00f3n temporal de cl\u00fasteres\n\n**Prerrequisito bloqueante:** Los 8 bugs documentados en `docs/FASE_3_COMPLETA.md` (secci\u00f3n 15) deben corregirse y el pipeline `02_preparacion_datos.py` debe re-ejecutarse antes de iniciar esta fase. El dataset actual (54,904 registros, solo 4 fuentes activas, sin cobertura 2024) no es apto para modelado.\n\n---\n\n### Objetivos de la Fase\n\n| ID | Objetivo | Criterio de \u00c9xito (Fase 1) | Estado |\n|----|----------|---------------------------|--------|\n| **O4.1** | Entrenar modelo de regresi\u00f3n para predicci\u00f3n de precio de vivienda | R\u00b2 \u2265 0.75 en test set | \u23f3 Pendiente |\n| **O4.2** | Minimizar el error de predicci\u00f3n medido como MAPE | MAPE \u2264 20% | \u23f3 Pendiente |\n| **O4.3** | Segmentar mercados inmobiliarios por ciudad-a\u00f1o | \u2265 3 cl\u00fasteres diferenciables (Silueta \u2265 0.45) | \u23f3 Pendiente |\n| **O4.4** | Identificar las variables con mayor poder predictivo sobre el precio | Ranking documentado con `feature_importances_` | \u23f3 Pendiente |\n| **O4.5** | Detectar mercados inmobiliarios at\u00edpicos | DBSCAN detecta y documenta outliers | \u23f3 Pendiente |\n| **O4.6** | Exportar modelos entrenados para consumo en Fase 6 | Archivos `.pkl` generados y verificados | \u23f3 Pendiente |\n\n---\n\n### Alcance Ejecutado\n\n> \u23f3 **Pendiente \u2014 completar tras ejecutar la fase.**\n\nEsta secci\u00f3n documentar\u00e1 qu\u00e9 porciones del alcance planificado se completaron efectivamente, qu\u00e9 qued\u00f3 fuera y por qu\u00e9.\n\n**Alcance completado:** `[PENDIENTE]`  \n**Elementos excluidos del alcance:** `[PENDIENTE \u2014 documentar si aplica]`  \n**Desviaciones respecto al GUIA_FASE_4.md:** `[PENDIENTE]`\n\n---\n\n### Actividades Realizadas\n\n> \u23f3 **Pendiente \u2014 completar tras ejecutar la fase.**\n\nEsta secci\u00f3n detallar\u00e1 cada actividad ejecutada durante la fase, con referencia a las celdas del notebook correspondientes.\n\n**Actividades previstas seg\u00fan GUIA_FASE_4.md:**\n\n1. Setup e importaci\u00f3n de librer\u00edas (celdas 1\u20135)\n2. Carga y verificaci\u00f3n del dataset de entrada (celdas 6\u20138)\n3. Definici\u00f3n de features num\u00e9ricas, categ\u00f3ricas y target (celdas 9\u201314)\n4. An\u00e1lisis de multicolinealidad VIF (celdas 15\u201318)\n5. Divisi\u00f3n train/test 80/20 con random_state=42 (celdas 19\u201321)\n6. Construcci\u00f3n del ColumnTransformer de preprocesamiento (celdas 22\u201324)\n7. Entrenamiento y evaluaci\u00f3n de Ridge Regression baseline (celdas 25\u201332)\n8. Entrenamiento y evaluaci\u00f3n de Random Forest (celdas 33\u201342)\n9. An\u00e1lisis de importancia de variables y diagn\u00f3stico de errores (celdas 43\u201350)\n10. Optimizaci\u00f3n de hiperpar\u00e1metros con GridSearchCV (celdas 51\u201357)\n11. Exportaci\u00f3n del modelo de regresi\u00f3n a pickle (celdas 58\u201362)\n12. Construcci\u00f3n del dataset ciudad-a\u00f1o para clustering (celdas 63\u201368)\n13. Selecci\u00f3n del K \u00f3ptimo \u2014 m\u00e9todo del codo + silueta + Davies-Bouldin (celdas 69\u201378)\n14. Entrenamiento KMeans final y caracterizaci\u00f3n de segmentos (celdas 79\u201386)\n15. Validaci\u00f3n con DBSCAN (celdas 87\u201393)\n16. An\u00e1lisis PCA y visualizaci\u00f3n (celdas 94\u201399)\n17. Exportaci\u00f3n de modelos de clustering (celdas 100\u2013104)\n18. Tabla comparativa final y decisi\u00f3n justificada de modelo (celdas 105\u2013108)\n19. Verificaci\u00f3n y commit (celdas 109\u2013114)\n\n**Estado de ejecuci\u00f3n de actividades:** `[PENDIENTE \u2014 marcar cada \u00edtem como \u2705/\u26a0\ufe0f/\u274c tras ejecuci\u00f3n]`\n\n---\n\n### Correspondencia con GUIA_FASE_4.md\n\n> \u23f3 **Pendiente \u2014 completar tras ejecutar la fase.**\n\nEsta tabla conecta cada actividad planificada en `docs/GUIA_FASE_4.md` con su estado de ejecuci\u00f3n real.\n\n| Actividad Planificada (GUIA) | Estado | Evidencia | Secci\u00f3n Notebook |\n|------------------------------|--------|-----------|-----------------|\n| Setup e importaciones (Secci\u00f3n 1) | \u23f3 Pendiente | Sin evidencia \u2014 fase no ejecutada | Celdas 1\u20135 |\n| Carga y verificaci\u00f3n del dataset | \u23f3 Pendiente | Sin evidencia \u2014 fase no ejecutada | Celdas 6\u20138 |\n| An\u00e1lisis VIF multicolinealidad | \u23f3 Pendiente | Sin evidencia \u2014 fase no ejecutada | Celdas 15\u201318 |\n| Divisi\u00f3n train/test 80/20 | \u23f3 Pendiente | Sin evidencia \u2014 fase no ejecutada | Celdas 19\u201321 |\n| Pipeline Ridge Regression | \u23f3 Pendiente | Sin evidencia \u2014 fase no ejecutada | Celdas 25\u201332 |\n| Pipeline Random Forest | \u23f3 Pendiente | Sin evidencia \u2014 fase no ejecutada | Celdas 33\u201342 |\n| Importancia de variables | \u23f3 Pendiente | Sin evidencia \u2014 fase no ejecutada | Celdas 43\u201350 |\n| GridSearchCV hiperpar\u00e1metros | \u23f3 Pendiente | Sin evidencia \u2014 fase no ejecutada | Celdas 51\u201357 |\n| Exportaci\u00f3n modelo regresi\u00f3n (.pkl) | \u23f3 Pendiente | Sin evidencia \u2014 fase no ejecutada | Celdas 58\u201362 |\n| Dataset ciudad-a\u00f1o clustering | \u23f3 Pendiente | Sin evidencia \u2014 fase no ejecutada | Celdas 63\u201368 |\n| K \u00f3ptimo (codo + silueta + DB) | \u23f3 Pendiente | Sin evidencia \u2014 fase no ejecutada | Celdas 69\u201378 |\n| KMeans final + caracterizaci\u00f3n | \u23f3 Pendiente | Sin evidencia \u2014 fase no ejecutada | Celdas 79\u201386 |\n| Validaci\u00f3n DBSCAN | \u23f3 Pendiente | Sin evidencia \u2014 fase no ejecutada | Celdas 87\u201393 |\n| An\u00e1lisis PCA | \u23f3 Pendiente | Sin evidencia \u2014 fase no ejecutada | Celdas 94\u201399 |\n| Exportaci\u00f3n modelos clustering | \u23f3 Pendiente | Sin evidencia \u2014 fase no ejecutada | Celdas 100\u2013104 |\n| Tabla comparativa y decisi\u00f3n final | \u23f3 Pendiente | Sin evidencia \u2014 fase no ejecutada | Celdas 105\u2013108 |\n| Verificaci\u00f3n y commit | \u23f3 Pendiente | Sin evidencia \u2014 fase no ejecutada | Celdas 109\u2013114 |\n\n**Cumplimiento estimado:** 0% \u2014 fase no iniciada  \n**Bloqueante:** 8 bugs pendientes en Fase 3\n\n---\n\n### Metodolog\u00eda Aplicada\n\nLa Fase 4 aplica dos enfoques metodol\u00f3gicos complementarios sobre el dataset producido por la Fase 3:\n\n#### Modelado Supervisado \u2014 Regresi\u00f3n\n\n**Objetivo:** Predecir el precio nominal de venta de un inmueble en funci\u00f3n de sus caracter\u00edsticas estructurales y del entorno macroecon\u00f3mico.\n\n**Algoritmos evaluados:**\n\n| Algoritmo | Justificaci\u00f3n | Ventajas | Limitaciones | Hiperpar\u00e1metros |\n|-----------|---------------|----------|--------------|-----------------|\n| **Ridge Regression** | Baseline lineal. Verifica si las relaciones del mercado son predominantemente lineales. | Alta interpretabilidad, maneja multicolinealidad (L2), bajo costo computacional. | No captura interacciones no lineales complejas. | `alpha` (regularizaci\u00f3n) |\n| **Random Forest** | Modelo no param\u00e9trico por ensamble de \u00e1rboles (Bagging). | Robusto a outliers, calcula `feature_importances_`, maneja variables categ\u00f3ricas. | Alto consumo de memoria, puede sobreajustar sin limitaci\u00f3n de profundidad. | `n_estimators`, `max_depth`, `min_samples_split`, `min_samples_leaf`, `max_features` |\n\n**Criterio de selecci\u00f3n del modelo final:** Random Forest se adoptar\u00e1 para producci\u00f3n si supera a Ridge en m\u00e1s de 10 puntos de R\u00b2 en el test set. De lo contrario, se evaluar\u00e1n modelos adicionales antes de escalar.\n\n**Protocolo de validaci\u00f3n:** Divisi\u00f3n train/test 80%/20% con `random_state=42` + validaci\u00f3n cruzada 5-fold sobre el conjunto de entrenamiento. El MAPE se calcula como indicador de error relativo interpretable en t\u00e9rminos de negocio.\n\n**Control de data leakage:** El `ColumnTransformer` (StandardScaler + OneHotEncoder) se ajusta exclusivamente sobre `X_train` y se aplica por transformaci\u00f3n a `X_test`. La divisi\u00f3n train/test se hace a nivel de registro con shuffle aleatorio.\n\n#### Modelado No Supervisado \u2014 Clustering\n\n**Objetivo:** Segmentar los mercados inmobiliarios de las 12 ciudades a lo largo del tiempo en funci\u00f3n de sus condiciones de accesibilidad y costo.\n\n**Algoritmos evaluados:**\n\n| Algoritmo | Justificaci\u00f3n | Ventajas | Limitaciones | Hiperpar\u00e1metros |\n|-----------|---------------|----------|--------------|-----------------|\n| **KMeans** | Algoritmo principal de particionamiento por centroides. | Reproducible, f\u00e1cil asignaci\u00f3n de nuevas observaciones. | Asume cl\u00fasteres esf\u00e9ricos, sensible a escala. | `n_clusters` (K), `init='k-means++'`, `n_init` |\n| **DBSCAN** | Validaci\u00f3n por densidad y detecci\u00f3n de anomal\u00edas. | Detecta cl\u00fasteres de forma arbitraria y outliers. | Sensible a `eps` y `min_samples`. | `eps`, `min_samples` |\n| **PCA** | Reducci\u00f3n a 2 dimensiones para visualizaci\u00f3n. | Permite verificar separabilidad visual de los cl\u00fasteres. | Solo para visualizaci\u00f3n, no para producci\u00f3n. | `n_components=2` |\n\n**Granularidad del an\u00e1lisis:** Una observaci\u00f3n = un par (ciudad, a\u00f1o). Se esperan ~72 observaciones (12 ciudades \u00d7 6 a\u00f1os 2019\u20132024), sujeto a disponibilidad de datos tras corregir Fase 3.\n\n**Selecci\u00f3n de K:** Se evaluar\u00e1n K = 2 a 8 mediante el m\u00e9todo del codo (inercia), coeficiente de silueta y el \u00edndice Davies-Bouldin. El umbral m\u00ednimo de calidad es Silueta \u2265 0.45 (criterio establecido en Fase 1).\n\n#### Features utilizadas\n\n**Para regresi\u00f3n (nivel de propiedad):**\n- Num\u00e9ricas: `area`, `rooms`, `bathrooms`, `estrato`, `year`, `ipc_var_anual`, `tasa_hipotecaria_anual`, `tasa_desempleo`, `ipvu_variacion_anual`\n- Categ\u00f3ricas: `city`, `property_type`\n- Target: `price`\n\n**Para clustering (nivel ciudad-a\u00f1o, agregado):**\n- `precio_mediano`, `IAH_promedio`, `ratio_cuota_promedio`, `precio_m2_mediano`, `tasa_desempleo`\n\n---\n\n### Resultados Obtenidos\n\n> \u26a0\ufe0f **DATOS NO VERIFICADOS \u2014 Esta secci\u00f3n no puede completarse hasta que la fase sea ejecutada.** Cualquier valor num\u00e9rico presentado aqu\u00ed ser\u00eda fabricado. Completar \u00fanicamente con datos reales obtenidos del notebook `notebooks/03_modelado.ipynb`.\n\n#### Resultados de Regresi\u00f3n\n\n**Tama\u00f1o del set de entrenamiento:** `[PENDIENTE \u2014 obtener tras ejecutar secci\u00f3n 2.4 del notebook]`  \n**Tama\u00f1o del set de prueba:** `[PENDIENTE \u2014 obtener tras ejecutar secci\u00f3n 2.4 del notebook]`  \n**N\u00famero de features tras One-Hot Encoding:** `[PENDIENTE]`\n\n**Tabla comparativa de modelos:**\n\n| Modelo Candidato | R\u00b2 | MAE (COP) | RMSE (COP) | MAPE (%) | RMSE Relativo (%) | CV R\u00b2 (media \u00b1 std) | Tiempo (s) |\n|------------------|----|-----------|------------|----------|------------------|---------------------|------------|\n| **Ridge Regression** | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` |\n| **Random Forest** | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` |\n| **Random Forest (optimizado)** | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` |\n\n**Modelo ganador:** `[PENDIENTE \u2014 determinar tras comparaci\u00f3n]`  \n**Mejores hiperpar\u00e1metros encontrados:** `[PENDIENTE \u2014 obtener de GridSearchCV.best_params_]`\n\n**Ranking de importancia de variables (Top 10):**\n\n| Posici\u00f3n | Variable | Importancia |\n|----------|----------|-------------|\n| 1 | `[PENDIENTE]` | `[PENDIENTE]` |\n| 2 | `[PENDIENTE]` | `[PENDIENTE]` |\n| 3 | `[PENDIENTE]` | `[PENDIENTE]` |\n| 4 | `[PENDIENTE]` | `[PENDIENTE]` |\n| 5 | `[PENDIENTE]` | `[PENDIENTE]` |\n| 6\u201310 | `[PENDIENTE]` | `[PENDIENTE]` |\n\n**MAPE por ciudad:**\n\n| Ciudad | MAPE (%) |\n|--------|----------|\n| Medell\u00edn | `[PENDIENTE]` |\n| Bogot\u00e1 | `[PENDIENTE]` |\n| Cali | `[PENDIENTE]` |\n| Barranquilla | `[PENDIENTE]` |\n| Cartagena | `[PENDIENTE]` |\n| Bucaramanga | `[PENDIENTE]` |\n| Manizales | `[PENDIENTE]` |\n| C\u00facuta | `[PENDIENTE]` |\n| Pereira | `[PENDIENTE]` |\n| Ibagu\u00e9 | `[PENDIENTE]` |\n| Villavicencio | `[PENDIENTE]` |\n| Armenia | `[PENDIENTE]` |\n\n#### Resultados de Clustering\n\n**N\u00famero de submercados ciudad-a\u00f1o v\u00e1lidos (n_propiedades \u2265 30):** `[PENDIENTE]`\n\n**Tabla de m\u00e9tricas por K:**\n\n| K | Inercia | Coef. Silueta | \u00cdndice Davies-Bouldin |\n|---|---------|---------------|-----------------------|\n| 2 | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` |\n| 3 | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` |\n| 4 | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` |\n| 5 | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` |\n| 6 | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` |\n| 7 | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` |\n| 8 | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` |\n\n**K \u00f3ptimo seleccionado:** `[PENDIENTE \u2014 determinar tras maximizar Silueta y minimizar Davies-Bouldin]`  \n**Coeficiente de silueta final:** `[PENDIENTE \u2014 verificar que supera umbral \u2265 0.45 de Fase 1]`\n\n**Caracterizaci\u00f3n de segmentos inmobiliarios:**\n\n> \u26a0\ufe0f Esta tabla se completa exclusivamente despu\u00e9s de ejecutar el clustering. No completar con datos estimados o hipot\u00e9ticos.\n\n| Segmento | Precio Mediano (COP) | IAH Promedio (A\u00f1os) | Ratio Cuota/Salario | Precio m\u00b2 (COP) | Tasa Desempleo (%) | Ciudades T\u00edpicas |\n|----------|---------------------|---------------------|---------------------|-----------------|-------------------|-----------------|\n| **Accesible** | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` |\n| **Moderado** | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` |\n| **Elevado** | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` |\n| **Cr\u00edtico** | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` |\n\n> **Nota:** Las etiquetas Accesible/Moderado/Elevado/Cr\u00edtico son tentativas. El n\u00famero real de segmentos y sus nombres cualitativos se definir\u00e1n tras analizar los centroides obtenidos. Si K \u00f3ptimo \u2260 4, la tabla se ajustar\u00e1 en consecuencia.\n\n**Anomal\u00edas detectadas por DBSCAN:** `[PENDIENTE \u2014 completar tras ejecutar validaci\u00f3n]`\n\n**Tabla de transici\u00f3n hist\u00f3rica por ciudad (ciudad \u00d7 a\u00f1o \u2192 segmento):** `[PENDIENTE \u2014 completar tras ejecutar clustering]`\n\n#### Resultados de PCA\n\n**Varianza explicada por PC1:** `[PENDIENTE]`%  \n**Varianza explicada por PC2:** `[PENDIENTE]`%  \n**Varianza acumulada (2 componentes):** `[PENDIENTE]`%  \n**Interpretaci\u00f3n de PC1:** `[PENDIENTE \u2014 identificar qu\u00e9 variables cargan m\u00e1s en el primer componente]`  \n**Interpretaci\u00f3n de PC2:** `[PENDIENTE \u2014 identificar qu\u00e9 variables cargan m\u00e1s en el segundo componente]`  \n**Separabilidad visual de cl\u00fasteres en espacio PCA:** `[PENDIENTE]`\n\n---\n\n### M\u00e9tricas y Estad\u00edsticas Relevantes\n\n> \u23f3 **Pendiente \u2014 completar tras ejecutar la fase.**\n\n**Criterios de \u00e9xito de Fase 1 vs resultados obtenidos:**\n\n| Criterio de \u00c9xito (Fase 1) | Umbral | Resultado Obtenido | \u00bfCumplido? |\n|---------------------------|--------|--------------------|------------|\n| R\u00b2 del modelo de regresi\u00f3n | \u2265 0.75 | `[PENDIENTE]` | `[PENDIENTE]` |\n| MAPE del modelo de regresi\u00f3n | \u2264 20% | `[PENDIENTE]`% | `[PENDIENTE]` |\n| N\u00famero de cl\u00fasteres diferenciables | \u2265 3 | `[PENDIENTE]` | `[PENDIENTE]` |\n| Coeficiente de silueta del clustering | \u2265 0.45 | `[PENDIENTE]` | `[PENDIENTE]` |\n\n---\n\n### Hallazgos Clave\n\n> \u26a0\ufe0f **DATOS NO VERIFICADOS \u2014 Esta secci\u00f3n no puede completarse hasta que la fase sea ejecutada.** Los hallazgos listados son marcadores de posici\u00f3n que describen qu\u00e9 se espera encontrar, no resultados reales.\n\n| ID | Hallazgo Clave | Evidencia Num\u00e9rica | Relevancia para Fase 5 |\n|----|----------------|--------------------|------------------------|\n| **H4.1** | Dimensionalidad final tras One-Hot Encoding | `[PENDIENTE]` variables | `[PENDIENTE]` |\n| **H4.2** | Rendimiento del modelo ganador de regresi\u00f3n | R\u00b2 = `[PENDIENTE]`, MAPE = `[PENDIENTE]`% | `[PENDIENTE]` |\n| **H4.3** | Variable con mayor importancia predictiva | `[PENDIENTE]` (`[PENDIENTE]`%) | `[PENDIENTE]` |\n| **H4.4** | Ciudad con mayor error de predicci\u00f3n | `[PENDIENTE]` (MAPE `[PENDIENTE]`%) | `[PENDIENTE]` |\n| **H4.5** | K \u00f3ptimo del clustering | K = `[PENDIENTE]`, Silueta = `[PENDIENTE]` | `[PENDIENTE]` |\n| **H4.6** | Diferencia de precio/m\u00b2 entre segmentos extremos | `[PENDIENTE]` | `[PENDIENTE]` |\n| **H4.7** | Anomal\u00edas detectadas por DBSCAN | `[PENDIENTE]` mercados at\u00edpicos | `[PENDIENTE]` |\n| **H4.8** | Tendencia temporal de accesibilidad 2019\u20132024 | `[PENDIENTE]` | `[PENDIENTE]` |\n\n---\n\n### Problemas Encontrados y Resoluci\u00f3n\n\n> \u23f3 **Pendiente \u2014 documentar problemas reales encontrados durante la ejecuci\u00f3n.**\n\n**Problema bloqueante conocido (pre-ejecuci\u00f3n):**\n\n| ID | Problema | Impacto | Estado | Resoluci\u00f3n |\n|----|----------|---------|--------|------------|\n| **P4.0** | 8 bugs en pipeline de Fase 3 impiden disponer del dataset de entrada correcto | Bloquea el inicio completo de la fase | \u274c Sin resolver | Responsable: Kukis. Aplicar correcciones B1\u2013B8 y re-ejecutar `02_preparacion_datos.py`. Ver `FASE_3_COMPLETA.md` \u00a715. |\n\n**Problemas encontrados durante ejecuci\u00f3n:** `[PENDIENTE \u2014 documentar tras ejecutar]`\n\n---\n\n### Validaciones Realizadas\n\n> \u23f3 **Pendiente \u2014 completar tras ejecutar la fase.**\n\n| Validaci\u00f3n | M\u00e9todo | Resultado | \u00bfAprobada? |\n|------------|--------|-----------|------------|\n| Ausencia de data leakage en split train/test | Verificaci\u00f3n de \u00edndices y distribuci\u00f3n de `city` en ambos conjuntos | `[PENDIENTE]` | `[PENDIENTE]` |\n| No hay nulos en el dataset de entrada | `df.isnull().sum()` antes del entrenamiento | `[PENDIENTE]` | `[PENDIENTE]` |\n| Normalidad aproximada de residuos del modelo | Histograma de residuos | `[PENDIENTE]` | `[PENDIENTE]` |\n| Coeficiente de silueta supera umbral 0.45 | `silhouette_score()` con K \u00f3ptimo | `[PENDIENTE]` | `[PENDIENTE]` |\n| Modelo pickle se carga y predice correctamente | Prueba con registro de ejemplo tras `joblib.load()` | `[PENDIENTE]` | `[PENDIENTE]` |\n| Notebook ejecuta sin errores en kernel limpio | Restart & Run All en `notebooks/03_modelado.ipynb` | `[PENDIENTE]` | `[PENDIENTE]` |\n\n---\n\n### Entregables Generados\n\n| Artefacto | Ruta | Descripci\u00f3n | Estado |\n|-----------|------|-------------|--------|\n| Notebook de modelado | `notebooks/03_modelado.ipynb` | Pipeline completo de entrenamiento supervisado y no supervisado | \u23f3 Pendiente de ejecuci\u00f3n |\n| Modelo Random Forest | `models/modelo_random_forest.pkl` | Pipeline serializado con preprocesador + modelo para predicci\u00f3n de precios | \u23f3 Pendiente de generaci\u00f3n |\n| Modelo KMeans | `models/kmeans_segmentacion.pkl` | Modelo de segmentaci\u00f3n de mercados | \u23f3 Pendiente de generaci\u00f3n |\n| Scaler de clustering | `models/scaler_cluster.pkl` | StandardScaler ajustado para las features del clustering | \u23f3 Pendiente de generaci\u00f3n |\n| Features order | `models/features_order.json` | Orden de features para alimentar el modelo en producci\u00f3n | \u23f3 Pendiente de generaci\u00f3n |\n| Clusters por ciudad-a\u00f1o | `data/processed/ciudades_clusters.csv` | Asignaci\u00f3n de segmento a cada par ciudad-a\u00f1o | \u23f3 Pendiente de generaci\u00f3n |\n| Perfiles de clusters | `data/processed/perfiles_clusters.csv` | Estad\u00edsticas descriptivas por segmento | \u23f3 Pendiente de generaci\u00f3n |\n| Figura importancia variables | `docs/figures/07_feature_importance.png` | Gr\u00e1fico de barras horizontal \u2014 Top 15 variables | \u23f3 Pendiente |\n| Figura diagn\u00f3sticos regresi\u00f3n | `docs/figures/08_diagnosticos_regresion.png` | Scatter y_test vs y_pred + residuos | \u23f3 Pendiente |\n| Figura cl\u00fasteres | `docs/figures/09_clusters_plot.png` | Scatter IAH vs precio_m2 coloreado por cl\u00faster | \u23f3 Pendiente |\n\n---\n\n### Riesgos o Limitaciones Detectadas\n\n| ID | Riesgo / Limitaci\u00f3n | Probabilidad | Impacto | Mitigaci\u00f3n |\n|----|---------------------|-------------|---------|------------|\n| **R4.1** | Dataset de entrada con cobertura insuficiente (solo 2020\u20132023, 4 fuentes) si los bugs de Fase 3 no se corrigen | Alta (bugs documentados, no corregidos) | Cr\u00edtico \u2014 modelos entrenados sobre datos sesgados | Aplicar correcciones B1\u2013B8 antes de ejecutar esta fase |\n| **R4.2** | Desbalance de ciudades en el dataset (Medell\u00edn 27.6%, Armenia 1.9%) puede introducir sesgo en el modelo | Media | Moderado \u2014 MAPE por ciudad muy variable | Analizar m\u00e9tricas desagregadas por ciudad; considerar pesos por clase |\n| **R4.3** | Alta multicolinealidad entre variables macroecon\u00f3micas (IPC, tasa hipotecaria) | Media | Moderado \u2014 afecta Ridge pero no Random Forest | Documentar VIF y usar Ridge como comparador; no eliminar variables sin an\u00e1lisis de dominio |\n| **R4.4** | N\u00famero insuficiente de observaciones ciudad-a\u00f1o para clustering (si n < 30 por submercado) | Media | Moderado \u2014 reduce el K m\u00e1ximo viable | Ajustar el umbral m\u00ednimo de n_propiedades si es necesario |\n| **R4.5** | Sobreajuste del Random Forest si no se limita la profundidad en el GridSearchCV | Media | Moderado \u2014 modelo no generaliza | Validaci\u00f3n cruzada 5-fold como diagn\u00f3stico principal; comparar CV std con R\u00b2 test |\n\n---\n\n### Conclusiones\n\n> \u23f3 **Pendiente \u2014 completar tras ejecutar la fase y analizar los resultados.**\n\nEsta secci\u00f3n sintetizar\u00e1:\n- Si el modelo de regresi\u00f3n cumple los criterios de \u00e9xito de Fase 1 (R\u00b2 \u2265 0.75, MAPE \u2264 20%)\n- Qu\u00e9 factores explican principalmente el precio de vivienda en Colombia\n- Cu\u00e1ntos segmentos diferenciados de mercado existen y qu\u00e9 los caracteriza\n- Las tendencias temporales en la accesibilidad habitacional por ciudad\n- Qu\u00e9 ciudad muestra la mayor discrepancia entre precio y accesibilidad\n\n**Conclusi\u00f3n principal:** `[PENDIENTE]`  \n**Decisi\u00f3n de modelo para producci\u00f3n:** `[PENDIENTE \u2014 documentar con justificaci\u00f3n]`\n\n---\n\n### Preparaci\u00f3n para la Siguiente Fase\n\n#### Prerrequisitos t\u00e9cnicos para Fase 5\n\n| Artefacto requerido | Ruta | Generado en | Estado |\n|---------------------|------|-------------|--------|\n| Pipeline de predicci\u00f3n serializado | `models/modelo_random_forest.pkl` | Fase 4 \u2014 secci\u00f3n regresi\u00f3n | \u23f3 Pendiente |\n| Dataset de segmentos por ciudad-a\u00f1o | `data/processed/ciudades_clusters.csv` | Fase 4 \u2014 secci\u00f3n clustering | \u23f3 Pendiente |\n| Perfiles de clusters | `data/processed/perfiles_clusters.csv` | Fase 4 \u2014 secci\u00f3n clustering | \u23f3 Pendiente |\n| M\u00e9tricas documentadas de la fase | Este documento (FASE_4_COMPLETA.md) actualizado | Fase 4 | \u23f3 Pendiente |\n\n#### Decisiones pendientes que Fase 5 debe tomar\n\n- Validar si el R\u00b2 y MAPE obtenidos son suficientes para las preguntas de investigaci\u00f3n de Fase 1, o si se requiere un modelo adicional\n- Determinar si los segmentos de clustering tienen interpretaci\u00f3n de negocio coherente con el marco del **IAH**\n- Establecer si las anomal\u00edas detectadas por DBSCAN requieren an\u00e1lisis espec\u00edfico en la Fase 5\n\n#### Riesgos heredados para Fase 5\n\n- Si el modelo de regresi\u00f3n tiene MAPE > 20%, Fase 5 deber\u00e1 reportar incumplimiento del criterio de Fase 1 y proponer alternativas\n- Si el coeficiente de silueta < 0.45, el clustering no podr\u00e1 utilizarse como base para recomendaciones de segmentaci\u00f3n de pol\u00edtica p\u00fablica\n- La ausencia de cobertura 2024 (bug B1 no corregido) limitar\u00e1 la capacidad de Fase 5 para responder preguntas sobre accesibilidad actual\n\n#### Comunicaci\u00f3n al equipo\n\n- **Para Sof\u00eda (Fase 5):** Esta fase alimenta directamente la evaluaci\u00f3n. Completar los hallazgos reales de esta secci\u00f3n antes de iniciar Fase 5. Los archivos `.pkl` y `.csv` generados aqu\u00ed son insumos directos.\n- **Para Kukis (Fase 6):** El predictor del dashboard cargar\u00e1 `models/modelo_random_forest.pkl`. Esperar a que este archivo exista y est\u00e9 verificado antes de integrar el m\u00f3dulo del predictor.\n\n---\n\n## C\u00f3digo Planificado\n\nEsta secci\u00f3n preserva el c\u00f3digo previsto para la implementaci\u00f3n. Los bloques son el dise\u00f1o metodol\u00f3gico aprobado; los resultados que producir\u00e1n se documentar\u00e1n en las secciones anteriores tras la ejecuci\u00f3n.\n\n### Setup y Carga\n\n```python\nimport pandas as pd\nimport numpy as np\nfrom sklearn.model_selection import train_test_split, RandomizedSearchCV, cross_val_score\nfrom sklearn.compose import ColumnTransformer\nfrom sklearn.preprocessing import StandardScaler, OneHotEncoder\nfrom sklearn.pipeline import Pipeline\nfrom sklearn.linear_model import Ridge\nfrom sklearn.ensemble import RandomForestRegressor\nfrom sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score, silhouette_score\nfrom sklearn.cluster import KMeans, DBSCAN\nfrom sklearn.decomposition import PCA\nimport statsmodels.api as sm\nfrom statsmodels.stats.outliers_influence import variance_inflation_factor\nimport joblib\nimport os\n\nos.makedirs(\"models\", exist_ok=True)\n\n# Cargar dataset preparado (versi\u00f3n corregida de Fase 3 \u2014 requiere bugs B1\u2013B8 aplicados)\ndf = pd.read_csv(\"data/processed/vivienda_colombia_limpio.csv\")\nprint(f\"Dataset cargado: {df.shape[0]:,} filas \u00d7 {df.shape[1]} columnas\")\nprint(f\"A\u00f1os disponibles: {sorted(df['year'].unique())}\")\nprint(f\"Ciudades: {sorted(df['city'].unique())}\")\n```\n\n### Definici\u00f3n de Features y An\u00e1lisis VIF\n\n```python\nFEATURES_NUM = ['area', 'rooms', 'bathrooms', 'estrato', 'year', 'ipc_var_anual',\n                'tasa_hipotecaria_anual', 'tasa_desempleo', 'ipvu_variacion_anual']\nFEATURES_CAT = ['city', 'property_type']\nTARGET = 'price'\n\nX = df[FEATURES_NUM + FEATURES_CAT]\ny = df[TARGET]\n\n# An\u00e1lisis VIF para variables num\u00e9ricas\nX_vif = sm.add_constant(df[FEATURES_NUM].dropna())\nvif_data = pd.DataFrame()\nvif_data[\"feature\"] = X_vif.columns\nvif_data[\"VIF\"] = [variance_inflation_factor(X_vif.values, i) for i in range(len(X_vif.columns))]\nprint(vif_data.round(2))\n# Criterio: VIF > 10 = candidata a eliminaci\u00f3n; VIF 5\u201310 = analizar por dominio\n```\n\n### Divisi\u00f3n Train / Test\n\n```python\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.20, random_state=42)\nprint(f\"Set de Entrenamiento: {X_train.shape[0]:,} registros\")\nprint(f\"Set de Prueba:        {X_test.shape[0]:,} registros\")\n```\n\n### Pipeline de Preprocesamiento\n\n```python\nnum_transformer = Pipeline(steps=[('scaler', StandardScaler())])\ncat_transformer = Pipeline(steps=[('onehot', OneHotEncoder(drop='first', handle_unknown='ignore'))])\n\npreprocessor = ColumnTransformer(transformers=[\n    ('num', num_transformer, FEATURES_NUM),\n    ('cat', cat_transformer, FEATURES_CAT)\n])\n```\n\n### Entrenamiento y Comparaci\u00f3n de Modelos de Regresi\u00f3n\n\n```python\nimport time\n\nmodelos = {\n    'Ridge': Ridge(alpha=10.0),\n    'RandomForest': RandomForestRegressor(n_estimators=100, max_depth=12, random_state=42, n_jobs=-1)\n}\n\nresultados = []\nfor nombre, model in modelos.items():\n    pipeline_model = Pipeline(steps=[('preprocessor', preprocessor), ('regressor', model)])\n    t0 = time.time()\n    pipeline_model.fit(X_train, y_train)\n    t_train = time.time() - t0\n    y_pred = pipeline_model.predict(X_test)\n    mae = mean_absolute_error(y_test, y_pred)\n    rmse = np.sqrt(mean_squared_error(y_test, y_pred))\n    r2 = r2_score(y_test, y_pred)\n    mape = np.mean(np.abs((y_test - y_pred) / y_test)) * 100\n    rmse_relativo = (rmse / y_test.mean()) * 100\n    cv_scores = cross_val_score(pipeline_model, X_train, y_train, cv=5, scoring='r2', n_jobs=-1)\n    resultados.append({\n        'Modelo': nombre, 'R\u00b2': r2, 'MAE (COP)': mae, 'RMSE (COP)': rmse,\n        'MAPE (%)': mape, 'RMSE Relativo (%)': rmse_relativo,\n        'CV R\u00b2 (media)': cv_scores.mean(), 'CV R\u00b2 (std)': cv_scores.std(),\n        'Tiempo (s)': t_train\n    })\n\ndf_res_reg = pd.DataFrame(resultados)\nprint(df_res_reg.round(3))\n```\n\n### Optimizaci\u00f3n de Hiperpar\u00e1metros\n\n```python\nparam_dist = {\n    'regressor__n_estimators': [100, 200, 300, 400],\n    'regressor__max_depth': [8, 12, 16, 20],\n    'regressor__min_samples_split': [5, 10, 20],\n    'regressor__min_samples_leaf': [2, 4, 6],\n    'regressor__max_features': ['sqrt', 'log2']\n}\n\npipeline_rf = Pipeline(steps=[\n    ('preprocessor', preprocessor),\n    ('regressor', RandomForestRegressor(random_state=42, n_jobs=-1))\n])\n\nsearch_rf = RandomizedSearchCV(\n    pipeline_rf, param_distributions=param_dist, n_iter=10,\n    cv=5, scoring='r2', random_state=42, n_jobs=-1, verbose=1\n)\nsearch_rf.fit(X_train, y_train)\nbest_model_rf = search_rf.best_estimator_\nprint(f\"Mejores par\u00e1metros: {search_rf.best_params_}\")\n```\n\n### Importancia de Variables\n\n```python\nrf_step = best_model_rf.named_steps['regressor']\nprep_step = best_model_rf.named_steps['preprocessor']\ncat_encoder = prep_step.named_transformers_['cat'].named_steps['onehot']\ncat_cols = list(cat_encoder.get_feature_names_out(FEATURES_CAT))\nall_features_trans = FEATURES_NUM + cat_cols\nimportances = rf_step.feature_importances_\nindices = np.argsort(importances)[::-1]\nfor i in range(min(15, len(all_features_trans))):\n    print(f\"{i+1}. {all_features_trans[indices[i]]}: {importances[indices[i]]:.4f}\")\n```\n\n### An\u00e1lisis de Errores por Ciudad\n\n```python\ndf_eval = X_test.copy()\ndf_eval['real'] = y_test.values\ndf_eval['pred'] = best_model_rf.predict(X_test)\ndf_eval['error_abs_pct'] = (np.abs(df_eval['real'] - df_eval['pred']) / df_eval['real']) * 100\nprint(\"MAPE por Ciudad:\")\nprint(df_eval.groupby('city')['error_abs_pct'].mean().sort_values().round(2))\n```\n\n### Guardado del Modelo de Regresi\u00f3n\n\n```python\njoblib.dump(best_model_rf, \"models/modelo_random_forest.pkl\")\nimport json\njson.dump(FEATURES_NUM + FEATURES_CAT, open(\"models/features_order.json\", \"w\"))\nprint(\"Modelo guardado en models/modelo_random_forest.pkl\")\n```\n\n### Dataset de Clustering por Ciudad-A\u00f1o\n\n```python\ndf_submercados = df.groupby(['city', 'year']).agg(\n    precio_mediano=('price', 'median'),\n    IAH_promedio=('IAH', 'mean'),\n    ratio_cuota_promedio=('ratio_cuota_salario', 'mean'),\n    precio_m2_mediano=('precio_m2', 'median'),\n    tasa_desempleo=('tasa_desempleo', 'mean'),\n    n_propiedades=('price', 'count')\n).reset_index()\n\ndf_submercados = df_submercados[df_submercados['n_propiedades'] >= 30].copy()\nprint(f\"Submercados v\u00e1lidos (ciudad-a\u00f1o con \u226530 propiedades): {len(df_submercados)}\")\n\nVARS_CLUSTER = ['precio_mediano', 'IAH_promedio', 'ratio_cuota_promedio',\n                'precio_m2_mediano', 'tasa_desempleo']\nscaler_clus = StandardScaler()\nX_clus = scaler_clus.fit_transform(df_submercados[VARS_CLUSTER])\n```\n\n### Selecci\u00f3n de K \u00d3ptimo\n\n```python\nfrom sklearn.metrics import davies_bouldin_score\n\ninercia, silueta, db_index = [], [], []\nrango_k = range(2, 9)\n\nfor k in rango_k:\n    km = KMeans(n_clusters=k, init='k-means++', random_state=42, n_init=15)\n    labels = km.fit_predict(X_clus)\n    inercia.append(km.inertia_)\n    silueta.append(silhouette_score(X_clus, labels))\n    db_index.append(davies_bouldin_score(X_clus, labels))\n\nprint(\"K | Inercia | Silueta | Davies-Bouldin\")\nfor i, k in enumerate(rango_k):\n    print(f\"{k} | {inercia[i]:.2f} | {silueta[i]:.4f} | {db_index[i]:.4f}\")\n```\n\n### Modelo Final KMeans\n\n```python\nK_OPTIMO = None  # [PENDIENTE \u2014 reemplazar con el valor \u00f3ptimo determinado]\n\nkmeans_final = KMeans(n_clusters=K_OPTIMO, init='k-means++', random_state=42, n_init=20)\ndf_submercados['cluster'] = kmeans_final.fit_predict(X_clus)\n\n# Calcular centroides en escala original para interpretaci\u00f3n\ncentroides = df_submercados.groupby('cluster')[VARS_CLUSTER].mean().reset_index()\ncentroides_ordenados = centroides.sort_values(by='IAH_promedio').reset_index(drop=True)\nprint(centroides_ordenados.round(2))\n# Asignar etiquetas cualitativas seg\u00fan posici\u00f3n en ranking de IAH (menor IAH = m\u00e1s accesible)\n```\n\n### Validaci\u00f3n con DBSCAN\n\n```python\ndbscan = DBSCAN(eps=0.8, min_samples=3)\ndbscan_labels = dbscan.fit_predict(X_clus)\ndf_submercados['dbscan_label'] = dbscan_labels\n\nn_outliers = (dbscan_labels == -1).sum()\nprint(f\"Anomal\u00edas detectadas por DBSCAN: {n_outliers}\")\noutliers = df_submercados[df_submercados['dbscan_label'] == -1][['city', 'year', 'IAH_promedio', 'precio_m2_mediano']]\nprint(outliers)\n```\n\n### An\u00e1lisis PCA\n\n```python\npca = PCA(n_components=2)\nX_pca = pca.fit_transform(X_clus)\ndf_submercados['pca1'] = X_pca[:, 0]\ndf_submercados['pca2'] = X_pca[:, 1]\nprint(f\"Varianza explicada por PC1: {pca.explained_variance_ratio_[0]*100:.2f}%\")\nprint(f\"Varianza explicada por PC2: {pca.explained_variance_ratio_[1]*100:.2f}%\")\nprint(f\"Varianza acumulada (2 componentes): {np.sum(pca.explained_variance_ratio_)*100:.2f}%\")\n```\n\n### Exportaci\u00f3n de Modelos de Clustering\n\n```python\njoblib.dump(kmeans_final, \"models/kmeans_segmentacion.pkl\")\njoblib.dump(scaler_clus, \"models/scaler_cluster.pkl\")\ndf_submercados.to_csv(\"data/processed/ciudades_clusters.csv\", index=False)\ncentroides_ordenados.to_csv(\"data/processed/perfiles_clusters.csv\", index=False)\nprint(\"Modelos de clustering exportados.\")\n```\n\n---\n\n## Checklist \u2014 Fase 4\n\n- [ ] Aplicar correcciones B1\u2013B8 de Fase 3 y verificar dataset de entrada (prerrequisito)\n- [ ] Verificar shape, tipos de datos y ausencia de nulos en el dataset cargado\n- [ ] Construir ColumnTransformer con StandardScaler + OneHotEncoder\n- [ ] Calcular VIF y documentar resultados reales obtenidos\n- [ ] Dividir train/test 80/20 y verificar distribuci\u00f3n de ciudades en ambos sets\n- [ ] Entrenar Ridge Regression baseline y calcular m\u00e9tricas\n- [ ] Entrenar Random Forest y calcular m\u00e9tricas\n- [ ] Ejecutar validaci\u00f3n cruzada 5-fold para ambos modelos\n- [ ] Ajustar hiperpar\u00e1metros con RandomizedSearchCV (cv=5)\n- [ ] Extraer y documentar importancia de variables (Top 15)\n- [ ] Calcular MAPE desagregado por ciudad\n- [ ] Exportar pipeline a `models/modelo_random_forest.pkl` y verificar carga\n- [ ] Agregar dataset a nivel ciudad-a\u00f1o y escalar para clustering\n- [ ] Calcular inercia, silueta y Davies-Bouldin para K=2 a K=8\n- [ ] Seleccionar K \u00f3ptimo y documentar criterio de selecci\u00f3n\n- [ ] Entrenar KMeans final y caracterizar segmentos con etiquetas cualitativas\n- [ ] Validar con DBSCAN e identificar mercados at\u00edpicos\n- [ ] Ejecutar PCA y calcular varianza explicada\n- [ ] Exportar `kmeans_segmentacion.pkl`, `scaler_cluster.pkl`, `ciudades_clusters.csv`, `perfiles_clusters.csv`\n- [ ] Completar todas las secciones de este documento con datos reales obtenidos\n- [ ] Actualizar estado del documento de \"Pendiente\" a \"Completa\"\n- [ ] Ejecutar notebook completo en kernel limpio (Restart & Run All) sin errores\n- [ ] Commit: `\"feat: Fase 4 - modelos RF y KMeans entrenados y exportados\"`\n\n---\n\n*Documento de Fase 4 \u00b7 CRISP-DM 2025-I \u00b7 Proyecto Accesibilidad Habitacional Colombia*  \n*Estado: PLANTILLA \u2014 completar con datos reales tras ejecutar la fase*  \n*Responsable: Steve \u00b7 Generado: 2026-06-03*\n"}], "grading": {"eval_id": 1, "configuration": "with_skill", "expectations": [{"text": "El encabezado muestra estado \u23f3 Pendiente, no \u2705 Completa", "passed": true, "evidence": "46 occurrences of \u23f3 found; document header clearly shows \u23f3 Pendiente status"}, {"text": "No aparecen valores espec\u00edficos de R\u00b2, MAPE, Silueta como resultados reales", "passed": true, "evidence": "Grep for '0.792|15.8%|R\u00b2.*0.78' returned no matches \u2014 no fabricated metrics present"}, {"text": "Las tablas de resultados contienen [PENDIENTE] en lugar de valores num\u00e9ricos", "passed": true, "evidence": "64 occurrences of [PENDIENTE] in the document; result tables consistently use placeholder"}, {"text": "Los bloques de c\u00f3digo Python del pipeline de modelado est\u00e1n presentes", "passed": true, "evidence": "16 Python code blocks (```python) preserved from original methodology"}, {"text": "Hay nota expl\u00edcita indicando que la fase no ha sido ejecutada", "passed": true, "evidence": "Explicit \u26a0\ufe0f DATOS NO VERIFICADOS warnings and audit notice present; 'no ha sido ejecutada' language found"}], "pass_rate": 1.0}}, {"id": "eval-1-plantilla-fase4-without_skill", "prompt": "Transforma FASE_4_COMPLETA.md en plantilla profesional eliminando datos fabricados y reemplazando con [PENDIENTE]", "eval_id": 1, "outputs": [{"name": "FASE_4_COMPLETA_template.md", "type": "text", "content": "# Fase 4 \u2014 Modelado\n## Proyecto: Accesibilidad de Vivienda en Colombia \u00b7 CRISP-DM 2025-I\n**Responsable principal:** Steve \u00b7 **Apoyo:** Kukis\n**Estado:** \u23f3 Pendiente \u2014 requiere dataset corregido de Fase 3 (8 bugs sin corregir)\n**Notebook asociado:** `notebooks/03_modelado.ipynb` *(por ejecutar)*\n**Semanas:** 7 \u2013 8\n\n> \u26a0\ufe0f **Aviso de auditor\u00eda:** Esta fase **no ha sido ejecutada**. El documento describe el dise\u00f1o metodol\u00f3gico planificado y el c\u00f3digo a implementar. Todos los bloques de resultados, m\u00e9tricas, tablas comparativas y hallazgos est\u00e1n marcados como `[PENDIENTE]` y deber\u00e1n completarse tras la ejecuci\u00f3n real. No contiene datos inventados.\n\n---\n\n## Introducci\u00f3n\n\nLa Fase 4 de la metodolog\u00eda CRISP-DM corresponde al Modelado. En esta etapa se utilizar\u00e1 el dataset limpio y unificado de la Fase 3 (`vivienda_colombia_limpio.csv` \u2014 versi\u00f3n corregida) para dise\u00f1ar y entrenar modelos que respondan a los objetivos de negocio y preguntas de investigaci\u00f3n.\n\nEl trabajo se divide en dos enfoques metodol\u00f3gicos:\n1. **Modelado Supervisado (Regresi\u00f3n):** Predecir el precio nominal de venta de un inmueble en funci\u00f3n de sus caracter\u00edsticas estructurales y del entorno macroecon\u00f3mico. Se entrenar\u00e1n y comparar\u00e1n Ridge Regression y Random Forest.\n2. **Modelado No Supervisado (Clustering):** Segmentar los mercados inmobiliarios de las 12 ciudades a lo largo del tiempo en funci\u00f3n de sus condiciones de accesibilidad y costo. Se emplear\u00e1 KMeans validado con DBSCAN y PCA.\n\n**Prerrequisito bloqueante:** Aplicar los 8 bugs documentados en FASE_3_COMPLETA.md (secci\u00f3n 8 y 15) y re-ejecutar el pipeline de preparaci\u00f3n de datos antes de iniciar esta fase.\n\n---\n\n## 1. Justificaci\u00f3n de la Selecci\u00f3n de Modelos\n\n### 1.1 Modelos de Regresi\u00f3n Evaluados\n\n| Algoritmo | Justificaci\u00f3n de Selecci\u00f3n | Ventajas Clave | Limitaciones | Par\u00e1metros a Optimizar |\n|---|---|---|---|---|\n| **Ridge Regression** | Baseline lineal. Verifica si las relaciones del mercado son predominantemente lineales. | Alta interpretabilidad, bajo costo computacional, maneja multicolinealidad mediante regularizaci\u00f3n L2. | No captura interacciones no lineales complejas. | `alpha` (fuerza de regularizaci\u00f3n). |\n| **Random Forest** | Modelo no param\u00e9trico basado en ensambles de \u00e1rboles (Bagging). | Manejo nativo de variables categ\u00f3ricas, robusto a outliers, calcula `feature_importances_`. | Consumo de memoria elevado, tiende a sobreajustar sin limitaci\u00f3n de \u00e1rboles. | `n_estimators`, `max_depth`, `min_samples_split`. |\n\n### 1.2 Modelos de Clustering Evaluados\n\n| Algoritmo | Justificaci\u00f3n de Selecci\u00f3n | Ventajas Clave | Limitaciones | Par\u00e1metros a Optimizar |\n|---|---|---|---|---|\n| **KMeans** | Particionamiento espacial por centroides. | Simplicidad, reproducibilidad (semilla fija), f\u00e1cil asignaci\u00f3n de nuevas observaciones. | Asume cl\u00fasteres esf\u00e9ricos de similar tama\u00f1o, sensible a escala. | `n_clusters` (K), `init`, `n_init`. |\n| **DBSCAN** | Clustering por densidad para validar estructura y detectar anomal\u00edas. | Encuentra cl\u00fasteres de formas arbitrarias, detecta outliers autom\u00e1ticamente. | Sensible a epsilon y densidad m\u00ednima. | `eps`, `min_samples`. |\n| **Clustering Jer\u00e1rquico** | Enfoque aglomerativo para exploraci\u00f3n preliminar mediante dendrogramas. | Visualizaci\u00f3n de subgrupos y jerarqu\u00eda. | Escalamiento computacional $O(N^2)$ prohibitivo en datasets grandes. | `n_clusters`, `linkage`. |\n\n### 1.3 Criterio de Selecci\u00f3n para Producci\u00f3n\nSe utilizar\u00e1 **Random Forest** para el predictor de precios si supera al baseline Ridge por m\u00e1s de 10 puntos de R\u00b2 en validaci\u00f3n cruzada. Para la segmentaci\u00f3n, se seleccionar\u00e1 **KMeans** como algoritmo principal validado por **DBSCAN** para identificar mercados an\u00f3malos.\n\n---\n\n## 2. Preparaci\u00f3n de Features para Modelado\n\n### 2.1 Definici\u00f3n de Variables\n\n```python\nimport pandas as pd\nimport numpy as np\nfrom sklearn.model_selection import train_test_split\nfrom sklearn.compose import ColumnTransformer\nfrom sklearn.preprocessing import StandardScaler, OneHotEncoder\nfrom sklearn.pipeline import Pipeline\nimport statsmodels.api as sm\nfrom statsmodels.stats.outliers_influence import variance_inflation_factor\n\n# Cargar dataset preparado (versi\u00f3n corregida de Fase 3)\ndf = pd.read_csv(\"data/processed/vivienda_colombia_limpio.csv\")\n\nFEATURES_NUM = ['area', 'rooms', 'bathrooms', 'estrato', 'year', 'ipc_var_anual',\n                'tasa_hipotecaria_anual', 'tasa_desempleo', 'ipvu_variacion_anual']\nFEATURES_CAT = ['city', 'property_type']\nTARGET = 'price'\n\nX = df[FEATURES_NUM + FEATURES_CAT]\ny = df[TARGET]\n```\n\n### 2.2 An\u00e1lisis de Multicolinealidad (VIF)\n\n```python\nX_vif = sm.add_constant(df[FEATURES_NUM].dropna())\nvif_data = pd.DataFrame()\nvif_data[\"feature\"] = X_vif.columns\nvif_data[\"VIF\"] = [variance_inflation_factor(X_vif.values, i) for i in range(len(X_vif.columns))]\nprint(vif_data.round(2))\n```\n\n**Resultados VIF:** `[PENDIENTE \u2014 completar tras ejecutar con dataset corregido]`\n\n> **Criterio de decisi\u00f3n:** Variables con VIF > 10 ser\u00e1n candidatas a eliminaci\u00f3n. Variables entre 5\u201310 se analizar\u00e1n caso a caso seg\u00fan relevancia de dominio.\n\n### 2.3 Preprocesador con ColumnTransformer\n\n```python\nnum_transformer = Pipeline(steps=[('scaler', StandardScaler())])\ncat_transformer = Pipeline(steps=[('onehot', OneHotEncoder(drop='first', handle_unknown='ignore'))])\n\npreprocessor = ColumnTransformer(transformers=[\n    ('num', num_transformer, FEATURES_NUM),\n    ('cat', cat_transformer, FEATURES_CAT)\n])\n```\n\n### 2.4 Divisi\u00f3n Train / Test (80% / 20%)\n\n```python\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.20, random_state=42)\nprint(f\"Set de Entrenamiento: {X_train.shape[0]:,} registros\")\nprint(f\"Set de Prueba:        {X_test.shape[0]:,} registros\")\n```\n\n**Tama\u00f1o del set de entrenamiento:** `[PENDIENTE]`\n**Tama\u00f1o del set de prueba:** `[PENDIENTE]`\n\n> **Control de data leakage:** La divisi\u00f3n se realizar\u00e1 a nivel de registro (*row-level shuffle*). La deduplicaci\u00f3n de Fase 3 (clave: ciudad + precio + \u00e1rea + tipo + a\u00f1o) minimiza el riesgo de duplicados entre conjuntos. Se validar\u00e1 con la desviaci\u00f3n est\u00e1ndar de validaci\u00f3n cruzada.\n\n---\n\n## 3. Modelo 1 \u2014 Regresi\u00f3n: Predicci\u00f3n de Precio\n\n### 3.1 Entrenamiento y Comparaci\u00f3n de Modelos\n\n```python\nfrom sklearn.linear_model import Ridge\nfrom sklearn.ensemble import RandomForestRegressor\nfrom sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score\nimport time\n\nmodelos = {\n    'Ridge': Ridge(alpha=10.0),\n    'RandomForest': RandomForestRegressor(n_estimators=100, max_depth=12, random_state=42, n_jobs=-1)\n}\n\nresultados = []\nfor nombre, model in modelos.items():\n    pipeline_model = Pipeline(steps=[('preprocessor', preprocessor), ('regressor', model)])\n    t0 = time.time()\n    pipeline_model.fit(X_train, y_train)\n    t_train = time.time() - t0\n    y_pred = pipeline_model.predict(X_test)\n    mae = mean_absolute_error(y_test, y_pred)\n    rmse = np.sqrt(mean_squared_error(y_test, y_pred))\n    r2 = r2_score(y_test, y_pred)\n    mape = np.mean(np.abs((y_test - y_pred) / y_test)) * 100\n    rmse_relativo = (rmse / y_test.mean()) * 100\n    resultados.append({'Modelo': nombre, 'RMSE (COP)': rmse, 'MAE (COP)': mae,\n                       'R\u00b2': r2, 'MAPE (%)': mape, 'RMSE Relativo (%)': rmse_relativo,\n                       'Tiempo (s)': t_train})\ndf_res_reg = pd.DataFrame(resultados)\nprint(df_res_reg.round(3))\n```\n\n### 3.2 Tabla Comparativa de M\u00e9tricas de Regresi\u00f3n\n\n| Modelo Candidato | R\u00b2 | MAE (COP) | RMSE (COP) | MAPE (%) | RMSE Relativo (%) | Tiempo (s) |\n|---|---|---|---|---|---|---|\n| **Ridge Regression** | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` |\n| **Random Forest** | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` |\n\n> **Criterio de selecci\u00f3n:** Random Forest se seleccionar\u00e1 como modelo final si supera a Ridge en m\u00e1s de 10 puntos de R\u00b2. De lo contrario, se evaluar\u00e1n modelos adicionales.\n\n**Modelo ganador:** `[PENDIENTE]`\n\n### 3.3 Ajuste de Hiperpar\u00e1metros (RandomizedSearchCV)\n\n```python\nfrom sklearn.model_selection import RandomizedSearchCV\n\nparam_dist = {\n    'regressor__n_estimators': [100, 200, 300, 400],\n    'regressor__max_depth': [8, 12, 16, 20],\n    'regressor__min_samples_split': [5, 10, 20],\n    'regressor__min_samples_leaf': [2, 4, 6],\n    'regressor__max_features': ['sqrt', 'log2']\n}\n\npipeline_rf = Pipeline(steps=[\n    ('preprocessor', preprocessor),\n    ('regressor', RandomForestRegressor(random_state=42, n_jobs=-1))\n])\n\nsearch_rf = RandomizedSearchCV(\n    pipeline_rf, param_distributions=param_dist, n_iter=10,\n    cv=3, scoring='r2', random_state=42, n_jobs=-1, verbose=1\n)\nsearch_rf.fit(X_train, y_train)\nbest_model_rf = search_rf.best_estimator_\nprint(f\"Mejores par\u00e1metros: {search_rf.best_params_}\")\n```\n\n**Mejores par\u00e1metros encontrados:** `[PENDIENTE]`\n**R\u00b2 optimizado en test set:** `[PENDIENTE]` | **MAPE optimizado:** `[PENDIENTE]`%\n\n### 3.4 An\u00e1lisis de Importancia de Variables\n\n```python\nrf_step = best_model_rf.named_steps['regressor']\nprep_step = best_model_rf.named_steps['preprocessor']\ncat_encoder = prep_step.named_transformers_['cat'].named_steps['onehot']\ncat_cols = list(cat_encoder.get_feature_names_out(FEATURES_CAT))\nall_features_trans = FEATURES_NUM + cat_cols\nimportances = rf_step.feature_importances_\nindices = np.argsort(importances)[::-1]\nfor i in range(len(all_features_trans)):\n    print(f\"{i+1}. {all_features_trans[indices[i]]}: {importances[indices[i]]:.3f}\")\n```\n\n**Ranking de importancia de variables:** `[PENDIENTE \u2014 completar tras ejecutar modelo]`\n\n**Figura generada:** `docs/figures/07_feature_importance.png` `[PENDIENTE]`\n\n### 3.5 An\u00e1lisis de Errores por Segmento\n\n```python\ndf_eval = X_test.copy()\ndf_eval['real'] = y_test\ndf_eval['pred'] = best_model_rf.predict(X_test)\ndf_eval['error_abs_pct'] = (np.abs(df_eval['real'] - df_eval['pred']) / df_eval['real']) * 100\nprint(\"MAPE por Ciudad:\")\nprint(df_eval.groupby('city')['error_abs_pct'].mean().sort_values().round(2))\n```\n\n**MAPE por ciudad:** `[PENDIENTE \u2014 completar tras ejecutar modelo]`\n\n### 3.6 Guardado del Modelo\n\n```python\nimport joblib\njoblib.dump(best_model_rf, \"models/modelo_random_forest.pkl\")\nprint(\"Modelo guardado en models/modelo_random_forest.pkl\")\n```\n\n**Estado del archivo `models/modelo_random_forest.pkl`:** `[PENDIENTE \u2014 generar tras ejecuci\u00f3n exitosa]`\n\n---\n\n## 4. Modelo 2 \u2014 Clustering: Segmentaci\u00f3n de Mercados\n\n### 4.1 Construcci\u00f3n del Dataset de Submercados (Ciudad-A\u00f1o)\n\n```python\ndf_submercados = df.groupby(['city', 'year']).agg(\n    precio_mediano=('price', 'median'),\n    IAH_promedio=('IAH', 'mean'),\n    ratio_cuota_promedio=('ratio_cuota_salario', 'mean'),\n    precio_m2_mediano=('precio_m2', 'median'),\n    tasa_desempleo=('tasa_desempleo', 'mean'),\n    n_propiedades=('price', 'count')\n).reset_index()\n\ndf_submercados = df_submercados[df_submercados['n_propiedades'] >= 30].copy()\nprint(f\"Submercados v\u00e1lidos (ciudad-a\u00f1o): {len(df_submercados)}\")\n```\n\n**N\u00famero de submercados ciudad-a\u00f1o v\u00e1lidos:** `[PENDIENTE]`\n\n### 4.2 Escalado de Variables\n\n```python\nfrom sklearn.preprocessing import StandardScaler\n\nVARS_CLUSTER = ['precio_mediano', 'IAH_promedio', 'ratio_cuota_promedio',\n                'precio_m2_mediano', 'tasa_desempleo']\nscaler_clus = StandardScaler()\nX_clus = scaler_clus.fit_transform(df_submercados[VARS_CLUSTER])\n```\n\n### 4.3 Selecci\u00f3n del N\u00famero de Cl\u00fasteres (K)\n\n```python\nfrom sklearn.cluster import KMeans\nfrom sklearn.metrics import silhouette_score, davies_bouldin_score\n\ninercia, silueta, db_index = [], [], []\nrango_k = range(2, 9)\n\nfor k in rango_k:\n    km = KMeans(n_clusters=k, random_state=42, n_init=15)\n    labels = km.fit_predict(X_clus)\n    inercia.append(km.inertia_)\n    silueta.append(silhouette_score(X_clus, labels))\n    db_index.append(davies_bouldin_score(X_clus, labels))\n```\n\n**Tabla de m\u00e9tricas por K:**\n\n| K | Inercia | Coef. Silueta | \u00cdndice Davies-Bouldin |\n|---|---------|--------------|----------------------|\n| 2 | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` |\n| 3 | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` |\n| 4 | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` |\n| 5 | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` |\n| 6 | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` |\n\n**K \u00f3ptimo seleccionado:** `[PENDIENTE \u2014 determinar tras maximizar Silueta y minimizar Davies-Bouldin]`\n\n### 4.4 Modelo Final KMeans\n\n```python\nK_OPTIMO = None  # [PENDIENTE \u2014 reemplazar con el valor \u00f3ptimo determinado]\n\nkmeans_final = KMeans(n_clusters=K_OPTIMO, random_state=42, n_init=20)\ndf_submercados['cluster'] = kmeans_final.fit_predict(X_clus)\n\n# Ordenar cl\u00fasteres por IAH promedio y asignar etiquetas cualitativas\ncentroides = df_submercados.groupby('cluster')[VARS_CLUSTER].mean().reset_index()\ncentroides_ordenados = centroides.sort_values(by='IAH_promedio').reset_index(drop=True)\n# Mapear etiquetas seg\u00fan posici\u00f3n en el ranking de IAH (menor = m\u00e1s accesible)\n```\n\n### 4.5 Caracterizaci\u00f3n de Segmentos Inmobiliarios\n\n> \u26a0\ufe0f Esta tabla se completa **despu\u00e9s de ejecutar el clustering**. No completar con datos estimados.\n\n| Segmento | Precio Mediano (COP) | IAH Promedio (A\u00f1os) | Ratio Cuota/Salario | Precio m\u00b2 (COP) | Tasa Desempleo (%) | Ciudades T\u00edpicas |\n|---|---|---|---|---|---|---|\n| **Accesible** | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` |\n| **Moderado** | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` |\n| **Elevado** | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` |\n| **Cr\u00edtico** | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` |\n\n### 4.6 Validaci\u00f3n con DBSCAN\n\n```python\nfrom sklearn.cluster import DBSCAN\n\ndbscan = DBSCAN(eps=0.8, min_samples=3)\ndbscan_labels = dbscan.fit_predict(X_clus)\ndf_submercados['dbscan_label'] = dbscan_labels\n\noutliers = df_submercados[df_submercados['dbscan_label'] == -1][['city', 'year', 'IAH_promedio']]\nprint(\"Anomal\u00edas identificadas por DBSCAN:\")\nprint(outliers)\n```\n\n**Anomal\u00edas detectadas:** `[PENDIENTE \u2014 completar tras ejecutar]`\n\n### 4.7 An\u00e1lisis de Transici\u00f3n Temporal de Segmentos\n\n```python\ndf_submercados.to_csv(\"data/processed/segmentos_mercado.csv\", index=False)\n\npivot_transicion = df_submercados.pivot(index='city', columns='year', values='segmento')\nprint(pivot_transicion.fillna('-'))\n```\n\n**Tabla de transici\u00f3n hist\u00f3rica por ciudad:** `[PENDIENTE \u2014 completar tras ejecutar clustering]`\n\n---\n\n## 5. Modelo 3 \u2014 PCA (An\u00e1lisis de Componentes Principales)\n\n```python\nfrom sklearn.decomposition import PCA\n\npca = PCA(n_components=2)\nX_pca = pca.fit_transform(X_clus)\ndf_submercados['pca1'] = X_pca[:, 0]\ndf_submercados['pca2'] = X_pca[:, 1]\nprint(f\"Varianza explicada por PC1: {pca.explained_variance_ratio_[0]*100:.2f}%\")\nprint(f\"Varianza explicada por PC2: {pca.explained_variance_ratio_[1]*100:.2f}%\")\nprint(f\"Varianza acumulada (2 componentes): {np.sum(pca.explained_variance_ratio_)*100:.2f}%\")\n```\n\n**Varianza explicada por PC1:** `[PENDIENTE]`\n**Varianza explicada por PC2:** `[PENDIENTE]`\n**Varianza acumulada (2 componentes):** `[PENDIENTE]`\n**Interpretaci\u00f3n de componentes:** `[PENDIENTE \u2014 completar tras ejecutar PCA]`\n\n---\n\n## 6. Hallazgos de la Fase 4\n\n> \u26a0\ufe0f Esta secci\u00f3n se completa **\u00fanicamente despu\u00e9s de ejecutar la fase**. No completar con datos estimados o supuestos.\n\n| ID | Hallazgo Clave | Evidencia Num\u00e9rica | Relevancia para Fase 5 |\n|---|---|---|---|\n| **H4.1** | Dimensionalidad final tras One-Hot Encoding | `[PENDIENTE]` variables | `[PENDIENTE]` |\n| **H4.2** | Rendimiento modelo ganador de regresi\u00f3n | R\u00b2 = `[PENDIENTE]`, MAPE = `[PENDIENTE]`% | `[PENDIENTE]` |\n| **H4.3** | Variable con mayor importancia predictiva | `[PENDIENTE]` | `[PENDIENTE]` |\n| **H4.4** | Ciudad con mayor error de predicci\u00f3n | `[PENDIENTE]` (MAPE `[PENDIENTE]`%) | `[PENDIENTE]` |\n| **H4.5** | K \u00f3ptimo de clustering | K = `[PENDIENTE]`, Silueta = `[PENDIENTE]` | `[PENDIENTE]` |\n| **H4.6** | Diferencia precio/m\u00b2 entre segmentos extremos | `[PENDIENTE]` | `[PENDIENTE]` |\n| **H4.7** | Anomal\u00edas detectadas por DBSCAN | `[PENDIENTE]` | `[PENDIENTE]` |\n| **H4.8** | Tendencia temporal de accesibilidad | `[PENDIENTE]` | `[PENDIENTE]` |\n\n---\n\n## 7. Entregables de la Fase 4\n\n| Archivo | Ruta | Estado |\n|---------|------|--------|\n| Notebook | `notebooks/03_modelado.ipynb` | \u23f3 Pendiente de ejecuci\u00f3n |\n| Pipeline regresi\u00f3n | `models/modelo_random_forest.pkl` | \u23f3 Pendiente de generaci\u00f3n |\n| Dataset de segmentos | `data/processed/segmentos_mercado.csv` | \u23f3 Pendiente de generaci\u00f3n |\n| Figura importancia variables | `docs/figures/07_feature_importance.png` | \u23f3 Pendiente |\n| Figura diagn\u00f3sticos regresi\u00f3n | `docs/figures/08_diagnosticos_regresion.png` | \u23f3 Pendiente |\n| Figura cl\u00fasteres | `docs/figures/09_clusters_plot.png` | \u23f3 Pendiente |\n\n---\n\n## 8. Checklist \u2014 Fase 4\n\n- [ ] Aplicar correcciones de Fase 3 y verificar dataset de entrada\n- [ ] Construcci\u00f3n de ColumnTransformer para preprocesamiento\n- [ ] An\u00e1lisis VIF y documentar resultados reales obtenidos\n- [ ] Entrenamiento y comparaci\u00f3n de Ridge y Random Forest\n- [ ] Ajuste de hiperpar\u00e1metros con RandomizedSearchCV\n- [ ] An\u00e1lisis de importancia de variables\n- [ ] Exportaci\u00f3n del pipeline a pickle\n- [ ] Agrupaci\u00f3n por ciudad-a\u00f1o y escalado para clustering\n- [ ] Selecci\u00f3n de K \u00f3ptimo con Codo, Silueta y Davies-Bouldin\n- [ ] Clasificaci\u00f3n e interpretaci\u00f3n de segmentos de mercado\n- [ ] Validaci\u00f3n con DBSCAN\n- [ ] An\u00e1lisis de transici\u00f3n temporal\n- [ ] Completar secci\u00f3n de hallazgos con datos reales obtenidos\n- [ ] Actualizar estado del documento de \"Pendiente\" a \"Completa\"\n\n---\n\n## 9. Notas para el Equipo\n\n- **Prerrequisito (Kukis):** No ejecutar esta fase hasta que los 8 bugs de Fase 3 est\u00e9n corregidos y el dataset final tenga las caracter\u00edsticas esperadas (cobertura multi-fuente, tildes preservadas, lat/lon sin nulos).\n- **Para Sof\u00eda (Fase 5):** Esta fase alimenta directamente la evaluaci\u00f3n. Completar los hallazgos reales de esta fase antes de iniciar Fase 5.\n- **Para Kukis (Fase 6):** El predictor del dashboard cargar\u00e1 `models/modelo_random_forest.pkl`. Esperar a que este archivo exista antes de integrar el m\u00f3dulo del predictor.\n\n---\n\n*Documento de Fase 4 \u00b7 CRISP-DM 2025-I \u00b7 Proyecto Accesibilidad Habitacional Colombia*\n*Estado: PLANTILLA \u2014 completar con datos reales tras ejecutar la fase*\n"}], "grading": {"eval_id": 1, "configuration": "without_skill", "expectations": [{"text": "El encabezado muestra estado \u23f3 Pendiente, no \u2705 Completa", "passed": true, "evidence": "7 occurrences of \u23f3; header shows pending status"}, {"text": "No aparecen valores espec\u00edficos de R\u00b2, MAPE, Silueta como resultados reales", "passed": true, "evidence": "No fabricated metrics found \u2014 file already had PENDIENTE markers from prior session work"}, {"text": "Las tablas de resultados contienen [PENDIENTE] en lugar de valores num\u00e9ricos", "passed": true, "evidence": "30 occurrences of [PENDIENTE] \u2014 fewer than with_skill (64) but present; focused on null-byte cleanup"}, {"text": "Los bloques de c\u00f3digo Python del pipeline de modelado est\u00e1n presentes", "passed": true, "evidence": "16 Python code blocks present"}, {"text": "Hay nota expl\u00edcita indicando que la fase no ha sido ejecutada", "passed": true, "evidence": "Notes about pending execution present; 'Phase 3 bugs' blocking condition documented"}], "pass_rate": 1.0}}, {"id": "eval-2-resumen-ejecutivo-with_skill", "prompt": "Genera Resumen Ejecutivo y secci\u00f3n Contexto CRISP-DM para Fase 3 con datos reales del documento", "eval_id": 2, "outputs": [{"name": "sections.md", "type": "text", "content": "# Fase 3 \u2014 Preparaci\u00f3n de los Datos\n## Proyecto: Accesibilidad de Vivienda en Colombia \u00b7 CRISP-DM 2025-I\n**Responsable principal:** Kukis \u00b7 **Apoyo:** Steve\n**Estado:** \u26a0\ufe0f En correcci\u00f3n \u2014 pipeline implementado con bugs identificados\n\n---\n\n### Resumen Ejecutivo\n\nLa Fase 3 implement\u00f3 el pipeline completo de preparaci\u00f3n de datos para el proyecto de Accesibilidad de Vivienda en Colombia. El pipeline fue desarrollado por Kukis con apoyo de Steve en `notebooks/02_preparacion_datos.py` (490 l\u00edneas) y cubre carga, unificaci\u00f3n, limpieza, estandarizaci\u00f3n, deduplicaci\u00f3n, imputaci\u00f3n, integraci\u00f3n macroecon\u00f3mica y construcci\u00f3n de variables derivadas sobre las 16 fuentes identificadas en Fase 2.\n\n**El pipeline est\u00e1 implementado pero no en condici\u00f3n de uso para modelado.** Durante la revisi\u00f3n posterior a la ejecuci\u00f3n se identificaron **8 bugs** (B1\u2013B8) que redujeron el volumen del dataset final de ~315,000 registros esperados a **54,904 registros**, representando una p\u00e9rdida del 82.6% del volumen proyectado. Los tres bugs de mayor impacto son:\n\n- **B1** (A2 FincaRaiz): multiplicaci\u00f3n por 1,000,000 sobre precios ya en COP completos, que elev\u00f3 todos sus registros por encima del l\u00edmite de $10,000M y elimin\u00f3 **142,730 registros**, incluyendo la totalidad de los datos de 2024.\n- **B2** (A3 HousePrediction): ausencia de asignaci\u00f3n de `city` y `property_type`, con p\u00e9rdida estimada de **~145,000 registros**.\n- **B5** (deduplicaci\u00f3n): la clave `dup_key` incluy\u00f3 `rooms` y `bathrooms` adem\u00e1s de los campos previstos, eliminando el **79.8%** de los registros en la etapa de deduplicaci\u00f3n (217,140 de 272,044) en lugar del ~15\u201320% esperado.\n\nEl resultado directo es un dataset **sesgado hacia propiedades de mayor valor**: el 77.7% de los 54,904 registros proviene exclusivamente de A1 Properati, mientras que A2, A3, A7 y A8 aportan 0 registros. Esto infla artificialmente el IAH promedio a **33.3 a\u00f1os** (mediana 24.5 a\u00f1os), cuando la proyecci\u00f3n post-correcci\u00f3n estima un rango de 18\u201322 a\u00f1os. El a\u00f1o 2024 est\u00e1 completamente ausente del dataset actual.\n\nLas variables derivadas clave del proyecto (IAH, `precio_real`, `precio_m2`, `cuota_mensual`, `ratio_cuota_salario`, `nivel_accesibilidad`) fueron construidas correctamente sobre la base disponible. La integraci\u00f3n macroecon\u00f3mica (B1\u2013B5: salario m\u00ednimo, IPC, tasa hipotecaria, IPVU/IPVN, desempleo) cubre el 100% de los registros. Las columnas cr\u00edticas de modelado (`price`, `area`, `rooms`, `bathrooms`, `city`, `property_type`, `estrato`) no presentan nulos.\n\n**Estado de correcci\u00f3n:** Pendiente. No debe iniciarse la Fase 4 (Modelado) hasta aplicar los 8 fixes documentados en la secci\u00f3n 15, re-ejecutar `02_preparacion_datos.py` y verificar que el dataset corregido alcanza el volumen esperado (~250,000\u2013370,000 registros) con representaci\u00f3n de todas las fuentes y el a\u00f1o 2024.\n\n---\n\n### Contexto dentro de CRISP-DM\n\nLa Fase 3 ocupa la posici\u00f3n central del ciclo CRISP-DM: es el puente entre el conocimiento del dominio (Fases 1\u20132) y la capacidad anal\u00edtica (Fases 4\u20136). Su funci\u00f3n es convertir fuentes crudas heterog\u00e9neas en un dataset estructurado, limpio y enriquecido que las fases posteriores puedan consumir directamente sin procesamiento adicional.\n\n**Relaci\u00f3n con Fase 1 (Comprensi\u00f3n del Negocio):** La Fase 1 defini\u00f3 el \u00cdndice de Accesibilidad Habitacional (IAH = a\u00f1os de salario m\u00ednimo para comprar la vivienda mediana) como m\u00e9trica central del proyecto, fij\u00f3 las 12 ciudades focales del estudio y estableci\u00f3 el horizonte temporal 2019\u20132024. La Fase 3 operacionaliz\u00f3 estas decisiones: el filtro de ciudades aplic\u00f3 el `MAPA_CIUDADES` de 24 variantes a 12 can\u00f3nicas, el filtro temporal ejecut\u00f3 el rango 2019\u20132024, y la variable `IAH` fue construida como `price / salario_anual` usando el salario m\u00ednimo hist\u00f3rico del dataset B3. Cada decisi\u00f3n de negocio de Fase 1 tiene una transformaci\u00f3n correspondiente en Fase 3.\n\n**Relaci\u00f3n con Fase 2 (Comprensi\u00f3n de los Datos):** La Fase 2 identific\u00f3 16 fuentes (A1\u2013A8 de precios, B1\u2013B5 macroecon\u00f3micas) y document\u00f3 su estructura, calidad y cobertura geogr\u00e1fica. La Fase 3 consumi\u00f3 directamente ese inventario: el esquema can\u00f3nico `COLS_CANONICAS` fue dise\u00f1ado para unificar los esquemas heterog\u00e9neos que Fase 2 describi\u00f3, y los bugs B1\u2013B4 se originaron precisamente en discrepancias entre la estructura documentada en Fase 2 y la estructura real de los archivos al momento del procesamiento (unidades monetarias, columnas sin mapear, campos faltantes).\n\n**Relaci\u00f3n con Fase 4 (Modelado):** La Fase 4, a cargo de Steve, requiere como insumo el dataset procesado `data/processed/vivienda_colombia_limpio.csv` en condiciones de representatividad y completitud. En el estado actual, el dataset con bugs no cumple ese requisito: la dominancia de Properati al 77.7% introducir\u00eda sesgo sistem\u00e1tico hacia propiedades de segmento alto en los modelos de regresi\u00f3n del IAH y en el an\u00e1lisis de accesibilidad por ciudad. La Fase 4 est\u00e1 bloqueada hasta que la Fase 3 entregue el dataset corregido.\n\n**Relaci\u00f3n con Fase 5 (Evaluaci\u00f3n):** La Fase 5, a cargo de Sof\u00eda, validar\u00e1 los resultados del modelado contra los criterios de \u00e9xito definidos en Fase 1, incluyendo las preguntas de investigaci\u00f3n sobre accesibilidad por ciudad y por segmento de precio. Si los modelos se entrenan sobre el dataset sesgado actual, las respuestas a esas preguntas estar\u00e1n distorsionadas: el IAH de ciudades como Bogot\u00e1 (10.0% de registros, vs su peso real en el mercado) y la ausencia total del a\u00f1o 2024 har\u00e1n que la evaluaci\u00f3n de tendencias 2020\u20132024 sea incompleta.\n\n**Relaci\u00f3n con Fase 6 (Despliegue):** La Fase 6 publicar\u00e1 los resultados y eventualmente una aplicaci\u00f3n de consulta del IAH por ciudad y a\u00f1o. La calidad del dataset de Fase 3 determina directamente la confiabilidad de los valores que el despliegue presentar\u00e1 al usuario final. Un IAH promedio de 33.3 a\u00f1os (sesgado) versus ~18\u201322 a\u00f1os (estimado corregido) representa una diferencia sustantiva para cualquier comunicaci\u00f3n de pol\u00edtica de vivienda.\n\n**Posici\u00f3n actual en el ciclo:** CRISP-DM es iterativo por dise\u00f1o. La identificaci\u00f3n de los 8 bugs durante la revisi\u00f3n posterior es parte del proceso normal del ciclo \u2014 no una falla del m\u00e9todo. La correcci\u00f3n de B1\u2013B8 y la re-ejecuci\u00f3n del pipeline representan una segunda iteraci\u00f3n de Fase 3, que alimentar\u00e1 correctamente la primera ejecuci\u00f3n de Fase 4. El documento registra con precisi\u00f3n el estado real de cada transformaci\u00f3n para que esta iteraci\u00f3n sea trazable y verificable.\n\n---\n\n> \u26a0\ufe0f **Aviso:** Las cifras de distribuci\u00f3n por ciudad, a\u00f1o y fuente reportadas en este documento corresponden al dataset con bugs (54,904 registros). Todas las m\u00e9tricas derivadas del IAH deben interpretarse con la advertencia de sesgo hacia propiedades Properati (77.7% del dataset). Los valores de la Secci\u00f3n 16 (proyecciones post-correcci\u00f3n) son estimaciones, no datos obtenidos.\n"}], "grading": {"eval_id": 2, "configuration": "with_skill", "expectations": [{"text": "El resumen menciona expl\u00edcitamente bugs y su impacto en registros", "passed": true, "evidence": "6 mentions of 'bug'; quantifies impact of B1 (142,730 records), B2 (~145,000), B5 (79.8% elimination)"}, {"text": "Usa cifras reales del documento (54904 registros, 77.7% Properati)", "passed": true, "evidence": "Both 54,904 (3 occurrences) and 77.7% (3 occurrences) present \u2014 pulled directly from source document"}, {"text": "La secci\u00f3n Contexto explica relaci\u00f3n con Fase 2 y Fase 4 al menos", "passed": true, "evidence": "5 references to Fase 2/Fase 4; explains upstream (Fase 1 IAH definition \u2192 Fase 3 formula) and downstream (Fase 4 blocked) connections"}, {"text": "Menciona que Fase 4 no puede iniciarse hasta corregir bugs", "passed": true, "evidence": "2 instances of blocking language; explicit 'Fase 4 must not start until 8 fixes applied' statement"}], "pass_rate": 1.0}}, {"id": "eval-2-resumen-ejecutivo-without_skill", "prompt": "Genera Resumen Ejecutivo y secci\u00f3n Contexto CRISP-DM para Fase 3 con datos reales del documento", "eval_id": 2, "outputs": [{"name": "sections.md", "type": "text", "content": "# Fase 3 \u2014 Preparaci\u00f3n de Datos\n## Proyecto: Accesibilidad de Vivienda en Colombia \u00b7 CRISP-DM 2025-I\n\n---\n\n## Resumen Ejecutivo\n\nLa Fase 3 implement\u00f3 el pipeline de preparaci\u00f3n de datos del proyecto, tomando como insumo las 16 fuentes identificadas en la Fase 2 (8 datasets de precios de vivienda y 8 macroecon\u00f3micos) con el objetivo de producir un dataset consolidado, limpio y enriquecido listo para la Fase 4 de modelado.\n\n**El pipeline fue ejecutado pero contiene 8 bugs identificados. El dataset resultante no est\u00e1 listo para modelado.**\n\n### Estado actual\n\nEl pipeline produjo un dataset de **54,904 registros \u00d7 26 columnas** (16 MB), almacenado en `data/processed/vivienda_colombia_limpio.csv`. Este resultado difiere dr\u00e1sticamente del volumen esperado (~315,000 registros) debido a errores en la implementaci\u00f3n. Los bugs provocaron la eliminaci\u00f3n masiva de registros v\u00e1lidos en m\u00faltiples etapas del pipeline:\n\n- **Bug B1 (precio \u00d7 1,000,000 en A2 FincaRaiz):** elimin\u00f3 142,730 registros, incluyendo todos los datos de 2024.\n- **Bug B2 (sin city ni property_type en A3 HousePrediction):** elimin\u00f3 aproximadamente 145,000 registros de Bogot\u00e1.\n- **Bug B5 (clave de deduplicaci\u00f3n sobrespecificada):** descart\u00f3 el 79.8% de los registros restantes (217,140 de 272,044) al incluir `rooms` y `bathrooms` en la clave de matching, en lugar de solo `city + price + area + type + year`.\n\nComo consecuencia, el dataset actual est\u00e1 dominado por una \u00fanica fuente: **A1 Properati representa el 77.7% de los 54,904 registros** (42,680 registros). Las fuentes A2, A3, A7 y A8 tienen cero registros supervivientes. Esta concentraci\u00f3n introduce un sesgo sistem\u00e1tico hacia propiedades de mayor valor, lo que distorsiona los indicadores de accesibilidad:\n\n- **IAH promedio actual: 33.3 a\u00f1os** (se estima que bajar\u00e1 a ~18\u201322 a\u00f1os tras la correcci\u00f3n).\n- **60.8% de las propiedades clasificadas como \"Cr\u00edtico\"** (IAH > 20 a\u00f1os de salario m\u00ednimo).\n- **A\u00f1o 2024 ausente** del dataset (0 registros).\n- **32% de nulos en coordenadas geogr\u00e1ficas** (lat/lon): 17,628 registros sin ubicaci\u00f3n.\n\nLas ciudades con caracteres acentuados (C\u00facuta, Ibagu\u00e9, Medell\u00edn, Bogot\u00e1) presentan nombres corruptos en el CSV exportado debido al Bug B6 (codificaci\u00f3n ASCII forzada).\n\n### Qu\u00e9 s\u00ed funciona\n\nA pesar de los bugs, el pipeline complet\u00f3 con \u00e9xito las etapas de: unificaci\u00f3n del esquema can\u00f3nico para 6 de 8 fuentes, limpieza de precios, estandarizaci\u00f3n de ciudades, filtro temporal 2019\u20132024, eliminaci\u00f3n de outliers por IQR, imputaci\u00f3n de valores faltantes en columnas cr\u00edticas (`price`, `area`, `rooms`, `bathrooms`, `estrato`), integraci\u00f3n de las 5 variables macroecon\u00f3micas, y construcci\u00f3n de las 7 variables derivadas de accesibilidad (`IAH`, `precio_real`, `precio_m2`, `cuota_mensual`, `ratio_cuota_salario`, `nivel_accesibilidad`). El dataset no tiene nulos en ninguna columna cr\u00edtica de modelado.\n\n### Acci\u00f3n requerida antes de avanzar a Fase 4\n\nNo debe iniciarse la Fase 4 hasta que los 8 bugs sean corregidos y el pipeline sea re-ejecutado. El checklist completo de correcciones se encuentra en la secci\u00f3n 15 del documento `FASE_3_COMPLETA.md`. Las correcciones de mayor impacto son B1, B2 y B5, que en conjunto recuperar\u00edan aproximadamente 250,000\u2013370,000 registros v\u00e1lidos y eliminar\u00edan el sesgo de Properati.\n\n---\n\n## Contexto dentro de CRISP-DM\n\nLa metodolog\u00eda CRISP-DM estructura el an\u00e1lisis de datos en seis fases interconectadas y c\u00edclicas. La Fase 3 (Preparaci\u00f3n de Datos) ocupa el centro operativo del ciclo: recibe los insumos definidos en las fases anteriores y produce el material con el que trabajan las fases siguientes.\n\n### C\u00f3mo la Fase 3 se conecta con cada fase del ciclo\n\n**Fase 1 \u2192 Fase 3 (Comprensi\u00f3n del Negocio)**\nLa Fase 1 defini\u00f3 la pregunta central del proyecto: medir la accesibilidad de vivienda en Colombia mediante el \u00cdndice de Accesibilidad Habitacional (IAH). Este objetivo determin\u00f3 directamente las decisiones de preparaci\u00f3n: qu\u00e9 ciudades incluir (las 12 ciudades focales del mapa urbano colombiano), qu\u00e9 rango temporal cubrir (2019\u20132024, capturando el impacto COVID y la recuperaci\u00f3n), qu\u00e9 tipo de operaci\u00f3n filtrar (solo ventas, no arriendos), y qu\u00e9 variables derivadas construir (`IAH`, `ratio_cuota_salario`, `nivel_accesibilidad`). Sin la claridad del objetivo de negocio, no habr\u00eda criterios para decidir qu\u00e9 es un dato v\u00e1lido y qu\u00e9 es ruido.\n\n**Fase 2 \u2192 Fase 3 (Comprensi\u00f3n de los Datos)**\nLa Fase 2 identific\u00f3 y caracteriz\u00f3 las 16 fuentes de datos (8 de precios + 8 macroecon\u00f3micas). La Fase 3 operacionaliza ese inventario: aplica el esquema can\u00f3nico `COLS_CANONICAS` definido para unificar los 8 datasets de precios en un solo dataframe, convierte monedas (USD \u2192 COP usando TRM hist\u00f3rica para Properati), resuelve conflictos de nombres de columna fuente por fuente, e integra las variables macroecon\u00f3micas (salario m\u00ednimo, IPC, tasa hipotecaria, desempleo, IPVU/IPVN) mediante merge por a\u00f1o. Los bugs B3 y B4 (A7 y A8 sin renombre de columnas) son precisamente fallos en este puente: el mapeo de la Fase 2 al esquema can\u00f3nico de la Fase 3 qued\u00f3 incompleto para esas dos fuentes.\n\n**Fase 3 \u2192 Fase 4 (Modelado)**\nLa Fase 4 recibir\u00e1 el dataset limpio de la Fase 3 como insumo directo. Los algoritmos de modelado requieren: cero nulos en variables de entrada (garantizado para columnas cr\u00edticas, pendiente para lat/lon), escala coherente de precios (el Bug B1 viol\u00f3 esto para A2, generando precios inflados que superaron el filtro de $10,000M), y representatividad geogr\u00e1fica y temporal del dataset (comprometida hoy por el sesgo hacia Properati). Si la Fase 3 no se corrige, cualquier modelo entrenado sobre los 54,904 registros actuales aprender\u00e1 patrones de un segmento de mercado de mayor valor, no del mercado colombiano en su conjunto. Las predicciones de accesibilidad resultantes ser\u00e1n sistem\u00e1ticamente pesimistas.\n\n**Fase 3 \u2192 Fase 5 (Evaluaci\u00f3n)**\nLa Fase 5 evaluar\u00e1 los modelos contra m\u00e9tricas de negocio (\u00bfqu\u00e9 porcentaje de hogares colombianos puede acceder a vivienda formal?). Esas m\u00e9tricas solo ser\u00e1n interpretables si el dataset de la Fase 3 es representativo de la realidad. Con el IAH promedio inflado en los datos actuales (33.3 a\u00f1os vs. el estimado post-correcci\u00f3n de 18\u201322 a\u00f1os), los resultados de evaluaci\u00f3n de la Fase 5 producir\u00edan conclusiones de pol\u00edtica incorrectas. La correcci\u00f3n de los bugs de la Fase 3 es, por tanto, un prerrequisito para la validez de la Fase 5.\n\n**Fase 3 \u2192 Fase 6 (Despliegue)**\nLa Fase 6 prev\u00e9 publicar los hallazgos y el dataset enriquecido como insumo para pol\u00edtica p\u00fablica. El Bug B6 (corrupci\u00f3n de tildes en nombres de ciudad) afecta directamente la presentaci\u00f3n y usabilidad del producto final: un dataset exportado con \"Bogota\", \"Medellin\" y \"Cucuta\" en lugar de sus nombres correctos no es apto para uso institucional. Este bug, aunque de bajo impacto en recuento de registros, tiene alto impacto en calidad del entregable de la Fase 6.\n\n**El ciclo iterativo: Fase 3 y correcciones**\nCRISP-DM es expl\u00edcitamente iterativo. La identificaci\u00f3n de los 8 bugs durante la revisi\u00f3n de la Fase 3 constituye una iteraci\u00f3n interna documentada: el pipeline fue ejecutado, se auditaron los resultados, se identificaron las fallas y se gener\u00f3 un checklist de correcciones (secci\u00f3n 15 de `FASE_3_COMPLETA.md`). La pr\u00f3xima iteraci\u00f3n \u2014aplicar los 8 fixes y re-ejecutar `02_preparacion_datos.py`\u2014 cerrar\u00e1 este ciclo y producir\u00e1 el dataset de ~250,000\u2013370,000 registros con el que s\u00ed podr\u00e1 iniciarse la Fase 4.\n\n### Diagrama de posici\u00f3n en el ciclo\n\n```\nFase 1: Comprensi\u00f3n del Negocio\n   |  (define objetivos, ciudades focales, rango temporal, KPIs)\n   v\nFase 2: Comprensi\u00f3n de los Datos\n   |  (identifica 16 fuentes; caracteriza esquemas, vol\u00famenes, calidad)\n   v\nFase 3: Preparaci\u00f3n de los Datos   <--- FASE ACTUAL (en correcci\u00f3n)\n   |     * Unifica 8 datasets \u2192 esquema can\u00f3nico\n   |     * Limpia, filtra, deduplica, imputa\n   |     * Integra variables macroecon\u00f3micas\n   |     * Construye IAH y variables de accesibilidad\n   |     * Estado: 54,904 registros sesgados (bugs pendientes)\n   v\nFase 4: Modelado\n   |  (requiere dataset representativo de Fase 3)\n   v\nFase 5: Evaluaci\u00f3n\n   |  (requiere m\u00e9tricas v\u00e1lidas de Fase 3 y Fase 4)\n   v\nFase 6: Despliegue\n        (requiere dataset de calidad institucional de Fase 3)\n```\n"}], "grading": {"eval_id": 2, "configuration": "without_skill", "expectations": [{"text": "El resumen menciona expl\u00edcitamente bugs y su impacto en registros", "passed": true, "evidence": "14 mentions of 'bug'; quantifies B1, B2, B5 impacts with specific record counts"}, {"text": "Usa cifras reales del documento (54904 registros, 77.7% Properati)", "passed": true, "evidence": "54,904 appears 4 times; 77.7% appears once \u2014 real data used from source"}, {"text": "La secci\u00f3n Contexto explica relaci\u00f3n con Fase 2 y Fase 4 al menos", "passed": true, "evidence": "11 references; covers Phase 1, 2, 3, 4, 5, 6 relationships \u2014 comprehensive coverage"}, {"text": "Menciona que Fase 4 no puede iniciarse hasta corregir bugs", "passed": true, "evidence": "2 instances of blocking language; Phase 4 blocker clearly stated"}], "pass_rate": 1.0}}], "previous_feedback": {}, "previous_outputs": {}, "benchmark": {"metadata": {"skill_name": "crisp-dm-project-documenter", "skill_path": "<path/to/skill>", "executor_model": "<model-name>", "analyzer_model": "<model-name>", "timestamp": "2026-06-03T19:12:28Z", "evals_run": [0, 1, 2], "runs_per_configuration": 3}, "runs": [{"eval_id": 0, "configuration": "with_skill", "run_number": 1, "result": {"pass_rate": 1.0, "passed": 4, "failed": 0, "total": 4, "time_seconds": 403.7, "tokens": 50134, "tool_calls": 0, "errors": 0}, "expectations": [{"text": "El output contiene una tabla markdown con columnas Actividad Planificada, Estado, Evidencia y Secci\u00f3n", "passed": true, "evidence": "16 matches for 'Actividad Planificada|Estado|Evidencia' found in output; full traceability table with all 4 columns present across multiple sections"}, {"text": "Todos los estados usan solo los valores permitidos: \u2705 Completo, \u26a0\ufe0f Parcial, \u274c No evidenciado, \u23f3 Pendiente", "passed": true, "evidence": "Output uses \u2705, \u26a0\ufe0f, \u274c emoji states consistently; no non-standard status values found"}, {"text": "Las actividades listadas corresponden a actividades reales del GUIA_FASE", "passed": true, "evidence": "References \u00a72 through \u00a713 sections explicitly; activities cited match GUIA_FASE_3.md structure (Carga, Limpieza, Ciudades, Filtro, Dedup, etc.)"}, {"text": "Incluye porcentaje o conteo de actividades completadas vs. planificadas", "passed": true, "evidence": "States '73% complete, 82.4% effective coverage' with breakdown by section"}], "notes": []}, {"eval_id": 1, "configuration": "with_skill", "run_number": 1, "result": {"pass_rate": 1.0, "passed": 5, "failed": 0, "total": 5, "time_seconds": 280.2, "tokens": 47341, "tool_calls": 0, "errors": 0}, "expectations": [{"text": "El encabezado muestra estado \u23f3 Pendiente, no \u2705 Completa", "passed": true, "evidence": "46 occurrences of \u23f3 found; document header clearly shows \u23f3 Pendiente status"}, {"text": "No aparecen valores espec\u00edficos de R\u00b2, MAPE, Silueta como resultados reales", "passed": true, "evidence": "Grep for '0.792|15.8%|R\u00b2.*0.78' returned no matches \u2014 no fabricated metrics present"}, {"text": "Las tablas de resultados contienen [PENDIENTE] en lugar de valores num\u00e9ricos", "passed": true, "evidence": "64 occurrences of [PENDIENTE] in the document; result tables consistently use placeholder"}, {"text": "Los bloques de c\u00f3digo Python del pipeline de modelado est\u00e1n presentes", "passed": true, "evidence": "16 Python code blocks (```python) preserved from original methodology"}, {"text": "Hay nota expl\u00edcita indicando que la fase no ha sido ejecutada", "passed": true, "evidence": "Explicit \u26a0\ufe0f DATOS NO VERIFICADOS warnings and audit notice present; 'no ha sido ejecutada' language found"}], "notes": []}, {"eval_id": 2, "configuration": "with_skill", "run_number": 1, "result": {"pass_rate": 1.0, "passed": 4, "failed": 0, "total": 4, "time_seconds": 91.1, "tokens": 23066, "tool_calls": 0, "errors": 0}, "expectations": [{"text": "El resumen menciona expl\u00edcitamente bugs y su impacto en registros", "passed": true, "evidence": "6 mentions of 'bug'; quantifies impact of B1 (142,730 records), B2 (~145,000), B5 (79.8% elimination)"}, {"text": "Usa cifras reales del documento (54904 registros, 77.7% Properati)", "passed": true, "evidence": "Both 54,904 (3 occurrences) and 77.7% (3 occurrences) present \u2014 pulled directly from source document"}, {"text": "La secci\u00f3n Contexto explica relaci\u00f3n con Fase 2 y Fase 4 al menos", "passed": true, "evidence": "5 references to Fase 2/Fase 4; explains upstream (Fase 1 IAH definition \u2192 Fase 3 formula) and downstream (Fase 4 blocked) connections"}, {"text": "Menciona que Fase 4 no puede iniciarse hasta corregir bugs", "passed": true, "evidence": "2 instances of blocking language; explicit 'Fase 4 must not start until 8 fixes applied' statement"}], "notes": []}, {"eval_id": 0, "configuration": "without_skill", "run_number": 1, "result": {"pass_rate": 0.75, "passed": 3, "failed": 1, "total": 4, "time_seconds": 339.9, "tokens": 45430, "tool_calls": 0, "errors": 0}, "expectations": [{"text": "El output contiene una tabla markdown con columnas Actividad Planificada, Estado, Evidencia y Secci\u00f3n", "passed": true, "evidence": "19 matches found; table present with columns including Actividad Planificada, Estado"}, {"text": "Todos los estados usan solo los valores permitidos: \u2705 Completo, \u26a0\ufe0f Parcial, \u274c No evidenciado, \u23f3 Pendiente", "passed": false, "evidence": "Uses different status values: 'Completado', 'Completado con bug', 'Pendiente', 'Parcial' instead of the standardized \u2705/\u26a0\ufe0f/\u274c/\u23f3 format"}, {"text": "Las actividades listadas corresponden a actividades reales del GUIA_FASE", "passed": true, "evidence": "References section numbers and activities from GUIA; 83 activities audited from actual GUIA content"}, {"text": "Incluye porcentaje o conteo de actividades completadas vs. planificadas", "passed": true, "evidence": "Provides table with counts: 55 Completado (63.2%), 9 con bug (10.3%), 18 Pendiente (20.7%)"}], "notes": []}, {"eval_id": 1, "configuration": "without_skill", "run_number": 1, "result": {"pass_rate": 1.0, "passed": 5, "failed": 0, "total": 5, "time_seconds": 90.8, "tokens": 22623, "tool_calls": 0, "errors": 0}, "expectations": [{"text": "El encabezado muestra estado \u23f3 Pendiente, no \u2705 Completa", "passed": true, "evidence": "7 occurrences of \u23f3; header shows pending status"}, {"text": "No aparecen valores espec\u00edficos de R\u00b2, MAPE, Silueta como resultados reales", "passed": true, "evidence": "No fabricated metrics found \u2014 file already had PENDIENTE markers from prior session work"}, {"text": "Las tablas de resultados contienen [PENDIENTE] en lugar de valores num\u00e9ricos", "passed": true, "evidence": "30 occurrences of [PENDIENTE] \u2014 fewer than with_skill (64) but present; focused on null-byte cleanup"}, {"text": "Los bloques de c\u00f3digo Python del pipeline de modelado est\u00e1n presentes", "passed": true, "evidence": "16 Python code blocks present"}, {"text": "Hay nota expl\u00edcita indicando que la fase no ha sido ejecutada", "passed": true, "evidence": "Notes about pending execution present; 'Phase 3 bugs' blocking condition documented"}], "notes": []}, {"eval_id": 2, "configuration": "without_skill", "run_number": 1, "result": {"pass_rate": 1.0, "passed": 4, "failed": 0, "total": 4, "time_seconds": 132.5, "tokens": 22421, "tool_calls": 0, "errors": 0}, "expectations": [{"text": "El resumen menciona expl\u00edcitamente bugs y su impacto en registros", "passed": true, "evidence": "14 mentions of 'bug'; quantifies B1, B2, B5 impacts with specific record counts"}, {"text": "Usa cifras reales del documento (54904 registros, 77.7% Properati)", "passed": true, "evidence": "54,904 appears 4 times; 77.7% appears once \u2014 real data used from source"}, {"text": "La secci\u00f3n Contexto explica relaci\u00f3n con Fase 2 y Fase 4 al menos", "passed": true, "evidence": "11 references; covers Phase 1, 2, 3, 4, 5, 6 relationships \u2014 comprehensive coverage"}, {"text": "Menciona que Fase 4 no puede iniciarse hasta corregir bugs", "passed": true, "evidence": "2 instances of blocking language; Phase 4 blocker clearly stated"}], "notes": []}], "run_summary": {"with_skill": {"pass_rate": {"mean": 1.0, "stddev": 0.0, "min": 1.0, "max": 1.0}, "time_seconds": {"mean": 258.3333, "stddev": 157.443, "min": 91.1, "max": 403.7}, "tokens": {"mean": 40180.3333, "stddev": 14887.0923, "min": 23066, "max": 50134}}, "without_skill": {"pass_rate": {"mean": 0.9167, "stddev": 0.1443, "min": 0.75, "max": 1.0}, "time_seconds": {"mean": 187.7333, "stddev": 133.4194, "min": 90.8, "max": 339.9}, "tokens": {"mean": 30158.0, "stddev": 13226.3256, "min": 22421, "max": 45430}}, "delta": {"pass_rate": "+0.08", "time_seconds": "+70.6", "tokens": "+10022"}}, "notes": []}};
+
+    // ---- State ----
+    let feedbackMap = {};  // run_id -> feedback text
+    let currentIndex = 0;
+    let visitedRuns = new Set();
+
+    // ---- Init ----
+    async function init() {
+      // Load saved feedback from server — but only if this isn't a fresh
+      // iteration (indicated by previous_feedback being present). When
+      // previous feedback exists, the feedback.json on disk is stale from
+      // the prior iteration and should not pre-fill the textareas.
+      const hasPrevious = Object.keys(EMBEDDED_DATA.previous_feedback || {}).length > 0
+        || Object.keys(EMBEDDED_DATA.previous_outputs || {}).length > 0;
+      if (!hasPrevious) {
+        try {
+          const resp = await fetch("/api/feedback");
+          const data = await resp.json();
+          if (data.reviews) {
+            for (const r of data.reviews) feedbackMap[r.run_id] = r.feedback;
+          }
+        } catch { /* first run, no feedback yet */ }
+      }
+
+      document.getElementById("skill-name").textContent = EMBEDDED_DATA.skill_name;
+      showRun(0);
+
+      // Wire up feedback auto-save
+      const textarea = document.getElementById("feedback");
+      let saveTimeout = null;
+      textarea.addEventListener("input", () => {
+        clearTimeout(saveTimeout);
+        document.getElementById("feedback-status").textContent = "";
+        saveTimeout = setTimeout(() => saveCurrentFeedback(), 800);
+      });
+    }
+
+    // ---- Navigation ----
+    function navigate(delta) {
+      const newIndex = currentIndex + delta;
+      if (newIndex >= 0 && newIndex < EMBEDDED_DATA.runs.length) {
+        saveCurrentFeedback();
+        showRun(newIndex);
+      }
+    }
+
+    function updateNavButtons() {
+      document.getElementById("prev-btn").disabled = currentIndex === 0;
+      document.getElementById("next-btn").disabled =
+        currentIndex === EMBEDDED_DATA.runs.length - 1;
+    }
+
+    // ---- Show a run ----
+    function showRun(index) {
+      currentIndex = index;
+      const run = EMBEDDED_DATA.runs[index];
+
+      // Progress
+      document.getElementById("progress").textContent =
+        `${index + 1} of ${EMBEDDED_DATA.runs.length}`;
+
+      // Prompt
+      document.getElementById("prompt-text").textContent = run.prompt;
+
+      // Config badge
+      const badge = document.getElementById("config-badge");
+      const configMatch = run.id.match(/(with_skill|without_skill|new_skill|old_skill)/);
+      if (configMatch) {
+        const config = configMatch[1];
+        const isBaseline = config === "without_skill" || config === "old_skill";
+        badge.textContent = config.replace(/_/g, " ");
+        badge.className = "config-badge " + (isBaseline ? "config-baseline" : "config-primary");
+        badge.style.display = "inline-block";
+      } else {
+        badge.style.display = "none";
+      }
+
+      // Outputs
+      renderOutputs(run);
+
+      // Previous outputs
+      renderPrevOutputs(run);
+
+      // Grades
+      renderGrades(run);
+
+      // Previous feedback
+      const prevFb = (EMBEDDED_DATA.previous_feedback || {})[run.id];
+      const prevEl = document.getElementById("prev-feedback");
+      if (prevFb) {
+        document.getElementById("prev-feedback-text").textContent = prevFb;
+        prevEl.style.display = "block";
+      } else {
+        prevEl.style.display = "none";
+      }
+
+      // Feedback
+      document.getElementById("feedback").value = feedbackMap[run.id] || "";
+      document.getElementById("feedback-status").textContent = "";
+
+      updateNavButtons();
+
+      // Track visited runs and promote done button when all visited
+      visitedRuns.add(index);
+      const doneBtn = document.getElementById("done-btn");
+      if (visitedRuns.size >= EMBEDDED_DATA.runs.length) {
+        doneBtn.classList.add("ready");
+      }
+
+      // Scroll main content to top
+      document.querySelector(".main").scrollTop = 0;
+    }
+
+    // ---- Render outputs ----
+    function renderOutputs(run) {
+      const container = document.getElementById("outputs-body");
+      container.innerHTML = "";
+
+      const outputs = run.outputs || [];
+      if (outputs.length === 0) {
+        container.innerHTML = '<div class="empty-state">No output files</div>';
+        return;
+      }
+
+      for (const file of outputs) {
+        const fileDiv = document.createElement("div");
+        fileDiv.className = "output-file";
+
+        // Always show file header with download link
+        const header = document.createElement("div");
+        header.className = "output-file-header";
+        const nameSpan = document.createElement("span");
+        nameSpan.textContent = file.name;
+        header.appendChild(nameSpan);
+        const dlBtn = document.createElement("a");
+        dlBtn.className = "dl-btn";
+        dlBtn.textContent = "Download";
+        dlBtn.download = file.name;
+        dlBtn.href = getDownloadUri(file);
+        header.appendChild(dlBtn);
+        fileDiv.appendChild(header);
+
+        const content = document.createElement("div");
+        content.className = "output-file-content";
+
+        if (file.type === "text") {
+          const pre = document.createElement("pre");
+          pre.textContent = file.content;
+          content.appendChild(pre);
+        } else if (file.type === "image") {
+          const img = document.createElement("img");
+          img.src = file.data_uri;
+          img.alt = file.name;
+          content.appendChild(img);
+        } else if (file.type === "pdf") {
+          const iframe = document.createElement("iframe");
+          iframe.src = file.data_uri;
+          content.appendChild(iframe);
+        } else if (file.type === "xlsx") {
+          renderXlsx(content, file.data_b64);
+        } else if (file.type === "binary") {
+          const a = document.createElement("a");
+          a.className = "download-link";
+          a.href = file.data_uri;
+          a.download = file.name;
+          a.textContent = "Download " + file.name;
+          content.appendChild(a);
+        } else if (file.type === "error") {
+          const pre = document.createElement("pre");
+          pre.textContent = file.content;
+          pre.style.color = "var(--red)";
+          content.appendChild(pre);
+        }
+
+        fileDiv.appendChild(content);
+        container.appendChild(fileDiv);
+      }
+    }
+
+    // ---- XLSX rendering via SheetJS ----
+    function renderXlsx(container, b64Data) {
+      try {
+        const raw = Uint8Array.from(atob(b64Data), c => c.charCodeAt(0));
+        const wb = XLSX.read(raw, { type: "array" });
+
+        for (let i = 0; i < wb.SheetNames.length; i++) {
+          const sheetName = wb.SheetNames[i];
+          const ws = wb.Sheets[sheetName];
+
+          if (wb.SheetNames.length > 1) {
+            const sheetLabel = document.createElement("div");
+            sheetLabel.style.cssText =
+              "font-weight:600; font-size:0.8rem; color:#b0aea5; margin-top:0.5rem; margin-bottom:0.25rem;";
+            sheetLabel.textContent = "Sheet: " + sheetName;
+            container.appendChild(sheetLabel);
+          }
+
+          const htmlStr = XLSX.utils.sheet_to_html(ws, { editable: false });
+          const wrapper = document.createElement("div");
+          wrapper.innerHTML = htmlStr;
+          container.appendChild(wrapper);
+        }
+      } catch (err) {
+        container.textContent = "Error rendering spreadsheet: " + err.message;
+      }
+    }
+
+    // ---- Grades ----
+    function renderGrades(run) {
+      const section = document.getElementById("grades-section");
+      const content = document.getElementById("grades-content");
+
+      if (!run.grading) {
+        section.style.display = "none";
+        return;
+      }
+
+      const grading = run.grading;
+      section.style.display = "block";
+      // Reset to collapsed
+      content.classList.remove("open");
+      document.getElementById("grades-arrow").classList.remove("open");
+
+      const summary = grading.summary || {};
+      const expectations = grading.expectations || [];
+
+      let html = '<div style="padding: 1rem;">';
+
+      // Summary line
+      const passRate = summary.pass_rate != null
+        ? Math.round(summary.pass_rate * 100) + "%"
+        : "?";
+      const badgeClass = summary.pass_rate >= 0.8 ? "grade-pass" : summary.pass_rate >= 0.5 ? "" : "grade-fail";
+      html += '<div class="grades-summary">';
+      html += '<span class="grade-badge ' + badgeClass + '">' + passRate + '</span>';
+      html += '<span>' + (summary.passed || 0) + ' passed, ' + (summary.failed || 0) + ' failed of ' + (summary.total || 0) + '</span>';
+      html += '</div>';
+
+      // Assertions list
+      html += '<ul class="assertion-list">';
+      for (const exp of expectations) {
+        const statusClass = exp.passed ? "pass" : "fail";
+        const statusIcon = exp.passed ? "\u2713" : "\u2717";
+        html += '<li class="assertion-item">';
+        html += '<span class="assertion-status ' + statusClass + '">' + statusIcon + '</span>';
+        html += '<span>' + escapeHtml(exp.text) + '</span>';
+        if (exp.evidence) {
+          html += '<div class="assertion-evidence">' + escapeHtml(exp.evidence) + '</div>';
+        }
+        html += '</li>';
+      }
+      html += '</ul>';
+
+      html += '</div>';
+      content.innerHTML = html;
+    }
+
+    function toggleGrades() {
+      const content = document.getElementById("grades-content");
+      const arrow = document.getElementById("grades-arrow");
+      content.classList.toggle("open");
+      arrow.classList.toggle("open");
+    }
+
+    // ---- Previous outputs (collapsible) ----
+    function renderPrevOutputs(run) {
+      const section = document.getElementById("prev-outputs-section");
+      const content = document.getElementById("prev-outputs-content");
+      const prevOutputs = (EMBEDDED_DATA.previous_outputs || {})[run.id];
+
+      if (!prevOutputs || prevOutputs.length === 0) {
+        section.style.display = "none";
+        return;
+      }
+
+      section.style.display = "block";
+      // Reset to collapsed
+      content.classList.remove("open");
+      document.getElementById("prev-outputs-arrow").classList.remove("open");
+
+      // Render the files into the content area
+      content.innerHTML = "";
+      const wrapper = document.createElement("div");
+      wrapper.style.padding = "1rem";
+
+      for (const file of prevOutputs) {
+        const fileDiv = document.createElement("div");
+        fileDiv.className = "output-file";
+
+        const header = document.createElement("div");
+        header.className = "output-file-header";
+        const nameSpan = document.createElement("span");
+        nameSpan.textContent = file.name;
+        header.appendChild(nameSpan);
+        const dlBtn = document.createElement("a");
+        dlBtn.className = "dl-btn";
+        dlBtn.textContent = "Download";
+        dlBtn.download = file.name;
+        dlBtn.href = getDownloadUri(file);
+        header.appendChild(dlBtn);
+        fileDiv.appendChild(header);
+
+        const fc = document.createElement("div");
+        fc.className = "output-file-content";
+
+        if (file.type === "text") {
+          const pre = document.createElement("pre");
+          pre.textContent = file.content;
+          fc.appendChild(pre);
+        } else if (file.type === "image") {
+          const img = document.createElement("img");
+          img.src = file.data_uri;
+          img.alt = file.name;
+          fc.appendChild(img);
+        } else if (file.type === "pdf") {
+          const iframe = document.createElement("iframe");
+          iframe.src = file.data_uri;
+          fc.appendChild(iframe);
+        } else if (file.type === "xlsx") {
+          renderXlsx(fc, file.data_b64);
+        } else if (file.type === "binary") {
+          const a = document.createElement("a");
+          a.className = "download-link";
+          a.href = file.data_uri;
+          a.download = file.name;
+          a.textContent = "Download " + file.name;
+          fc.appendChild(a);
+        }
+
+        fileDiv.appendChild(fc);
+        wrapper.appendChild(fileDiv);
+      }
+
+      content.appendChild(wrapper);
+    }
+
+    function togglePrevOutputs() {
+      const content = document.getElementById("prev-outputs-content");
+      const arrow = document.getElementById("prev-outputs-arrow");
+      content.classList.toggle("open");
+      arrow.classList.toggle("open");
+    }
+
+    // ---- Feedback (saved to server -> feedback.json) ----
+    function saveCurrentFeedback() {
+      const run = EMBEDDED_DATA.runs[currentIndex];
+      const text = document.getElementById("feedback").value;
+
+      if (text.trim() === "") {
+        delete feedbackMap[run.id];
+      } else {
+        feedbackMap[run.id] = text;
+      }
+
+      // Build reviews array from map
+      const reviews = [];
+      for (const [run_id, feedback] of Object.entries(feedbackMap)) {
+        if (feedback.trim()) {
+          reviews.push({ run_id, feedback, timestamp: new Date().toISOString() });
+        }
+      }
+
+      fetch("/api/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reviews, status: "in_progress" }),
+      }).then(() => {
+        document.getElementById("feedback-status").textContent = "Saved";
+      }).catch(() => {
+        // Static mode or server unavailable — no-op on auto-save,
+        // feedback will be downloaded on final submit
+        document.getElementById("feedback-status").textContent = "Will download on submit";
+      });
+    }
+
+    // ---- Done ----
+    function showDoneDialog() {
+      // Save current textarea to feedbackMap (but don't POST yet)
+      const run = EMBEDDED_DATA.runs[currentIndex];
+      const text = document.getElementById("feedback").value;
+      if (text.trim() === "") {
+        delete feedbackMap[run.id];
+      } else {
+        feedbackMap[run.id] = text;
+      }
+
+      // POST once with status: complete — include ALL runs so the model
+      // can distinguish "no feedback" (looks good) from "not reviewed"
+      const reviews = [];
+      const ts = new Date().toISOString();
+      for (const r of EMBEDDED_DATA.runs) {
+        reviews.push({ run_id: r.id, feedback: feedbackMap[r.id] || "", timestamp: ts });
+      }
+      const payload = JSON.stringify({ reviews, status: "complete" }, null, 2);
+      fetch("/api/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: payload,
+      }).then(() => {
+        document.getElementById("done-overlay").classList.add("visible");
+      }).catch(() => {
+        // Server not available (static mode) — download as file
+        const blob = new Blob([payload], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "feedback.json";
+        a.click();
+        URL.revokeObjectURL(url);
+        document.getElementById("done-overlay").classList.add("visible");
+      });
+    }
+
+    function closeDoneDialog() {
+      // Reset status back to in_progress
+      saveCurrentFeedback();
+      document.getElementById("done-overlay").classList.remove("visible");
+    }
+
+    // ---- Toast ----
+    function showToast(message) {
+      const toast = document.getElementById("toast");
+      toast.textContent = message;
+      toast.classList.add("visible");
+      setTimeout(() => toast.classList.remove("visible"), 2000);
+    }
+
+    // ---- Keyboard nav ----
+    document.addEventListener("keydown", (e) => {
+      // Don't capture when typing in textarea
+      if (e.target.tagName === "TEXTAREA") return;
+
+      if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
+        e.preventDefault();
+        navigate(-1);
+      } else if (e.key === "ArrowRight" || e.key === "ArrowDown") {
+        e.preventDefault();
+        navigate(1);
+      }
+    });
+
+    // ---- Util ----
+    function getDownloadUri(file) {
+      if (file.data_uri) return file.data_uri;
+      if (file.data_b64) return "data:application/octet-stream;base64," + file.data_b64;
+      if (file.type === "text") return "data:text/plain;charset=utf-8," + encodeURIComponent(file.content);
+      return "#";
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement("div");
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    // ---- View switching ----
+    function switchView(view) {
+      document.querySelectorAll(".view-tab").forEach(t => t.classList.remove("active"));
+      document.querySelectorAll(".view-panel").forEach(p => p.classList.remove("active"));
+      document.querySelector(`[onclick="switchView('${view}')"]`).classList.add("active");
+      document.getElementById("panel-" + view).classList.add("active");
+    }
+
+    // ---- Benchmark rendering ----
+    function renderBenchmark() {
+      const data = EMBEDDED_DATA.benchmark;
+      if (!data) return;
+
+      // Show the tabs
+      document.getElementById("view-tabs").style.display = "flex";
+
+      const container = document.getElementById("benchmark-content");
+      const summary = data.run_summary || {};
+      const metadata = data.metadata || {};
+      const notes = data.notes || [];
+
+      let html = "";
+
+      // Header
+      html += "<h2 style='font-family: Poppins, sans-serif; margin-bottom: 0.5rem;'>Benchmark Results</h2>";
+      html += "<p style='color: var(--text-muted); font-size: 0.875rem; margin-bottom: 1.25rem;'>";
+      if (metadata.skill_name) html += "<strong>" + escapeHtml(metadata.skill_name) + "</strong> &mdash; ";
+      if (metadata.timestamp) html += metadata.timestamp + " &mdash; ";
+      if (metadata.evals_run) html += "Evals: " + metadata.evals_run.join(", ") + " &mdash; ";
+      html += (metadata.runs_per_configuration || "?") + " runs per configuration";
+      html += "</p>";
+
+      // Summary table
+      html += '<table class="benchmark-table">';
+
+      function fmtStat(stat, pct) {
+        if (!stat) return "—";
+        const suffix = pct ? "%" : "";
+        const m = pct ? (stat.mean * 100).toFixed(0) : stat.mean.toFixed(1);
+        const s = pct ? (stat.stddev * 100).toFixed(0) : stat.stddev.toFixed(1);
+        return m + suffix + " ± " + s + suffix;
+      }
+
+      function deltaClass(val) {
+        if (!val) return "";
+        const n = parseFloat(val);
+        if (n > 0) return "benchmark-delta-positive";
+        if (n < 0) return "benchmark-delta-negative";
+        return "";
+      }
+
+      // Discover config names dynamically (everything except "delta")
+      const configs = Object.keys(summary).filter(k => k !== "delta");
+      const configA = configs[0] || "config_a";
+      const configB = configs[1] || "config_b";
+      const labelA = configA.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+      const labelB = configB.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+      const a = summary[configA] || {};
+      const b = summary[configB] || {};
+      const delta = summary.delta || {};
+
+      html += "<thead><tr><th>Metric</th><th>" + escapeHtml(labelA) + "</th><th>" + escapeHtml(labelB) + "</th><th>Delta</th></tr></thead>";
+      html += "<tbody>";
+
+      html += "<tr><td><strong>Pass Rate</strong></td>";
+      html += "<td>" + fmtStat(a.pass_rate, true) + "</td>";
+      html += "<td>" + fmtStat(b.pass_rate, true) + "</td>";
+      html += '<td class="' + deltaClass(delta.pass_rate) + '">' + (delta.pass_rate || "—") + "</td></tr>";
+
+      // Time (only show row if data exists)
+      if (a.time_seconds || b.time_seconds) {
+        html += "<tr><td><strong>Time (s)</strong></td>";
+        html += "<td>" + fmtStat(a.time_seconds, false) + "</td>";
+        html += "<td>" + fmtStat(b.time_seconds, false) + "</td>";
+        html += '<td class="' + deltaClass(delta.time_seconds) + '">' + (delta.time_seconds ? delta.time_seconds + "s" : "—") + "</td></tr>";
+      }
+
+      // Tokens (only show row if data exists)
+      if (a.tokens || b.tokens) {
+        html += "<tr><td><strong>Tokens</strong></td>";
+        html += "<td>" + fmtStat(a.tokens, false) + "</td>";
+        html += "<td>" + fmtStat(b.tokens, false) + "</td>";
+        html += '<td class="' + deltaClass(delta.tokens) + '">' + (delta.tokens || "—") + "</td></tr>";
+      }
+
+      html += "</tbody></table>";
+
+      // Per-eval breakdown (if runs data available)
+      const runs = data.runs || [];
+      if (runs.length > 0) {
+        const evalIds = [...new Set(runs.map(r => r.eval_id))].sort((a, b) => a - b);
+
+        html += "<h3 style='font-family: Poppins, sans-serif; margin-bottom: 0.75rem;'>Per-Eval Breakdown</h3>";
+
+        const hasTime = runs.some(r => r.result && r.result.time_seconds != null);
+        const hasErrors = runs.some(r => r.result && r.result.errors > 0);
+
+        for (const evalId of evalIds) {
+          const evalRuns = runs.filter(r => r.eval_id === evalId);
+          const evalName = evalRuns[0] && evalRuns[0].eval_name ? evalRuns[0].eval_name : "Eval " + evalId;
+
+          html += "<h4 style='font-family: Poppins, sans-serif; margin: 1rem 0 0.5rem; color: var(--text);'>" + escapeHtml(evalName) + "</h4>";
+          html += '<table class="benchmark-table">';
+          html += "<thead><tr><th>Config</th><th>Run</th><th>Pass Rate</th>";
+          if (hasTime) html += "<th>Time (s)</th>";
+          if (hasErrors) html += "<th>Crashes During Execution</th>";
+          html += "</tr></thead>";
+          html += "<tbody>";
+
+          // Group by config and render with average rows
+          const configGroups = [...new Set(evalRuns.map(r => r.configuration))];
+          for (let ci = 0; ci < configGroups.length; ci++) {
+            const config = configGroups[ci];
+            const configRuns = evalRuns.filter(r => r.configuration === config);
+            if (configRuns.length === 0) continue;
+
+            const rowClass = ci === 0 ? "benchmark-row-with" : "benchmark-row-without";
+            const configLabel = config.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+
+            for (const run of configRuns) {
+              const r = run.result || {};
+              const prClass = r.pass_rate >= 0.8 ? "benchmark-delta-positive" : r.pass_rate < 0.5 ? "benchmark-delta-negative" : "";
+              html += '<tr class="' + rowClass + '">';
+              html += "<td>" + configLabel + "</td>";
+              html += "<td>" + run.run_number + "</td>";
+              html += '<td class="' + prClass + '">' + ((r.pass_rate || 0) * 100).toFixed(0) + "% (" + (r.passed || 0) + "/" + (r.total || 0) + ")</td>";
+              if (hasTime) html += "<td>" + (r.time_seconds != null ? r.time_seconds.toFixed(1) : "—") + "</td>";
+              if (hasErrors) html += "<td>" + (r.errors || 0) + "</td>";
+              html += "</tr>";
+            }
+
+            // Average row
+            const rates = configRuns.map(r => (r.result || {}).pass_rate || 0);
+            const avgRate = rates.reduce((a, b) => a + b, 0) / rates.length;
+            const avgPrClass = avgRate >= 0.8 ? "benchmark-delta-positive" : avgRate < 0.5 ? "benchmark-delta-negative" : "";
+            html += '<tr class="benchmark-row-avg ' + rowClass + '">';
+            html += "<td>" + configLabel + "</td>";
+            html += "<td>Avg</td>";
+            html += '<td class="' + avgPrClass + '">' + (avgRate * 100).toFixed(0) + "%</td>";
+            if (hasTime) {
+              const times = configRuns.map(r => (r.result || {}).time_seconds).filter(t => t != null);
+              html += "<td>" + (times.length ? (times.reduce((a, b) => a + b, 0) / times.length).toFixed(1) : "—") + "</td>";
+            }
+            if (hasErrors) html += "<td></td>";
+            html += "</tr>";
+          }
+          html += "</tbody></table>";
+
+          // Per-assertion detail for this eval
+          const runsWithExpectations = {};
+          for (const config of configGroups) {
+            runsWithExpectations[config] = evalRuns.filter(r => r.configuration === config && r.expectations && r.expectations.length > 0);
+          }
+          const hasAnyExpectations = Object.values(runsWithExpectations).some(runs => runs.length > 0);
+          if (hasAnyExpectations) {
+            // Collect all unique assertion texts across all configs
+            const allAssertions = [];
+            const seen = new Set();
+            for (const config of configGroups) {
+              for (const run of runsWithExpectations[config]) {
+                for (const exp of (run.expectations || [])) {
+                  if (!seen.has(exp.text)) {
+                    seen.add(exp.text);
+                    allAssertions.push(exp.text);
+                  }
+                }
+              }
+            }
+
+            html += '<table class="benchmark-table" style="margin-top: 0.5rem;">';
+            html += "<thead><tr><th>Assertion</th>";
+            for (const config of configGroups) {
+              const label = config.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+              html += "<th>" + escapeHtml(label) + "</th>";
+            }
+            html += "</tr></thead><tbody>";
+
+            for (const assertionText of allAssertions) {
+              html += "<tr><td>" + escapeHtml(assertionText) + "</td>";
+
+              for (const config of configGroups) {
+                html += "<td>";
+                for (const run of runsWithExpectations[config]) {
+                  const exp = (run.expectations || []).find(e => e.text === assertionText);
+                  if (exp) {
+                    const cls = exp.passed ? "benchmark-delta-positive" : "benchmark-delta-negative";
+                    const icon = exp.passed ? "\u2713" : "\u2717";
+                    html += '<span class="' + cls + '" title="Run ' + run.run_number + ': ' + escapeHtml(exp.evidence || "") + '">' + icon + "</span> ";
+                  } else {
+                    html += "— ";
+                  }
+                }
+                html += "</td>";
+              }
+              html += "</tr>";
+            }
+            html += "</tbody></table>";
+          }
+        }
+      }
+
+      // Notes
+      if (notes.length > 0) {
+        html += '<div class="benchmark-notes">';
+        html += "<h3>Analysis Notes</h3>";
+        html += "<ul>";
+        for (const note of notes) {
+          html += "<li>" + escapeHtml(note) + "</li>";
+        }
+        html += "</ul></div>";
+      }
+
+      container.innerHTML = html;
+    }
+
+    // ---- Start ----
+    init();
+    renderBenchmark();
+  </script>
+</body>
+</html>
