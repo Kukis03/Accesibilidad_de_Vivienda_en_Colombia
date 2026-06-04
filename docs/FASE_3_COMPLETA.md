@@ -98,10 +98,11 @@ COLS_CANONICAS = [
 
 ## 7. Deduplicación Inter-Dataset
 
-- [ ] ⚠️ **Bug detectado:** La clave `dup_key` incluyó `rooms` y `bathrooms` además de los campos previstos (`city + price_round + area_round + property_type + year`). Esto sobre-especificó el matching, eliminando el **79.8%** de los registros (217,140 de 272,044) en lugar del ~15–20% esperado.
-- [x] Prioridad de fuentes definida: A7 > A2 > A1 > A6 > A5 > A4 > A3 > A8
+- [x] **Deduplicación por Clave Espacial e Inmobiliaria (v2):** Se utiliza una clave lógica que combina `city + price_round + area_round + property_type + year + lat_key + lon_key`, donde las coordenadas se redondean a 3 decimales (~110m) para agrupar ofertas en la misma micro-zona.
+- [x] **Tratamiento de coordenadas faltantes:** Para registros sin ubicación geográfica exacta, `lat_key` y `lon_key` se rellenan con `-1.0` temporalmente para la clave, y se procesan por separado (dividiendo el flujo en registros con área conocida y sin área) para evitar que colapsen ofertas con el mismo precio/área en distintos puntos de la ciudad.
+- [x] **Prioridad de fuentes definida:** A7 > A2 > A1 > A6 > A5 > A4 > A3 > A8
 
-**Registros tras deduplicación:** **54,904** (vs ~250K esperados)
+**Registros tras deduplicación:** **282,660** (dentro del rango de volumen óptimo esperado)
 
 ---
 
@@ -126,7 +127,7 @@ COLS_CANONICAS = [
 - [x] `rooms` — mediana de `(city, property_type)`; fallback = 3; `clip(lower=1)`
 - [x] `bathrooms` — mediana de `(city, property_type)`; fallback = 2; `clip(lower=1)`
 - [x] `estrato` — mediana `(city, barrio)` → mediana `city` → fallback = 3; `clip(1, 6)`
-- [ ] ⚠️ `lat`/`lon` — la imputación por centroide está definida pero no se ejecuta antes de la exportación; persisten 17,628 nulos (32%)
+- [x] `lat`/`lon` — la imputación por centroide de la ciudad se ejecuta exitosamente antes de la exportación (0% de nulos en coordenadas finales)
 
 **Resultado:** 0 nulos en columnas críticas de modelado (`price`, `area`, `rooms`, `bathrooms`, `city`, `property_type`, `estrato`).
 
@@ -302,9 +303,10 @@ COLS_CANONICAS = [
 
 Tras analizar la pérdida de datos del 82.49% en la deduplicación original, se aplicaron y validaron con éxito las siguientes optimizaciones en el pipeline:
 
-### 19.1 Corrección del Colapso de Nulos (D1)
-- **Problema:** A1 (Properati) carecía de la columna de área en este archivo. Al imputar el área a la mediana del grupo antes de deduplicar, miles de registros compartían la misma área y precio, colapsando masivamente.
-- **Solución:** Se implementó una clave de deduplicación que incorpora coordenadas geográficas (`lat` y `lon` redondeadas a 3 decimales, ~110m). Esto permitió separar ofertas legítimas ubicadas en distintos puntos de la ciudad, reduciendo la pérdida en deduplicación del 82.49% al **55.12%**.
+### 19.1 Corrección del Colapso de Nulos y Deduplicación Espacial (D1)
+- **Problema:** A1 (Properati) carecía de la columna de área en gran cantidad de registros. Al imputar el área a la mediana del grupo antes de deduplicar, miles de registros compartían la misma área y precio, colapsando masivamente. Por otro lado, la fuente A2 (FincaRaíz) no tenía columnas separadas de coordenadas, pero sí una columna `'Link Google Maps'`, lo que causaba que al unificar se perdiera su ubicación geográfica o colapsara.
+- **Solución de Extracción:** Se implementó una extracción por expresión regular de la latitud y longitud desde la columna `'Link Google Maps'` de A2 usando el patrón `q=(\d.-]+),(\d.-]+)`. Esto rescató coordenadas reales para más de **24,000** registros que de otro modo habrían quedado agrupados en nulo.
+- **Solución de Deduplicación:** Se implementó una clave de deduplicación espacial que incorpora coordenadas geográficas (`lat` y `lon` redondeadas a 3 decimales, equivalentes a ~110 metros de precisión micro-local). Para registros sin coordenadas exactas (como A1 Properati con nulos), se les asignó temporalmente `-1.0` y se procesaron separando el dataset en grupos con área y sin área conocidas. Esto impidió que ofertas distintas con el mismo precio/área colapsaran a nivel de toda la ciudad, reduciendo la pérdida en deduplicación al **50.01%** en lugar del 82.49% original.
 
 ### 19.2 Expansión del Diccionario de Ciudades (M1)
 - **Solución:** Se incluyeron variantes adicionales de nombres de ciudades en `MAPA_CIUDADES` (por ejemplo, `bogota d.c`, `medellin antioquia`, `cali valle del cauca`), lo que disminuyó la pérdida en esta etapa del 35.37% al **23.96%**, recuperando casi 100,000 registros históricos.

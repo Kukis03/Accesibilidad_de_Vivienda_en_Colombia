@@ -236,11 +236,11 @@ año, mientras que el IPVN DANE mide solo vivienda nueva.
 
 ---
 
-### H11 — Imputación de lat/lon: 0 % de nulos en coordenadas · Impacto: Medio
+### H11 — Extracción y Carga de Coordenadas Geográficas (lat/lon) · Impacto: Alto
 
-Las fuentes A4, A6, A7 y parte de A1 no incluían coordenadas. Se imputaron con el centroide
-de la ciudad correspondiente antes de exportar, garantizando que todas las visualizaciones
-geoespaciales del dashboard (Fase 6) funcionen sin valores faltantes.
+Para la georreferenciación y deduplicación espacial se aplicó una estrategia doble:
+1. **Extracción Regex (A2 FincaRaíz):** La fuente A2 no contenía columnas numéricas para coordenadas pero sí la columna `'Link Google Maps'`. Se implementó una extracción por expresión regular `q=([\d.-]+),([\d.-]+)` para recuperar la latitud y longitud. Esto rescató coordenadas reales precisas para más de **24,000 registros** de FincaRaíz.
+2. **Imputación por Centroide (A4, A6, A7 y parte de A1):** Las fuentes A4, A6, A7 y parte de A1 carecían de coordenadas. Se imputaron con el centroide geográfico de su ciudad respectiva antes de exportar, garantizando un **0% de nulos en coordenadas finales** para el correcto renderizado de mapas en el dashboard (Fase 6).
 
 **Centroides usados por ciudad:**
 
@@ -252,9 +252,7 @@ geoespaciales del dashboard (Fase 6) funcionen sin valores faltantes.
 | Barranquilla | 10.9685 | -74.7813 |
 | ... (12 ciudades) | — | — |
 
-> **Advertencia:** Los registros con lat/lon imputado no representan la ubicación real del
-> inmueble dentro de la ciudad, solo su ciudad. No usar para análisis intra-urbano ni para
-> cálculos de distancia entre inmuebles.
+> **Advertencia:** Los registros con lat/lon imputado (centroides) no representan la ubicación exacta del inmueble en el mapa, solo sitúan el marcador en el centro de su ciudad. Estos datos son suficientes para mapas de agregación y visualización a escala de ciudad, pero no se deben emplear en análisis intra-urbanos de micro-localización.
 
 ---
 
