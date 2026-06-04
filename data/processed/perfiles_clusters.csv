@@ -1,3 +1,6 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:1f20cf8c88f7825f966bc38408ffc58a91ac648bcada9597d1852849ee1795f7
-size 222
+cluster,IAH,precio_m2,ratio_cuota_salario,tasa_desempleo,count
+0,29.23,4597674.42,2.52,15.7,6
+1,16.24,2144328.17,1.4,15.7,18
+2,18.66,3376073.33,2.37,10.62,12
+3,25.35,4904361.17,3.29,10.45,6
+4,12.93,2524136.49,1.59,10.73,9
