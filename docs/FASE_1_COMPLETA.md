@@ -3,7 +3,7 @@
 ## Proyecto: Accesibilidad de Vivienda en Colombia · CRISP-DM 2026-I
 
 **Responsable principal:** Steve · **Equipo:** Sofía · Kukis  
-**Período de análisis:** 2020 – 2025  
+**Período de análisis:** 2020 – 2024  
 **Estado:** ✅ Completa  
 **Semanas:** 1 – 2
 
@@ -11,9 +11,9 @@
 
 ## Resumen Ejecutivo
 
-Este proyecto construye un sistema cuantitativo de análisis de accesibilidad habitacional en Colombia para el período 2020–2025. Integra **16 fuentes de datos** —8 de precios inmobiliarios (A1–A8) y 8 de variables macroeconómicas (B1–B8)— para desarrollar el **Índice de Accesibilidad Habitacional (IAH)**, una adaptación del Price-to-Income Ratio (PIR) al contexto colombiano que mide cuántos años de salario mínimo equivale el precio mediano de una vivienda. El análisis abarca **12 ciudades focales** y se desplegará en un dashboard interactivo público (Streamlit).
+Este proyecto construye un sistema cuantitativo de análisis de accesibilidad habitacional en Colombia para el período 2020–2024. Integra **16 fuentes de datos** —8 de precios inmobiliarios (A1–A8) y 8 de variables macroeconómicas (B1–B8)— para desarrollar el **Índice de Accesibilidad Habitacional (IAH)**, una adaptación del Price-to-Income Ratio (PIR) al contexto colombiano que mide cuántos años de salario mínimo equivale el precio mediano de una vivienda. El análisis abarca **12 ciudades focales** y se desplegará en un dashboard interactivo público (Streamlit).
 
-La fase estableció los cimientos metodológicos del proyecto: definición del problema de negocio y pregunta de investigación, cuatro objetivos específicos medibles, ocho criterios de éxito con umbrales numéricos, inventario de todas las fuentes de datos, glosario técnico unificado, análisis de riesgos y cronograma de 13 semanas.
+La fase estableció los cimientos metodológicos del proyecto: definición del problema de negocio y pregunta de investigación, cuatro objetivos específicos medibles, ocho criterios de éxito con umbrales numéricos, inventario de todas las fuentes de datos, glosario técnico unificado, análisis de riesgos y cronograma de 14 semanas.
 
 ---
 
@@ -21,7 +21,7 @@ La fase estableció los cimientos metodológicos del proyecto: definición del p
 
 La vivienda es el activo más costoso que adquiere un hogar a lo largo de su vida. En Colombia, el déficit habitacional cuantitativo supera el millón de unidades, y el precio de la vivienda ha crecido sostenidamente por encima del salario mínimo real durante la última década. Los datos más recientes del DANE reportaron incrementos del 9,11% en Bogotá, 8,29% en Medellín y 9,22% en Barranquilla, mientras que ciudades intermedias como Cúcuta registraron saltos del 24,6% en 2024, evidenciando que la crisis no es exclusiva de las grandes capitales.
 
-El indicador internacional de referencia es el **Price-to-Income Ratio (PIR)**: la razón entre el precio mediano de vivienda y el ingreso anual mediano del hogar. Un PIR superior a 5 se considera crítico según la OCDE y ONU-Hábitat. Este proyecto construye una versión del PIR adaptada al contexto colombiano usando el salario mínimo como proxy del ingreso de referencia, integra todos los datasets disponibles de precios inmobiliarios con variables macroeconómicas oficiales, y analiza tanto el nivel nacional como las diferencias entre ciudades para revelar con evidencia cuantitativa cómo ha evolucionado la accesibilidad habitacional entre **2020 y 2025**.
+El indicador internacional de referencia es el **Price-to-Income Ratio (PIR)**: la razón entre el precio mediano de vivienda y el ingreso anual mediano del hogar. Un PIR superior a 5 se considera crítico según la OCDE y ONU-Hábitat. Este proyecto construye una versión del PIR adaptada al contexto colombiano usando el salario mínimo como proxy del ingreso de referencia, integra todos los datasets disponibles de precios inmobiliarios con variables macroeconómicas oficiales, y analiza tanto el nivel nacional como las diferencias entre ciudades para revelar con evidencia cuantitativa cómo ha evolucionado la accesibilidad habitacional entre **2020 y 2024**.
 
 ### 1.1 Rol de la Fase 1 en el ciclo CRISP-DM
 
@@ -44,24 +44,26 @@ La Fase 1 es la única que no puede retroalimentarse de fases anteriores en la p
 
 ### 2.1 Pregunta central
 
-> ¿Cómo ha evolucionado la accesibilidad económica a la vivienda en Colombia entre 2020 y 2025, y qué variables estructurales explican mejor las diferencias entre ciudades?
+> ¿Cómo ha evolucionado la accesibilidad económica a la vivienda en Colombia entre 2020 y 2024, y qué variables estructurales explican mejor las diferencias entre ciudades?
 
 ### 2.2 Preguntas derivadas (P1–P4)
 
-1. ¿Cuántos años de salario mínimo equivale el precio mediano de vivienda en las principales ciudades colombianas, y cómo ha cambiado esa relación en el período 2020–2025?
+1. ¿Cuántos años de salario mínimo equivale el precio mediano de vivienda en las principales ciudades colombianas, y cómo ha cambiado esa relación en el período 2020–2024?
 2. ¿Qué variables (área, ciudad, tipo de inmueble, inflación, tasa hipotecaria, desempleo) tienen mayor poder predictivo sobre el precio de una propiedad?
 3. ¿Es posible clasificar objetivamente los mercados de vivienda urbana en segmentos diferenciables de accesibilidad mediante clustering no supervisado?
 4. ¿Cuál es el ratio cuota/salario en cada ciudad y cómo ha evolucionado respecto al umbral del 30% que compromete la viabilidad financiera de los hogares?
 
 ### 2.3 Objetivo general
 
-Desarrollar un sistema de análisis y predicción de accesibilidad habitacional en Colombia, integrando datos inmobiliarios y macroeconómicos disponibles para el período 2020–2025, con el fin de identificar patrones nacionales y diferencias espaciales de inequidad en el acceso a la vivienda.
+Desarrollar un sistema de análisis y predicción de accesibilidad habitacional en Colombia, integrando datos inmobiliarios y macroeconómicos disponibles para el período 2020–2024, con el fin de identificar patrones nacionales y diferencias espaciales de inequidad en el acceso a la vivienda.
 
 ### 2.4 Objetivos específicos
 
 1. **Construir y validar el IAH** para las 12 ciudades focales, comparándolo con el estándar PIR de la OCDE a nivel nacional y por ciudad.
-2. **Entrenar y comparar modelos de regresión** para predecir el precio de una propiedad con base en sus características físicas y el contexto macroeconómico del año y ciudad correspondientes.
+2. **Entrenar y comparar modelos de regresión** para predecir el precio de una propiedad con base en sus características físicas y el contexto macroeconómico del año y ciudad correspondientes, generando predicciones para nuevas observaciones no incluidas en el entrenamiento.
 3. **Segmentar los mercados de vivienda urbana** mediante clustering no supervisado para identificar grupos de ciudades con comportamientos similares de accesibilidad.
+4. **Calcular y analizar el ratio cuota/salario** por ciudad para evaluar la viabilidad financiera del acceso a crédito hipotecario, usando el umbral del 30% como referencia de sostenibilidad.
+
 ### 2.5 Trazabilidad CRISP-DM: Objetivos de Negocio ↔ Objetivos de Data Science
 
 CRISP-DM requiere traducir cada objetivo de negocio en un objetivo técnico de minería de datos. La siguiente matriz garantiza que cada decisión analítica tenga una justificación de negocio clara:
@@ -108,9 +110,9 @@ Esta trazabilidad formaliza el nexo entre los requerimientos del negocio y las t
 
 ### 3.2 Alcance temporal
 
-El análisis cubre **2020–2025**, período que incluye el ciclo completo pandemia-recuperación-choque inflacionario y permite observar el impacto del aumento de tasas hipotecarias del BanRep (máximo histórico cercano al 16% EA en 2023).
+El análisis cubre **2020–2024**, período que incluye el ciclo pandemia-recuperación-choque inflacionario y permite observar el impacto del aumento de tasas hipotecarias del BanRep (máximo histórico cercano al 16% EA en 2023).
 
-> **Nota sobre disponibilidad de datos 2025:** La cobertura hasta 2025 está sujeta a la disponibilidad real de datos en las fuentes oficiales. Los datasets A de precios disponibles llegan hasta 2023–2024; las series macroeconómicas B están actualizadas hasta 2025 en el momento de escribir este documento (marzo 2025). La Fase 2 confirmará la fecha límite real de cada fuente, y en caso de no contar con datos completos de 2025, el análisis se ajustará al período efectivamente disponible (mínimo 2020–2024).
+> **Nota sobre disponibilidad de datos:** El alcance original contemplaba 2020–2025, pero tras la Fase 3 se confirmó que los dataset procesados cubren efectivamente **2020–2024**.
 
 ### 3.3 Fuera del alcance
 
@@ -144,7 +146,7 @@ Estos criterios evalúan la calidad estadística y metodológica de la implement
 | 4 | **Separabilidad de clusters** | Segmentos diferenciables | ≥ 3 | Mínimo para análisis comparativo (bajo/medio/alto) |
 
 **Criterio híbrido (ambas dimensiones):** 
-- **Cobertura temporal:** Años cubiertos por los datos = 2020–2025 (sujeto a disponibilidad real confirmada en Fase 2)
+- **Cobertura temporal:** Años cubiertos por los datos = 2020–2024
 
 La separación permite evaluar el proyecto desde ambas perspectivas: un modelo puede ser técnicamente excelente (R² = 0,85) pero irrelevante para el negocio si no responde las preguntas de investigación; o viceversa: responder preguntas con un modelo pobre que no sea confiable para toma de decisiones.
 
@@ -279,10 +281,10 @@ CRISP-DM recomienda una evaluación formal de viabilidad antes de comprometer re
 
 **Factores críticos que podrían afectar viabilidad:**
 1. **Calidad de A1 (~997K registros):** Si >30% de registros tienen datos nulos críticos (precio, ciudad), el volumen efectivo podría caer por debajo del umbral para ciudades intermedias.
-2. **Disponibilidad de datos 2025:** Los datasets A llegan hasta 2023–2024; si las series macro B no actualizan a 2025, el período efectivo sería 2020–2024.
+2. **Disponibilidad de datos:** Los datasets A llegan hasta 2024; el período efectivo confirmado es **2020–2024**.
 3. **Solapamiento A1–A3:** Duplicación masiva en 2020 podría reducir la cobertura temporal efectiva.
 
-**Conclusión:** El proyecto es viable en todas las dimensiones principales. El único factor de riesgo moderado es el temporal, mitigado por el buffer incorporado en Fase 4 y la flexibilidad en el alcance (2025 sujeto a disponibilidad).
+**Conclusión:** El proyecto es viable en todas las dimensiones principales. El único factor de riesgo moderado es el temporal, mitigado por el buffer incorporado en Fase 4. El período efectivo confirmado es **2020–2024**.
 
 ---
 
@@ -373,8 +375,8 @@ A cambio se entrega:
 
 1. Un **dataset consolidado y limpio** reutilizable por otros proyectos académicos.
 2. Un **modelo predictivo serializado** (R² ≥ 0,75) accesible vía dashboard público.
-3. Una **segmentación de mercados** (4 clusters) que permite agrupar ciudades por nivel de accesibilidad.
-4. **Evidencia cuantitativa** de la crisis de accesibilidad colombiana en 2020–2025, con potencial de citación en discusiones de política habitacional.
+3. Una **segmentación de mercados** (≥ 3 clusters) que permite agrupar ciudades por nivel de accesibilidad.
+4. **Evidencia cuantitativa** de la crisis de accesibilidad colombiana en 2020–2024, con potencial de citación en discusiones de política habitacional.
 
 **Conclusión:** El retorno académico, social e investigativo supera ampliamente la inversión de tiempo, especialmente dado que la totalidad de los entregables queda disponible públicamente (repositorio + dashboard) sin costo recurrente de mantenimiento.
 
@@ -463,11 +465,11 @@ El **IAH** usa el salario mínimo como denominador en lugar del ingreso mediano 
 
 | Opción | Ventajas | Desventajas |
 |---|---|---|
-| **Ingreso mediano del hogar (GEIH)** | Más cercano al PIR original; refleja distribución real de ingresos | Menor disponibilidad histórica; alta varianza muestral en ciudades intermedias; GEIH tiene cobertura temporal limitada (2010–presente); no permite desagregación confiable por ciudad para todos los años del período 2020–2025 |
+| **Ingreso mediano del hogar (GEIH)** | Más cercano al PIR original; refleja distribución real de ingresos | Menor disponibilidad histórica; alta varianza muestral en ciudades intermedias; GEIH tiene cobertura temporal limitada (2010–presente); no permite desagregación confiable por ciudad para todos los años del período 2020–2024 |
 | **SMLMV (Salario Mínimo)** | Serie homogénea y oficial disponible continuamente desde 1984; misma metodología todo el período; comparable entre ciudades; aprobado por decreto anual nacional | Es un proxy del ingreso de hogares de bajos ingresos, no del ingreso mediano real; sobreestima sistemáticamente el IAH (diferencia estimada ~1,5×–2×) |
 
 **Decisión final:** Se selecciona el **SMLMV** como denominador del IAH por las siguientes razones:
-1. **Disponibilidad histórica completa:** Cubre sin interrupciones todo el período 2020–2025 (y desde 1984), mientras que la GEIH tiene limitaciones de cobertura por ciudad y año.
+1. **Disponibilidad histórica completa:** Cubre sin interrupciones todo el período 2020–2024 (y desde 1984), mientras que la GEIH tiene limitaciones de cobertura por ciudad y año.
 2. **Homogeneidad metodológica:** El SMLMV se calcula con la misma fórmula año tras año, a diferencia del ingreso mediano de la GEIH que depende de la muestra de cada oleada.
 3. **Pertinencia para el segmento estudiado:** El proyecto se enfoca en accesibilidad para hogares de ingresos bajos y medios, que son precisamente quienes dependen del salario mínimo como referencia.
 4. **Transparencia del sesgo:** La sobreestimación del IAH (~1,5×–2×) se documenta explícitamente como limitación en el informe final (ver sección 6, Limitaciones), y no invalida la comparación relativa entre ciudades y años.
@@ -480,7 +482,7 @@ El **IAH** usa el salario mínimo como denominador en lugar del ingreso mediano 
   - *Elevado*: 10 < IAH ≤ 20 años
   - *Crítico*: IAH > 20 años
 - **Evaluación de riesgos:** Matriz cualitativa de probabilidad × impacto con mitigaciones específicas por riesgo identificado.
-- **Planificación CRISP-DM:** Asignación de fases según competencias del equipo (Steve: negocio + modelado; Sofía: datos + evaluación; Kukis: preparación + despliegue), cronograma de 13 semanas con entregables por fase.
+- **Planificación CRISP-DM:** Asignación de fases según competencias del equipo (Steve: negocio + modelado; Sofía: datos + evaluación; Kukis: preparación + despliegue), cronograma de 14 semanas con entregables por fase.
 
 ---
 
@@ -493,7 +495,7 @@ El **IAH** usa el salario mínimo como denominador en lugar del ingreso mediano 
 | Inventario de 16 fuentes de datos con metadatos | Sección 5 de este documento | ✅ Documentado |
 | Glosario técnico (30+ términos) | Sección 7 de este documento | ✅ Documentado |
 | Especificación de criterios de éxito (8) | Sección 3.4 de este documento | ✅ Documentado |
-| Cronograma de 13 semanas | Sección 9 de este documento | ✅ Documentado |
+| Cronograma de 14 semanas | Sección 9 de este documento | ✅ Documentado |
 | Análisis de riesgos (9 riesgos) | Sección 6.3 de este documento | ✅ Documentado |
 | Guía de Fase 1 para el equipo | `docs/GUIA_FASE_1.md` | ✅ Generado |
 
@@ -506,7 +508,7 @@ El **IAH** usa el salario mínimo como denominador en lugar del ingreso mediano 
 - [x] **Objetivo general** (1) + **4 objetivos específicos** — redacción evaluable por el jurado
 - [x] **Criterios de éxito** (8) — cada uno con métrica y umbral numérico concreto
 - [x] **Alcance geográfico definido** — análisis nacional + 12 ciudades focales con justificación
-- [x] **Tabla de stakeholders** (4) — con interés y modo de impacto
+- [x] **Tabla de stakeholders** (6) — con interés y modo de impacto
 - [x] **Supuestos y restricciones** — documentados explícitamente
 - [x] **Herramientas confirmadas** — 9 herramientas con responsable y estado
 - [x] **Inventario de 16 datasets** — URLs, tamaño, registros, período
@@ -529,7 +531,7 @@ La Fase 1 cumplió su rol dentro del ciclo CRISP-DM: convertir la problemática 
 
 **Estado del proyecto al cierre de Fase 1:** El proyecto cuenta con una base metodológica completa. Las 16 fuentes de datos están identificadas y sus URLs verificadas. El stack tecnológico está confirmado. Los ocho criterios de éxito funcionarán como contrato de calidad entre las fases de modelado (Fase 4) y evaluación (Fase 5). El único ítem pendiente es la aprobación formal del jurado, que no está dentro del control del equipo.
 
-**Validez del alcance:** La selección de 12 ciudades focales cubre un espectro suficiente de contextos urbanos colombianos (capitales principales, ciudades intermedias, ciudades costeras, fronterizas y cafeteras) para responder las preguntas de investigación con contraste regional genuino. La cobertura temporal 2020–2025 captura el ciclo pandemia-recuperación-choque inflacionario, los eventos económicos más relevantes para la accesibilidad habitacional en el período reciente.
+**Validez del alcance:** La selección de 12 ciudades focales cubre un espectro suficiente de contextos urbanos colombianos (capitales principales, ciudades intermedias, ciudades costeras, fronterizas y cafeteras) para responder las preguntas de investigación con contraste regional genuino. La cobertura temporal 2020–2024 captura el ciclo pandemia-recuperación-choque inflacionario, los eventos económicos más relevantes para la accesibilidad habitacional en el período reciente.
 
 ---
 
@@ -563,5 +565,5 @@ La **Fase 2 — Comprensión de los Datos** puede iniciarse inmediatamente al ci
 
 ---
 
-*Documento de Fase 1 · CRISP-DM 2026-I · Proyecto Accesibilidad Habitacional Colombia — 2020–2025*  
+*Documento de Fase 1 · CRISP-DM 2026-I · Proyecto Accesibilidad Habitacional Colombia — 2020–2024*  
 *Equipo: Steve · Sofía · Kukis*

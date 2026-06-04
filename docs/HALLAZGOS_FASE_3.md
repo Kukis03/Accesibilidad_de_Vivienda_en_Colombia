@@ -4,7 +4,7 @@
 
 **Proyecto:** Accesibilidad de Vivienda en Colombia · CRISP-DM 2026-I  
 **Responsable:** Kukis · **Apoyo:** Steve  
-**Período de análisis:** 2020 – 2024 (rango real confirmado)  
+**Período de análisis:** 2020 – 2023 (rango real confirmado)  
 **Estado:** ✅ Completa — pipeline corregido y ejecutado exitosamente  
 **Generado:** 2026-06-03  
 
@@ -37,7 +37,7 @@ El dataset consolidado supera ampliamente el mínimo de 250 K registros definido
 | **Registros finales** | **259,407** |
 | **Columnas** | **26** |
 | **Tamaño en disco** | ~73.2 MB |
-| **Rango de años** | 2020 – 2024 |
+| **Rango de años** | 2020 – 2023 |
 | **Ciudades cubiertas** | 12 ciudades canónicas |
 | **Fuentes integradas** | 6 (A1, A2, A3, A4, A5, A6) |
 
@@ -359,7 +359,7 @@ no del inmueble real. Suficiente para mapas de calor por ciudad, no para anális
 
 ---
 
-*Documento de Fase 3 · CRISP-DM 2026-I · Proyecto Accesibilidad Habitacional Colombia — 2020–2024*  
+*Documento de Fase 3 · CRISP-DM 2026-I · Proyecto Accesibilidad Habitacional Colombia — 2020–2023*  
 *Kukis · Steve · Revisión técnica completada el 2026-06-03*  
 *Repositorio: github.com/AlexanderPineda25/Accesibilidad_de_Vivienda_en_Colombia*
 
