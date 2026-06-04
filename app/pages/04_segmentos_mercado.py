@@ -42,12 +42,30 @@ def load_clusters():
         dfc = _rebuild_clusters()
     return dfc
 
+def _rebuild_perfiles(dfc):
+    """Reconstruye perfiles_clusters.csv desde el DataFrame de clusters ya cargado."""
+    perfiles = dfc.groupby('cluster')[CLUSTER_VARS].mean().round(2)
+    perfiles['count'] = dfc.groupby('cluster').size()
+    perfiles = perfiles.reset_index()
+    perfiles.to_csv("data/processed/perfiles_clusters.csv", index=False)
+    return perfiles
+
 @st.cache_data
-def load_perfiles():
-    return pd.read_csv("data/processed/perfiles_clusters.csv")
+def load_perfiles(cluster_hash: str):
+    try:
+        perf = pd.read_csv("data/processed/perfiles_clusters.csv")
+        if 'cluster' not in perf.columns:
+            raise ValueError("missing cluster column")
+    except (FileNotFoundError, ValueError):
+        perf = None
+    return perf
 
 dfc = load_clusters()
-perfiles = load_perfiles()
+# Usar hash de clusters para invalidar caché de perfiles si cambia dfc
+_cluster_hash = str(sorted(dfc['cluster'].unique().tolist()))
+perfiles = load_perfiles(_cluster_hash)
+if perfiles is None:
+    perfiles = _rebuild_perfiles(dfc)
 
 cluster_names = {0: "Premium (IAH 29.2)", 1: "Intermedio (IAH 16.2)", 2: "Intermedio-Alto (IAH 18.7)", 3: "Premium (IAH 25.4)", 4: "Intermedio-Bajo (IAH 12.9)"}
 dfc['cluster_name'] = dfc['cluster'].map(cluster_names)
