@@ -1,0 +1,5 @@
+Pregunta,Respuesta,Evidencia
+P1. Anios de salario minimo por vivienda,IAH nacional 23.1 anios en 2024. Ciudad mas accesible: Ibagué (12 anios). Menos accesible: Medellín (30 anios). Ninguna ciudad cumple estandar OCDE (<5 anios).,docs/figures/fig_IAH_por_ciudad.png + tabla IAH
+P2. Variables con mayor poder predictivo,"Top 3: bathrooms (42.2%), area (28.0%), estrato (11.3%). Caracteristicas fisicas dominan sobre contexto macro.",docs/figures/fig_importancia_vars.png + tabla correlacion
+P3. Segmentacion de ciudades en grupos,5 clusters identificados (silueta=0.4874). Diferencia IAH entre extremos: 16 anios. Segmentacion clara y estable en el tiempo.,docs/figures/fig_pca_clusters.png + fig_IAH_vs_precio_m2.png
+P4. Ciudades con cuota > 30% salario minimo,100% del mercado tiene cuota > 30% del salario minimo. Todas las ciudades superan el umbral critico en todos los anios.,docs/figures/fig_semaforo_cuota.png + heatmap ratio

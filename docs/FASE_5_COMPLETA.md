@@ -126,9 +126,9 @@ El modelo Random Forest (R²=0.6348) identificó que **las características fís
 
 ## 7. Entregables Generados
 - `notebooks/04_evaluacion.ipynb` — Notebook de evaluación ejecutado
-- `docs/tabla_metricas_finales.csv` — Métricas del modelo final
-- `docs/tabla_criterios_exito.csv` — Criterios de éxito vs valor obtenido
-- `docs/respuestas_preguntas.csv` — Respuestas a las 4 preguntas de investigación
+- `data/processed/tabla_metricas_finales.csv` — Métricas del modelo final
+- `data/processed/tabla_criterios_exito.csv` — Criterios de éxito vs valor obtenido
+- `data/processed/respuestas_preguntas.csv` — Respuestas a las 4 preguntas de investigación
 - `docs/figures/fig_*.png` — 9 figuras de evaluación (scatter residuos, histograma, Q-Q, boxplot por ciudad, importancia vars, PCA clusters, IAH por ciudad, IAH vs precio, semáforo cuota, precios nominal vs real, niveles accesibilidad)
 
 ## 8. Próximos Pasos

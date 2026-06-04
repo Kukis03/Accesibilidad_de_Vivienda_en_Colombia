@@ -1,0 +1,6 @@
+Metrica,Valor,Interpretacion
+R2,0.6348,El modelo explica el 63.48% de la varianza
+MAE,"$168,048,700","Error absoluto promedio de $168,048,700 COP"
+RMSE,"$284,996,129","Error tipico de $284,996,129 COP"
+MAPE,34.36%,Error porcentual absoluto medio de 34.4%
+RMSE rel (%),67.86%,RMSE equivale al 67.9% del precio mediano

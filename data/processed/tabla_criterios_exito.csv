@@ -1,0 +1,7 @@
+Criterio,Umbral Fase 1,Valor Obtenido,Cumple
+R2 >= 0.75,>= 0.75,0.6348,NO
+RMSE rel < 15%,< 15%,67.86%,NO
+CV R2 desv std < 0.02,< 0.02,0.0059,SI
+Silueta clustering >= 0.45,>= 0.45,0.4874,SI
+Ciudades >= 8,>= 8,12,SI
+Rango 2020-2024,2020-2024,2020-2024,SI

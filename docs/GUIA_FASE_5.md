@@ -57,7 +57,7 @@
 - [x] Calcular R² sobre X_test (0.6348)
 - [x] Calcular RMSE relativo (%) (67.86%)
 - [x] Crear tabla de métricas: métrica | valor | interpretación de negocio
-- [x] Exportar tabla a `docs/tabla_metricas_finales.csv`
+- [x] Exportar tabla a `data/processed/tabla_metricas_finales.csv`
 
 **Celdas 21–28: Análisis de residuos**
 - [x] Calcular residuos = `y_test − y_pred`
@@ -174,9 +174,9 @@
 **Celdas 91–97: Exportación**
 - [x] Crear carpeta `docs/figures/` si no existe
 - [x] Guardar todas las figuras en `docs/figures/` con nombres descriptivos (ej. `fig_IAH_por_ciudad.png`) a 150 dpi
-- [x] Exportar tabla de métricas finales a `docs/tabla_metricas_finales.csv`
-- [x] Exportar tabla de criterios de éxito a `docs/tabla_criterios_exito.csv`
-- [x] Exportar tabla de respuestas a preguntas de investigación a `docs/respuestas_preguntas.csv`
+- [x] Exportar tabla de métricas finales a `data/processed/tabla_metricas_finales.csv`
+- [x] Exportar tabla de criterios de éxito a `data/processed/tabla_criterios_exito.csv`
+- [x] Exportar tabla de respuestas a preguntas de investigación a `data/processed/respuestas_preguntas.csv`
 
 ---
 
@@ -185,7 +185,7 @@
 - [x] Ejecutar todas las celdas en kernel limpio (Restart & Run All) sin errores
 - [x] Verificar que NOT hay rutas absolutas en el notebook
 - [x] Confirmar que todas las figuras se guardaron en `docs/figures/`
-- [x] `git add notebooks/04_evaluacion.ipynb docs/figures/ docs/tabla_metricas_finales.csv docs/tabla_criterios_exito.csv`
+- [x] `git add notebooks/04_evaluacion.ipynb docs/figures/ data/processed/tabla_metricas_finales.csv data/processed/tabla_criterios_exito.csv`
 - [x] Commit: `"feat: Fase 5 - evaluación completa y respuestas a preguntas de investigación"`
 - [x] Actualizar `README.md`: marcar Fase 5 como completada
 - [x] Crear `docs/FASE_5_COMPLETA.md` con hallazgos consolidados y conclusiones
@@ -197,8 +197,8 @@
 | Archivo | Ruta | Estado | Descripción |
 |---|---|---|---|
 | Notebook de evaluación | `notebooks/04_evaluacion.ipynb` | ✅ | Análisis completo de métricas y respuestas de negocio |
-| Tabla de métricas | `docs/tabla_metricas_finales.csv` | ✅ | R², MAE, RMSE, MAPE del modelo final |
-| Tabla de criterios | `docs/tabla_criterios_exito.csv` | ✅ | Umbral Fase 1 vs valor obtenido por criterio |
-| Tabla de respuestas | `docs/respuestas_preguntas.csv` | ✅ | Respuesta cuantitativa a las 4 preguntas de investigación |
+| Tabla de métricas | `data/processed/tabla_metricas_finales.csv` | ✅ | R², MAE, RMSE, MAPE del modelo final |
+| Tabla de criterios | `data/processed/tabla_criterios_exito.csv` | ✅ | Umbral Fase 1 vs valor obtenido por criterio |
+| Tabla de respuestas | `data/processed/respuestas_preguntas.csv` | ✅ | Respuesta cuantitativa a las 4 preguntas de investigación |
 | Figuras | `docs/figures/fig_*.png` | ✅ | 11 figuras de evaluación (PNG 150 dpi) |
 | Documento de fase | `docs/FASE_5_COMPLETA.md` | ✅ | Resumen ejecutivo de hallazgos, limitaciones y recomendaciones |

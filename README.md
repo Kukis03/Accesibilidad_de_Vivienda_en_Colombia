@@ -154,7 +154,7 @@ La app carga con el modelo Random Forest (R²=0.6348) para el predictor de preci
 | Preguntas de investigación respondidas | 4 de 4 | 4/4 respondidas | ✅ |
 | Dashboard funcional | filtros + predictor | 4 páginas operativas | ✅ |
 
-Ver `docs/tabla_criterios_exito.csv` para detalle completo.
+Ver `data/processed/tabla_criterios_exito.csv` para detalle completo.
 
 ---
 

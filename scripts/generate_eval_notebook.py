@@ -128,8 +128,8 @@ c("""criterios = pd.DataFrame({
 })
 print("Tabla de criterios de éxito:")
 print(criterios.to_string(index=False))
-criterios.to_csv('docs/tabla_criterios_exito.csv', index=False)
-print("\\nExportada a docs/tabla_criterios_exito.csv")""")
+criterios.to_csv('data/processed/tabla_criterios_exito.csv', index=False)
+print("\\nExportada a data/processed/tabla_criterios_exito.csv")""")
 
 c("""print("=== ANÁLISIS DE CRITERIOS MARGINALES ===")
 print(f"1. R²={r2:.4f} (umbral 0.75): El modelo RF no captura suficiente varianza. "
@@ -155,8 +155,8 @@ c("""tabla_metricas = pd.DataFrame({
     ]
 })
 print(tabla_metricas.to_string(index=False))
-tabla_metricas.to_csv('docs/tabla_metricas_finales.csv', index=False)
-print("\\nExportada a docs/tabla_metricas_finales.csv")""")
+tabla_metricas.to_csv('data/processed/tabla_metricas_finales.csv', index=False)
+print("\\nExportada a data/processed/tabla_metricas_finales.csv")""")
 
 c("""residuos = y_test - y_pred
 print(f"Residuos: media={residuos.mean():.0f}, std={residuos.std():.0f}")
@@ -526,7 +526,7 @@ for f in sorted(os.listdir("docs/figures")):
     if f.endswith(".png"):
         print(f"  docs/figures/{f}")
 print("\\nTablas exportadas:")
-for f in ["docs/tabla_metricas_finales.csv", "docs/tabla_criterios_exito.csv", "docs/respuestas_preguntas.csv"]:
+for f in ["data/processed/tabla_metricas_finales.csv", "data/processed/tabla_criterios_exito.csv", "data/processed/respuestas_preguntas.csv"]:
     if os.path.exists(f):
         print(f"  {f}")""")
 
@@ -560,13 +560,13 @@ c("""respuestas = pd.DataFrame({
     ]
 })
 print(respuestas.to_string(index=False))
-respuestas.to_csv('docs/respuestas_preguntas.csv', index=False)
-print("\\nExportada a docs/respuestas_preguntas.csv")""")
+respuestas.to_csv('data/processed/respuestas_preguntas.csv', index=False)
+print("\nExportada a data/processed/respuestas_preguntas.csv")""")
 
-c("""criterios_ok = pd.read_csv('docs/tabla_criterios_exito.csv')
+c("""criterios_ok = pd.read_csv('data/processed/tabla_criterios_exito.csv')
 cumplen = (criterios_ok['Cumple'] == 'SÍ').sum()
 total = len(criterios_ok)
-print(f"\\n=== RESUMEN FINAL ===")
+print(f"\n=== RESUMEN FINAL ===")
 print(f"Criterios cumplidos: {cumplen}/{total}")
 print(f"Modelo regresión: R2={r2:.4f} (umbral 0.75) -> {'CUMPLE' if r2>=0.75 else 'NO CUMPLE'}")
 print(f"Clustering silueta: {silueta_kmeans:.4f} (umbral 0.45) -> {'CUMPLE' if silueta_kmeans>=0.45 else 'NO CUMPLE'}")
@@ -586,9 +586,9 @@ else:
 print("\\nArchivos para commit:")
 print("  notebooks/04_evaluacion.ipynb")
 print("  docs/figures/ (todos los PNG)")
-print("  docs/tabla_metricas_finales.csv")
-print("  docs/tabla_criterios_exito.csv")
-print("  docs/respuestas_preguntas.csv")
+print("  data/processed/tabla_metricas_finales.csv")
+print("  data/processed/tabla_criterios_exito.csv")
+print("  data/processed/respuestas_preguntas.csv")
 print("\\n✅ Fase 5 lista para commit.""")
 
 # Generate notebook

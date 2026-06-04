@@ -65,7 +65,7 @@ criterios = pd.DataFrame({
     'Valor Obtenido': [f'{r2:.4f}', f'{rmse_rel:.2f}%', f'{cv_scores.std():.4f}', f'{silueta_kmeans:.4f}', str(n_ciudades), rango_anual],
     'Cumple': ['NO' if r2 < 0.75 else 'SI', 'NO' if rmse_rel >= 15 else 'SI', 'SI' if cv_scores.std() < 0.02 else 'NO', 'SI' if silueta_kmeans >= 0.45 else 'NO', 'SI' if n_ciudades >= 8 else 'NO', 'SI']
 })
-criterios.to_csv('docs/tabla_criterios_exito.csv', index=False)
+criterios.to_csv('data/processed/tabla_criterios_exito.csv', index=False)
 print("Tabla criterios exportada")
 print(criterios.to_string(index=False))
 
@@ -79,7 +79,7 @@ tabla_metricas = pd.DataFrame({
                         'Error porcentual absoluto medio de {:.1f}%'.format(mape),
                         'RMSE equivale al {:.1f}% del precio mediano'.format(rmse_rel)]
 })
-tabla_metricas.to_csv('docs/tabla_metricas_finales.csv', index=False)
+tabla_metricas.to_csv('data/processed/tabla_metricas_finales.csv', index=False)
 print("Tabla metricas exportada")
 
 residuos = y_test - y_pred
@@ -268,7 +268,7 @@ respuestas = pd.DataFrame({
                   'docs/figures/fig_pca_clusters.png + fig_IAH_vs_precio_m2.png',
                   'docs/figures/fig_semaforo_cuota.png + heatmap ratio']
 })
-respuestas.to_csv('docs/respuestas_preguntas.csv', index=False)
+respuestas.to_csv('data/processed/respuestas_preguntas.csv', index=False)
 print("Respuestas exportadas")
 
 # ── Resumen final ───────────────────────────────────────────────────
@@ -283,8 +283,8 @@ print(f"Clustering silueta: {silueta_kmeans:.4f} (umbral 0.45) -> {'CUMPLE' if s
 print("Generando notebook...")
 cells = []
 # Read the source file to embed outputs
-with open("generate_eval_notebook.py", "r", encoding="utf-8") as f:
+with open("scripts/generate_eval_notebook.py", "r", encoding="utf-8") as f:
     gen_src = f.read()
-subprocess.run([sys.executable, "generate_eval_notebook.py"], check=True)
+subprocess.run([sys.executable, "scripts/generate_eval_notebook.py"], check=True)
 print("Notebook generado exitosamente!")
 print("\nFase 5 completa.")
