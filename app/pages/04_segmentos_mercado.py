@@ -10,7 +10,13 @@ st.set_page_config(page_title="Segmentos de Mercado", page_icon="�", layout="w
 
 @st.cache_data
 def load_clusters():
-    return pd.read_csv("data/processed/ciudades_clusters.csv")
+    import joblib
+    dfc = pd.read_csv("data/processed/ciudades_clusters.csv")
+    if 'cluster' not in dfc.columns:
+        cluster_vars = ['IAH', 'precio_m2', 'ratio_cuota_salario', 'tasa_desempleo']
+        pipeline = joblib.load('models/pipeline_clustering.pkl')
+        dfc['cluster'] = pipeline.predict(dfc[cluster_vars])
+    return dfc
 
 @st.cache_data
 def load_perfiles():
