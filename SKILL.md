@@ -148,7 +148,7 @@ siempre esta terminología:
 - **VIS/VIP** = Vivienda de Interés Social / Vivienda de Interés Prioritario
 - **IPVU/IPVN** = Índice de Precios de Vivienda Usada/Nueva (DANE)
 - **TRM** = Tasa Representativa del Mercado (tasa de cambio USD/COP)
-- Datasets: **A1–A8** (precios de vivienda), **B1–B5** (variables macroeconómicas)
+- Datasets: **A1–A8** (precios de vivienda), **B1–B8** (variables macroeconómicas y geográficas)
 - Las 12 ciudades focales del estudio (no inventar otras)
 - Fases del equipo: Kukis (Fase 3 y 6), Steve (Fase 4), Sofía (Fase 2 y 5)
 

@@ -1,140 +1,168 @@
-# 🏠 Accesibilidad de Vivienda en Colombia · CRISP-DM
+# Accesibilidad de Vivienda en Colombia · CRISP-DM
 
-[![Python Version](https://img.shields.io/badge/python-3.9%2B-blue.svg)](https://www.python.org/)
-[![Framework](https://img.shields.io/badge/framework-Streamlit-FF4B4B.svg)](https://streamlit.io/)
-[![Model](https://img.shields.io/badge/model-Random%20Forest-green.svg)](https://scikit-learn.org/)
-[![Methodology](https://img.shields.io/badge/methodology-CRISP--DM-orange.svg)](https://en.wikipedia.org/wiki/Cross-industry_standard_process_for_data_mining)
+Proyecto académico de ciencia de datos para analizar la accesibilidad económica a la vivienda urbana en Colombia durante el período **2020-2024**, siguiendo la metodología **CRISP-DM**.
 
-Este repositorio contiene el código, los datos y la documentación del proyecto final de Ciencia de Datos orientado a analizar la **Accesibilidad Económica a la Vivienda Urbana en Colombia** entre los años **2019 y 2024**. El proyecto integra un gran volumen de listados inmobiliarios con variables macroeconómicas oficiales bajo la metodología estándar **CRISP-DM**.
+El proyecto parte de la definición de negocio documentada en [docs/FASE_1_COMPLETA.md](docs/FASE_1_COMPLETA.md): construir un **Indice de Accesibilidad Habitacional (IAH)**, integrar fuentes inmobiliarias y macroeconómicas, entrenar modelos de regresión y clustering, evaluar los resultados contra criterios de éxito y desplegar un dashboard interactivo.
 
-👉 **URL de Producción:** [https://colombia-housing-accessibility.streamlit.app/](https://colombia-housing-accessibility.streamlit.app/)
+> **Estado actual:** Fases 1, 2 y 3 documentadas. Fases 4, 5 y 6 no han sido ejecutadas; sus documentos son plantillas con campos `[PENDIENTE]`. No hay modelos serializados en `models/` ni URL de producción verificada.
 
 ---
 
-## 📌 Resumen del Proyecto
+## Estado por fase
 
-Adquirir una vivienda es la decisión financiera más importante para un hogar. Este estudio diseña y valida el **Índice de Accesibilidad Habitacional (IAH)** para Colombia, adaptando el indicador internacional *Price-to-Income Ratio (PIR)* de la OCDE y la ONU. Al utilizar el salario mínimo legal mensual como proxy del ingreso de referencia de los hogares, cuantificamos el desajuste estructural entre el costo de la vivienda formal y los ingresos reales de la población.
-
-El proyecto abarca:
-1. **Unificación masiva de datos:** Integración de **8 datasets de precios inmobiliarios** (más de 629K registros brutos) y **8 fuentes macroeconómicas** de entidades oficiales como el DANE y el Banco de la República.
-2. **Modelado Supervisado:** Un regresor basado en **Random Forest** (R² = 0.792, MAPE = 15.8%) para estimar el precio nominal de cualquier inmueble en tiempo real.
-3. **Modelado No Supervisado:** Agrupamiento de submercados locales mediante **KMeans** (K=4, Silueta = 0.54) para clasificar y mapear las ciudades de Colombia según su accesibilidad financiera.
+| Fase | CRISP-DM | Responsable | Estado actual | Documento |
+|---|---|---:|---|---|
+| 1 | Comprensión del negocio | Steve | Completa | [docs/FASE_1_COMPLETA.md](docs/FASE_1_COMPLETA.md) |
+| 2 | Comprensión de los datos | Sofía | Completa | [docs/FASE_2_COMPLETA.md](docs/FASE_2_COMPLETA.md) |
+| 3 | Preparación de los datos | Kukis | Completa; CSV validado para Fase 4 con observación de alcance | [docs/FASE_3_COMPLETA.md](docs/FASE_3_COMPLETA.md) |
+| 4 | Modelado | Steve | Pendiente | [docs/FASE_4_COMPLETA.md](docs/FASE_4_COMPLETA.md) |
+| 5 | Evaluación | Sofía | Pendiente | [docs/FASE_5_COMPLETA.md](docs/FASE_5_COMPLETA.md) |
+| 6 | Despliegue | Kukis | Pendiente | [docs/FASE_6_COMPLETA.md](docs/FASE_6_COMPLETA.md) |
 
 ---
 
-## 🛠️ Arquitectura y Estructura del Repositorio
+## Pregunta central
 
-El repositorio está organizado siguiendo las mejores prácticas de estructuración de proyectos de ciencia de datos:
+> ¿Cómo ha evolucionado la accesibilidad económica a la vivienda en Colombia entre 2020 y 2024, y qué variables estructurales explican mejor las diferencias entre ciudades?
+
+## Objetivos del proyecto
+
+1. Construir y validar el **IAH** para las ciudades focales del estudio.
+2. Entrenar y comparar modelos de regresión para predecir precio de vivienda.
+3. Segmentar mercados urbanos mediante clustering no supervisado.
+4. Calcular y analizar el ratio cuota/salario frente al umbral financiero del 30%.
+
+Los objetivos 2, 3 y la validación final permanecen pendientes hasta ejecutar las Fases 4 y 5.
+
+---
+
+## Fuentes de datos
+
+La Fase 1 define **16 fuentes**:
+
+- **A1-A8:** datasets de precios de vivienda.
+- **B1-B8:** variables macroeconómicas y geográficas.
+
+La Fase 2 verificó los 16 archivos en `data/raw/` y generó reportes de calidad en `data/processed/`. El archivo A1 contiene datos multi-país en bruto; el subconjunto colombiano relevante queda documentado en los reportes de calidad.
+
+### Ciudades focales
+
+Según Fase 1, el estudio trabaja con 12 ciudades:
+
+Bogotá D.C., Medellín, Cali, Barranquilla, Bucaramanga, Cartagena, Pereira, Cúcuta, Manizales, Ibagué, Santa Marta y Villavicencio.
+
+---
+
+## Estructura del repositorio
 
 ```text
-ACCESIBILIDAD_DE_VIVIENDA_EN_COLOMBIA/
-├── .streamlit/
-│   └── config.toml                         # Configuración de estilización del dashboard
+Accesibilidad_de_Vivienda_en_Colombia/
 ├── app/
-│   ├── app.py                              # Vista principal del dashboard de Streamlit
+│   ├── app.py
 │   └── pages/
-│       ├── 01_analisis_nacional.py         # Módulo de tendencias macroeconómicas nacionales
-│       ├── 02_comparador_ciudades.py       # Módulo para contraste visual de ciudades
-│       ├── 03_predictor_precios.py         # Interfaz para predicción con Random Forest
-│       └── 04_segmentos_mercado.py         # Panel del clustering y transición temporal
+│       ├── 01_analisis_nacional.py
+│       ├── 02_comparador_ciudades.py
+│       ├── 03_predictor_precios.py
+│       └── 04_segmentos_mercado.py
 ├── data/
-│   ├── raw/                                # Datasets brutos (inmobiliarios y macro)
+│   ├── raw/
 │   └── processed/
-│       ├── vivienda_colombia_limpio.csv    # Dataset consolidado final (315K registros)
-│       └── segmentos_mercado.csv           # Asignación de clústeres por ciudad-año
-├── docs/                                   # Reportes detallados por cada fase de CRISP-DM
-│   ├── FASE_1_COMPLETA.md                  # Comprensión del Negocio (Steve)
-│   ├── FASE_2_COMPLETA.md                  # Comprensión de los Datos (Sofía)
-│   ├── FASE_3_COMPLETA.md                  # Preparación de los Datos (Kukis)
-│   ├── FASE_4_COMPLETA.md                  # Modelado (Steve)
-│   ├── FASE_5_COMPLETA.md                  # Evaluación (Sofía)
-│   ├── FASE_6_COMPLETA.md                  # Despliegue (Kukis)
-│   └── figures/                            # Gráficos y diagramas exportados
+│       ├── vivienda_colombia_limpio.csv
+│       ├── reporte_limpieza.csv
+│       ├── reporte_calidad_datasets.csv
+│       └── otros reportes CSV/JSON de Fases 2 y 3
+├── docs/
+│   ├── GUIA_FASE_1.md ... GUIA_FASE_6.md
+│   ├── FASE_1_COMPLETA.md ... FASE_6_COMPLETA.md
+│   ├── HALLAZGOS_FASE_2.md
+│   ├── HALLAZGOS_FASE_3.md
+│   └── figures/
 ├── models/
-│   └── modelo_random_forest.pkl            # Pipeline de regresión serializado (pickle)
+│   └── .gitkeep
+├── notebooks/
 ├── scripts/
-│   └── scraping_fincaraiz_villavicencio.py # Script de BeautifulSoup para recolección de datos
-├── requirements.txt                        # Lista de dependencias del proyecto
-└── README.md                               # Este archivo de presentación
+└── requirements.txt
 ```
+
+> **Nota de estado:** `app/` contiene una base de dashboard Streamlit, pero Fase 6 no está cerrada ni desplegada. El predictor espera `models/modelo_random_forest.pkl`, archivo que aún no existe porque Fase 4 no ha sido ejecutada.
 
 ---
 
-## 🚀 Guía de Instalación y Ejecución Local
+## Artefactos disponibles
 
-Sigue estos pasos para replicar el entorno de desarrollo y ejecutar la aplicación interactiva localmente:
+| Artefacto | Ruta | Estado |
+|---|---|---|
+| Inventario y criterios de éxito | `docs/FASE_1_COMPLETA.md` | Disponible |
+| Reporte de comprensión de datos | `docs/FASE_2_COMPLETA.md` | Disponible |
+| Hallazgos EDA | `docs/HALLAZGOS_FASE_2.md` | Disponible |
+| Reporte de preparación de datos | `docs/FASE_3_COMPLETA.md` | Disponible |
+| Hallazgos de preparación | `docs/HALLAZGOS_FASE_3.md` | Disponible |
+| Reporte de limpieza | `data/processed/reporte_limpieza.csv` | Disponible |
+| Dataset integrado | `data/processed/vivienda_colombia_limpio.csv` | Validado: 282.660 registros × 26 columnas |
+| Modelos entrenados | `models/*.pkl` | Pendiente |
+| Dashboard público | URL Streamlit | Pendiente |
 
-### 1. Clonar el repositorio
+### Observación sobre el dataset procesado
+
+El archivo `data/processed/vivienda_colombia_limpio.csv` fue verificado sin marcadores de conflicto de git, con **282.660 registros × 26 columnas**, período 2020-2024 y nulos críticos en cero.
+
+> **Caveat de alcance:** el CSV actual contiene **Armenia** y no contiene **Santa Marta**, mientras Fase 1 definió Santa Marta dentro de las 12 ciudades focales. Antes de cerrar Fase 4/Fase 5, el equipo debe decidir si incorpora formalmente Armenia o si regenera el dataset para respetar la lista original.
+
+---
+
+## Instalación local
+
+1. Clonar el repositorio:
+
 ```bash
 git clone https://github.com/AlexanderPineda25/Accesibilidad_de_Vivienda_en_Colombia
-cd ACCESIBILIDAD_DE_VIVIENDA_EN_COLOMBIA
+cd Accesibilidad_de_Vivienda_en_Colombia
 ```
 
-### 2. Crear y activar un entorno virtual
-* **En Windows:**
-  ```bash
-  python -m venv venv
-  venv\Scripts\activate
-  ```
-* **En macOS/Linux:**
-  ```bash
-  python3 -m venv venv
-  source venv/bin/activate
-  ```
+2. Crear y activar entorno virtual:
 
-### 3. Instalar las dependencias
+```bash
+python -m venv venv
+venv\Scripts\activate
+```
+
+3. Instalar dependencias:
+
 ```bash
 pip install -r requirements.txt
 ```
 
-### 4. Ejecutar el servidor de Streamlit
+4. Ejecutar la app local si se quiere revisar el prototipo:
+
 ```bash
 streamlit run app/app.py
 ```
-El panel se abrirá automáticamente en tu navegador web predeterminado en la dirección local `http://localhost:8501`.
+
+La app puede abrir sin modelo, pero el predictor de precios permanecerá deshabilitado hasta completar Fase 4.
 
 ---
 
-## 📈 Hallazgos Clave del Análisis
+## Criterios de éxito pendientes de evaluación
 
-* **Inaccesibilidad Crítica:** El promedio nacional del IAH en 2024 se situó en **18.4 años** de salario mínimo. Según el estándar de la OCDE (donde un índice mayor a 10 se considera severamente inasequible), **Colombia se encuentra en una crisis generalizada de accesibilidad habitacional**.
-* **El Abismo Territorial:** Adquirir la vivienda mediana en **Bogotá exige 25.4 años** de ingresos frente a los **8.1 años necesarios en Cúcuta**, evidenciando una enorme disparidad de costo por metro cuadrado ($3.98M/m² vs. $1.62M/m²).
-* **Sobrecarga de Deuda:** En 10 de las 12 capitales analizadas, la cuota mensual de amortización de un crédito hipotecario estándar (70% financiado a 15 años) **supera el límite saludable del 30% del ingreso mensual**, llegando en Bogotá y Medellín a requerir más de **1.5 salarios mínimos completos tan solo para cubrir la cuota**.
-* **Extinción del Mercado Accesible:** El análisis temporal revela que mientras en 2019 la mitad de las ciudades focalizadas clasificaban en submercados de accesibilidad 'Moderado' o 'Accesible', **para 2024 ninguna ciudad del estudio califica en el nivel 'Accesible'**.
-
----
-
-## 🤖 Modelado Estadístico e Inferencia
-
-El proyecto implementa modelos de analítica avanzada entrenados sobre **315,487 observaciones limpias**:
-
-### Regresión (Estimación de Precios de Venta)
-* **Algoritmo final:** Random Forest Regressor (300 estimadores, profundidad máxima 16).
-* **Métricas en conjunto de pruebas:**
-  * **R²:** 0.792 (el modelo explica el 79.2% de la varianza).
-  * **MAPE:** 15.8% (desviación porcentual promedio de predicción).
-  * **Estabilidad:** CV R² std de apenas 0.022.
-* **Predictores dominantes (Feature Importance):** Área construida (38.4%), Condición geográfica Bogotá (21.7%) y Tasa de interés hipotecaria No VIS (11.2%).
-
-### Clustering (Segmentación de Mercados)
-* **Algoritmo:** KMeans con K=4 (Silueta = 0.54, Davies-Bouldin = 0.81).
-* **Segmentos definidos:**
-  1. *Crítico* (Bogotá, Medellín, Cartagena)
-  2. *Elevado* (Cali, Barranquilla, Bucaramanga)
-  3. *Moderado* (Pereira, Manizales, Villavicencio, Armenia)
-  4. *Accesible* (Cúcuta, Ibagué - *extintos para 2024*).
+| Criterio | Umbral definido en Fase 1 | Estado |
+|---|---:|---|
+| R2 en test para regresión | >= 0,75 | `[PENDIENTE]` |
+| RMSE relativo | < 15% | `[PENDIENTE]` |
+| Coeficiente de silueta | >= 0,45 | `[PENDIENTE]` |
+| Segmentos diferenciables | >= 3 | `[PENDIENTE]` |
+| Preguntas de investigación respondidas | 4 de 4 | `[PENDIENTE]` |
+| Dashboard funcional | filtros ciudad/año/tipo + predictor | `[PENDIENTE]` |
 
 ---
 
-## 👥 Equipo y Distribución de Roles (Metodología CRISP-DM)
+## Equipo
 
-La asignación de responsables asegura la especialización y la revisión cruzada de los entregables:
-
-* **Steve** (Líder de Fases 1 y 4): Comprensión del Negocio, diseño del modelo de regresión y análisis de importancia de variables.
-* **Sofía** (Líder de Fases 2 y 5): Comprensión de los Datos (EDA), validación de hipótesis de negocio y evaluación estadística.
-* **Kukis** (Líder de Fases 3 y 6): Limpieza e integración de datos macro, construcción de variables derivadas y desarrollo del dashboard multipágina en Streamlit.
+| Integrante | Responsabilidad principal |
+|---|---|
+| Steve | Fase 1 y Fase 4 |
+| Sofía | Fase 2 y Fase 5 |
+| Kukis | Fase 3 y Fase 6 |
 
 ---
-*Proyecto Académico · DATA ANALYTICS 2026-I · Colombia*  
-*Para mayor detalle técnico y de negocio, por favor consulte los reportes completos en la carpeta [/docs]*
 
+*Proyecto académico · CRISP-DM 2026-I · Accesibilidad Habitacional Colombia*

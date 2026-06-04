@@ -152,7 +152,7 @@
 
 **Análisis especial de Villavicencio**
 - [x] Calcular estadísticas descriptivas de precio para Villavicencio (A1 + A7 consolidados)
-- [x] Precio mediano de Villavicencio en cada año (2015–2024)
+- [x] Precio mediano de Villavicencio en serie exploratoria disponible; reportar conclusiones finales solo para 2020–2024
 - [x] Comparar precio/m² de Villavicencio vs ciudades similares (Ibagué, Cúcuta)
 - [x] Distribución de tipos de propiedad en Villavicencio
 - [x] Documentar calidad de datos A7 (completitud, nulos, duplicados)
@@ -173,14 +173,14 @@
 
 **Crear columna de año y filtrar período**
 - [x] Extraer año de columna de fecha
-- [x] Filtrar registros con año entre 2015–2024
+- [x] Filtrar registros con año dentro de la serie exploratoria disponible; usar 2020–2024 como período objetivo del proyecto
 - [x] Calcular volumen de registros por año
 - [x] Documentar cobertura temporal por dataset
 
 **Tendencia nacional**
 - [x] Calcular precio mediano nacional por año
 - [x] Calcular precio mediano por año y ciudad (principales)
-- [x] Visualizar línea de tendencia nacional (2015–2024)
+- [x] Visualizar línea de tendencia nacional; destacar 2020–2024 como período objetivo del proyecto
 - [x] Visualizar líneas de tendencia por ciudad focal
 - [x] Documentar crecimiento porcentual acumulado
 
@@ -267,7 +267,7 @@
 **Cargar y limpiar macrovariables**
 - [x] Cargar salario mínimo histórico
 - [x] Limpiar nombres de columnas (convertir a inglés/estándar)
-- [x] Filtrar años 2015–2024
+- [x] Filtrar años disponibles para contexto macro; usar 2020–2024 en resultados finales
 - [x] Crear series anuales de IPC, tasa hipotecaria
 - [x] Crear tabla consolidada de macrovariables (`data/processed/macrovariables_consolidadas.csv`)
 
@@ -287,7 +287,7 @@
 - [x] Calcular precio mediano nacional por año
 - [x] Obtener salario mínimo anual del dataset B
 - [x] Calcular IAH = precio_mediano / (salario_anual)
-- [x] Crear serie histórica de IAH (2015–2024)
+- [x] Crear serie histórica preliminar de IAH; reportar conclusiones finales solo para 2020–2024
 - [x] Calcular IAH por ciudad focal
 
 **Análisis y visualización de IAH**
@@ -306,7 +306,7 @@
 - [x] Cargar datos de desempleo GEIH (B5)
 - [x] Limpiar nombres de ciudades (estandarizar)
 - [x] Agregar a desempleo anual por ciudad
-- [x] Filtrar años 2015–2024
+- [x] Filtrar años disponibles para contexto; usar 2020–2024 en resultados finales
 
 **Visualización de desempleo**
 - [x] Crear heatmap desempleo × ciudad × año

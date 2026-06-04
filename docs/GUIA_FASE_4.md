@@ -19,7 +19,7 @@
 **Celdas 6–8: Carga y verificación del dataset**
 - [ ] Cargar `data/processed/vivienda_colombia_limpio.csv`
 - [ ] Verificar shape, tipos de datos y ausencia de nulos
-- [ ] Imprimir distribución de `year` y `city` para confirmar cobertura 2019–2024
+- [ ] Imprimir distribución de `year` y `city` para confirmar cobertura 2020–2024
 
 ---
 
@@ -103,7 +103,7 @@
 - [ ] Calcular mediana de `IAH`, `precio_m2`, `ratio_cuota_salario` y `tasa_desempleo` por `(city, year)`
 - [ ] Crear `df_cluster`: una fila por ciudad-año con esas 4 variables
 - [ ] Escalar las 4 variables con `StandardScaler`
-- [ ] Confirmar que `df_cluster` tiene `12 ciudades × 6 años = 72 filas` (o las disponibles)
+- [ ] Confirmar que `df_cluster` tiene `12 ciudades × 5 años = 60 filas` (o las disponibles)
 
 ---
 
@@ -123,7 +123,7 @@
 - [ ] Calcular media de cada variable por cluster (tabla de perfiles de cluster)
 - [ ] Nombrar cualitativamente cada cluster según su perfil (ej. "Inaccesible Alto Costo", "Mercado Moderado")
 - [ ] Crear scatter plot IAH vs precio_m2 con puntos coloreados por cluster y etiquetados por ciudad
-- [ ] Crear gráfico de líneas: evolución de asignación de cluster por ciudad a lo largo del tiempo (2019–2024)
+- [ ] Crear gráfico de líneas: evolución de asignación de cluster por ciudad a lo largo del tiempo (2020–2024)
 - [ ] Crear heatmap: ciudad × año con color de cluster asignado
 
 ---

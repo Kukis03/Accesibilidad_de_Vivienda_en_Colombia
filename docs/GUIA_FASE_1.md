@@ -18,7 +18,7 @@
 
 ## Sección 2: Pregunta Central y Preguntas Derivadas
 **Definir las preguntas de investigación**
-- [x] Formular la pregunta central sobre evolución de accesibilidad habitacional (2019–2024)
+- [x] Formular la pregunta central sobre evolución de accesibilidad habitacional (2020–2024)
 - [x] Derivar 4 preguntas secundarias específicas y medibles:
   - [x] Años de salario mínimo por ciudad y evolución temporal
   - [x] Variables con mayor poder predictivo sobre el precio
@@ -58,7 +58,7 @@
   - [x] Coeficiente de silueta ≥ 0,45
   - [x] Mínimo 3 clusters diferenciables
   - [x] Cobertura ≥ 8 ciudades con análisis completo
-  - [x] Cobertura temporal 2019–2024
+  - [x] Cobertura temporal 2020–2024
   - [x] Dashboard funcional con filtros
   - [x] 4 de 4 preguntas respondidas con evidencia
 - [x] Definir umbrales mínimos aceptables para cada métrica

@@ -22,7 +22,7 @@
 - [ ] Configurar `st.set_page_config`: título, ícono, layout="wide", sidebar expandido
 - [ ] Implementar función `@st.cache_data` para cargar `vivienda_colombia_limpio.csv` — sin caché el dashboard será lento
 - [ ] Implementar función `@st.cache_resource` para cargar el modelo RF con `joblib.load`
-- [ ] Crear sidebar con filtros globales: `st.sidebar.selectbox` para ciudad (+ opción "Todas"), `st.sidebar.slider` para rango de años (2019–2024), `st.sidebar.radio` para tipo de propiedad
+- [ ] Crear sidebar con filtros globales: `st.sidebar.selectbox` para ciudad (+ opción "Todas"), `st.sidebar.slider` para rango de años (2020–2024), `st.sidebar.radio` para tipo de propiedad
 - [ ] Aplicar filtros al DataFrame cargado y almacenar como variable de sesión o pasar a las páginas
 - [ ] Mostrar 3 KPI cards en la fila principal: precio mediano nacional (COP), IAH mediano nacional (años), % de mercado con ratio cuota/salario > 0.30
 - [ ] Agregar texto de bienvenida con descripción breve del proyecto y metodología CRISP-DM
@@ -33,7 +33,7 @@
 ## Sección 3: Página de Análisis Nacional (`app/pages/01_analisis_nacional.py`)
 **Tareas de implementación**
 - [ ] Cargar datos usando la misma función `@st.cache_data` definida en `app.py` (o importar desde módulo común)
-- [ ] Crear gráfico de líneas: evolución del IAH mediano nacional por año (2019–2024) con líneas de referencia horizontales en IAH = 5 (verde, "Accesible OCDE") y IAH = 10 (naranja, "Moderado")
+- [ ] Crear gráfico de líneas: evolución del IAH mediano nacional por año (2020–2024) con líneas de referencia horizontales en IAH = 5 (verde, "Accesible OCDE") y IAH = 10 (naranja, "Moderado")
 - [ ] Crear gráfico de líneas: salario mínimo nominal vs precio mediano de vivienda por año (doble eje Y)
 - [ ] Crear gráfico de barras apiladas: distribución de `nivel_accesibilidad` por año (% de Accesible / Moderado / Elevado / Crítico)
 - [ ] Crear tabla resumen anual: año | precio mediano | salario mínimo | IAH | tasa hipotecaria | IPC
@@ -45,7 +45,7 @@
 ## Sección 4: Página Comparador de Ciudades (`app/pages/02_comparador_ciudades.py`)
 **Tareas de implementación**
 - [ ] Agregar `st.multiselect` para seleccionar 2 o más ciudades a comparar (máximo 4 recomendado)
-- [ ] Agregar `st.slider` para seleccionar año de comparación (2019–2024)
+- [ ] Agregar `st.slider` para seleccionar año de comparación (2020–2024)
 - [ ] Crear tabla comparativa: ciudad | precio mediano | precio/m² | IAH | ratio cuota/salario | tasa desempleo | cluster
 - [ ] Crear gráfico de barras agrupadas: precio mediano y IAH por ciudad seleccionada
 - [ ] Crear gráfico de líneas: evolución del IAH por ciudad seleccionada en el período completo
@@ -64,7 +64,7 @@
   - `st.number_input` para habitaciones — rango 1–10
   - `st.number_input` para baños — rango 1–8
   - `st.selectbox` para estrato (1–6)
-  - `st.selectbox` para año (2019–2024)
+  - `st.selectbox` para año (2020–2024)
 - [ ] Al enviar el formulario: recuperar macro variables del año seleccionado (tasa hipotecaria, IPC, desempleo por ciudad) desde el dataset
 - [ ] Construir DataFrame de 1 fila con todas las features en el orden correcto (`features_order.json`)
 - [ ] Llamar `pipeline_rf.predict(X_input)` y mostrar el precio predicho en COP
@@ -83,7 +83,7 @@
 - [ ] Crear scatter plot interactivo: IAH mediano vs precio_m2 mediano, un punto por ciudad-año, coloreado por cluster, con tooltip que muestre ciudad y año
 - [ ] Crear heatmap: ciudad (filas) × año (columnas), con celda coloreada según cluster asignado
 - [ ] Mostrar tabla de perfiles de clusters: nombre del cluster | IAH promedio | precio/m² promedio | ratio cuota/salario | ciudades en 2024
-- [ ] Crear gráfico de área o Sankey que muestre si ciudades cambiaron de cluster entre 2019 y 2024
+- [ ] Crear gráfico de área o Sankey que muestre si ciudades cambiaron de cluster entre 2020 y 2024
 - [ ] Agregar explicación textual de cada cluster (accesible, moderado, elevado, crítico) con las ciudades que lo componen
 - [ ] Agregar nota metodológica sobre KMeans: número de clusters, coeficiente de silueta obtenido
 

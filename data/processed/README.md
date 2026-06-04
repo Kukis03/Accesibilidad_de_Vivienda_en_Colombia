@@ -1,38 +1,88 @@
-# Dataset de Vivienda en Colombia (Procesado)
+# Datos Procesados — Accesibilidad de Vivienda en Colombia
 
-Este directorio contiene el dataset final procesado, listo para su uso en los modelos predictivos de la Fase 4 y en el dashboard interactivo de Streamlit.
+Este directorio contiene artefactos generados durante las Fases 2 y 3 del proyecto CRISP-DM.
 
-## Archivos
-* `vivienda_colombia_limpio.csv`: El dataset principal con todos los datos integrados.
-* `reporte_limpieza.csv`: El reporte de métricas que indica el número de registros en cada etapa de la Fase 3.
+> **Estado actual:** `vivienda_colombia_limpio.csv` fue validado sin marcadores de conflicto, con **282.660 registros × 26 columnas** y período 2020-2024. Antes de modelar, documentar la decisión sobre la inclusión de Armenia y la ausencia de Santa Marta frente al alcance original de Fase 1.
 
-## Diccionario de Datos (`vivienda_colombia_limpio.csv`)
+---
 
-| Columna | Tipo | Descripción |
+## Archivos principales
+
+| Archivo | Fase | Descripción | Estado |
+|---|---:|---|---|
+| `reporte_calidad_datasets.csv` | 2 | Inventario de las 16 fuentes crudas. | Disponible |
+| `calidad_grupo_a.csv` | 2 | Calidad de datasets inmobiliarios A1-A8. | Disponible |
+| `calidad_grupo_b.csv` | 2 | Calidad de fuentes macro/geográficas B1-B8. | Disponible |
+| `reporte_nulos_completo.csv` | 2 | Nulos por columna y dataset. | Disponible |
+| `mapeo_canonico.json` | 2 | Mapeo de columnas originales al esquema canónico. | Disponible |
+| `problemas_esquema.json` | 2 | Problemas detectados por fuente. | Disponible |
+| `metadatos_fase_2.json` | 2 | Metadatos de notebooks, hallazgos y decisiones. | Disponible |
+| `reporte_limpieza.csv` | 3 | Trazabilidad del pipeline de limpieza. | Disponible |
+| `decisiones_fase_3.csv` | 3 | Decisiones metodológicas aplicadas en preparación. | Disponible |
+| `acciones_correctivas_fase_3.csv` | 3 | Acciones requeridas/corregidas por problema. | Disponible |
+| `resumen_precios_ciudad.csv` | 3 | Resumen de registros y precios por ciudad. | Disponible |
+| `vivienda_colombia_limpio.csv` | 3 | Dataset integrado para modelado. | Validado con caveat de alcance |
+
+---
+
+## Salida esperada de Fase 3
+
+Según la validación actual del CSV y `reporte_limpieza.csv`, la salida final del pipeline es:
+
+| Métrica | Valor |
+|---|---:|
+| Registros finales | 282.660 |
+| Columnas finales | 26 |
+| Período objetivo | 2020-2024 |
+| Ciudades en el CSV | 12 |
+
+Antes de cerrar Fase 4, documentar si Armenia se incorpora al alcance o si el dataset se regenera para recuperar Santa Marta.
+
+---
+
+## Diccionario de Datos Esperado
+
+| Columna | Tipo esperado | Descripción |
 |---|---|---|
-| `price` | float | Precio de venta del inmueble en COP |
-| `area` | float | Área total del inmueble en m² |
-| `rooms` | int | Número de habitaciones (mínimo 1) |
-| `bathrooms` | int | Número de baños (mínimo 1) |
-| `property_type` | str | Tipo de propiedad (`Apartamento` o `Casa`) |
-| `city` | str | Ciudad estandarizada (12 ciudades principales) |
-| `lat` | float | Latitud (imputada con centroide de ciudad — sin nulos) |
-| `lon` | float | Longitud (imputada con centroide de ciudad — sin nulos) |
-| `created_on` | datetime | Fecha de publicación o extracción del registro |
-| `estrato` | int | Estrato socioeconómico (1-6) |
-| `fuente` | str | Origen de los datos (A1-A8) |
-| `year` | int | Año de análisis (2019-2024) |
-| `salario_mensual` | float | Salario mínimo legal vigente mensual (COP) para ese año |
-| `ipc_var_anual` | float | Variación anual del IPC (%) |
-| `ipc_base2018` | float | Índice de Precios al Consumidor (Base 2018=100) |
-| `tasa_hipotecaria_anual` | float | Tasa de interés hipotecaria promedio (%) |
-| `tasa_desempleo` | float | Tasa de desempleo nacional anual (%) |
-| `ipvu_variacion_anual` | float | Variación del IPVU (Vivienda Usada) (%) |
-| `ipvn_variacion_anual` | float | Variación del IPVN (Vivienda Nueva) (%) |
-| `salario_anual` | float | Salario anual acumulado (COP) |
-| `IAH` | float | Índice de Accesibilidad a la Vivienda (Años de salario necesarios para comprar) |
-| `precio_real` | float | Precio ajustado por inflación (Base 2018) |
-| `precio_m2` | float | Precio por metro cuadrado (COP/m²) |
-| `cuota_mensual` | float | Cuota mensual estimada (Crédito a 15 años, 70% LTV) |
-| `ratio_cuota_salario` | float | Proporción de la cuota mensual sobre el salario mínimo |
-| `nivel_accesibilidad` | str | Clasificación de asequibilidad (`Accesible`, `Moderado`, `Elevado`, `Crítico`) |
+| `price` | float | Precio de venta del inmueble en COP. |
+| `area` | float | Área del inmueble en metros cuadrados. |
+| `rooms` | int/float | Número de habitaciones. |
+| `bathrooms` | int/float | Número de baños. |
+| `property_type` | str | Tipo de propiedad, principalmente `Casa` o `Apartamento`. |
+| `city` | str | Ciudad estandarizada. El CSV actual contiene 12 ciudades: 11 del alcance original más Armenia; Santa Marta no aparece. |
+| `lat` | float | Latitud; puede estar imputada por centroide de ciudad. |
+| `lon` | float | Longitud; puede estar imputada por centroide de ciudad. |
+| `created_on` | datetime/str | Fecha de publicación o extracción cuando existe. |
+| `estrato` | int/float | Estrato socioeconómico estimado o reportado. |
+| `fuente` | str | Fuente de origen del registro. |
+| `year` | int | Año de análisis. |
+| `salario_mensual` | float | Salario mínimo mensual vigente para el año. |
+| `ipc_var_anual` | float | Variación anual del IPC. |
+| `ipc_base2018` | float | Índice IPC con base 2018. |
+| `tasa_hipotecaria_anual` | float | Tasa hipotecaria anual promedio. |
+| `tasa_desempleo` | float | Tasa de desempleo usada como contexto macro. |
+| `ipvu_variacion_anual` | float | Variación anual del IPVU. |
+| `ipvn_variacion_anual` | float | Variación anual del IPVN. |
+| `salario_anual` | float | Salario mínimo anual (`salario_mensual × 12`). |
+| `IAH` | float | Indice de Accesibilidad Habitacional (`price / salario_anual`). |
+| `precio_real` | float | Precio ajustado por inflación. |
+| `precio_m2` | float | Precio por metro cuadrado. |
+| `cuota_mensual` | float | Cuota estimada con supuestos de financiación documentados. |
+| `ratio_cuota_salario` | float | Relación entre cuota mensual y salario mínimo mensual. |
+| `nivel_accesibilidad` | str | Clasificación: `Accesible`, `Moderado`, `Elevado` o `Crítico`. |
+
+---
+
+## Validaciones requeridas antes de Fase 4
+
+- [x] El archivo no contiene `<<<<<<<`, `=======` ni `>>>>>>>`.
+- [x] El shape final queda registrado: 282.660 × 26.
+- [x] Las 26 columnas esperadas existen.
+- [x] El período operativo queda acotado a 2020-2024.
+- [x] Las variables críticas para modelado no contienen nulos.
+- [x] Las tildes de ciudades están almacenadas con codepoints correctos; algunas consolas pueden renderizarlas como `�`.
+- [ ] Decidir y documentar el tratamiento de Armenia vs Santa Marta frente al alcance de Fase 1.
+
+---
+
+*Datos procesados · CRISP-DM Fases 2-3*

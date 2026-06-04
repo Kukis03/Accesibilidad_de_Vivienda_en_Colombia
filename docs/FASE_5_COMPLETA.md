@@ -1,350 +1,244 @@
-﻿# Fase 5 — Evaluación
+# Fase 5 — Evaluación
+
 ## Proyecto: Accesibilidad de Vivienda en Colombia · CRISP-DM 2026-I
+
 **Responsable principal:** Sofía · **Apoyo:** Steve  
-**Estado:** ⏳ Pendiente — requiere resultados reales de Fase 4  
-**Notebook asociado:** `notebooks/04_evaluacion.ipynb` *(por ejecutar)*  
-**Semana:** 9
-
-> ⚠️ **Aviso de auditoría:** Esta fase **no ha sido ejecutada**. El documento describe el plan de evaluación y el código a implementar. Todos los resultados, métricas, tablas de verificación de criterios y respuestas a preguntas de investigación están marcados como `[PENDIENTE]` y deberán completarse con los datos reales producidos por Fase 4. No contiene datos inventados.
+**Estado:** ⏳ Pendiente — requiere Fase 4 ejecutada y modelos validados  
+**Semana planificada:** 10
 
 ---
 
-## Introducción
+## Resumen Ejecutivo
 
-La Fase 5 de la metodología CRISP-DM corresponde a la Evaluación. Su propósito no es evaluar el ajuste matemático de los algoritmos (realizado preliminarmente en Fase 4), sino **validar el proyecto desde la perspectiva del negocio**: constatar si los entregables técnicos cumplen los criterios de éxito planteados en la Fase 1, traducir las métricas técnicas a implicaciones socioeconómicas reales y proveer respuestas cuantitativas a las 4 preguntas de investigación.
+Esta fase **no ha sido ejecutada**. El presente documento es una plantilla para evaluar los modelos y responder las preguntas de investigación cuando existan resultados reales de Fase 4.
 
-**Prerrequisito bloqueante:** Fase 4 debe estar completamente ejecutada y sus entregables generados (`modelo_random_forest.pkl`, `segmentos_mercado.csv`, métricas reales documentadas).
-
----
-
-## 1. Verificación de Criterios de Aceptación
-
-> ⚠️ Los valores de la columna "Valor Obtenido" se completarán con los datos reales producidos por Fase 4. No completar con estimaciones.
-
-| Criterio de Éxito | Dimensión | Umbral Definido (Fase 1) | Valor Obtenido | ¿Cumple? |
-|---|---|---|---|---|
-| **R² Regresión** | Capacidad Predictiva | R² ≥ 0.75 | `[PENDIENTE]` | `[PENDIENTE]` |
-| **RMSE relativo** | Precisión Predictiva | < 15.0% del precio mediano | `[PENDIENTE]` | `[PENDIENTE]` |
-| **Estabilidad Regresión** | Validación Cruzada | CV R² std < 0.05 | `[PENDIENTE]` | `[PENDIENTE]` |
-| **Separabilidad Clustering** | Calidad de Agrupación | Coef. Silueta ≥ 0.45 | `[PENDIENTE]` | `[PENDIENTE]` |
-| **Resolución del Modelo** | Cobertura Territorial | ≥ 8 ciudades | `[PENDIENTE]` | `[PENDIENTE]` |
-| **Resolución Temporal** | Historial de Datos | Período 2020–2024 | `[PENDIENTE]` | `[PENDIENTE]` |
-| **Preguntas de Investigación** | Transferencia de Negocio | 4 de 4 preguntas resueltas | `[PENDIENTE]` | `[PENDIENTE]` |
+No se reportan métricas, conclusiones, rankings de variables, clusters ni respuestas de negocio porque aún no hay modelos entrenados ni evaluación reproducible.
 
 ---
 
-## 2. Evaluación Completa del Modelo de Regresión
+## Contexto dentro de CRISP-DM
 
-### 2.1 Métricas Finales sobre el Conjunto de Pruebas
+| Relación en el ciclo | Descripción |
+|---|---|
+| Entrada requerida | Modelos, métricas y clusters generados en Fase 4. |
+| Rol de Fase 5 | Verificar si el proyecto cumple criterios de éxito técnicos y de negocio. |
+| Salida hacia Fase 6 | Decisión de despliegue, conclusiones validadas y restricciones para el dashboard. |
 
-```python
-import pandas as pd
-import numpy as np
-import joblib
-from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
+---
 
-# Cargar modelo entrenado en Fase 4
-pipeline_rf = joblib.load("models/modelo_random_forest.pkl")
-df = pd.read_csv("data/processed/vivienda_colombia_limpio.csv")
+## Objetivos de la Fase
 
-FEATURES_NUM = ['area', 'rooms', 'bathrooms', 'estrato', 'year', 'ipc_var_anual',
-                'tasa_hipotecaria_anual', 'tasa_desempleo', 'ipvu_variacion_anual']
-FEATURES_CAT = ['city', 'property_type']
-TARGET = 'price'
+1. Evaluar el desempeño real del modelo de regresión.
+2. Evaluar la calidad e interpretabilidad de los clusters.
+3. Verificar los criterios de éxito definidos en Fase 1.
+4. Responder las cuatro preguntas de investigación con evidencia cuantitativa.
+5. Definir si el proyecto está listo para despliegue o requiere iteración.
 
-# Reproducir la misma división train/test de Fase 4 (random_state=42)
-from sklearn.model_selection import train_test_split
-X = df[FEATURES_NUM + FEATURES_CAT]
-y = df[TARGET]
-_, X_test, _, y_test = train_test_split(X, y, test_size=0.20, random_state=42)
+---
 
-y_pred = pipeline_rf.predict(X_test)
+## Alcance Planificado
 
-mae = mean_absolute_error(y_test, y_pred)
-rmse = np.sqrt(mean_squared_error(y_test, y_pred))
-r2 = r2_score(y_test, y_pred)
-mape = np.mean(np.abs((y_test - y_pred) / y_test)) * 100
-rmse_relativo = (rmse / y_test.mean()) * 100
-
-print(f"R²:            {r2:.4f}")
-print(f"MAE:           ${mae:,.0f} COP")
-print(f"RMSE:          ${rmse:,.0f} COP")
-print(f"MAPE:          {mape:.2f}%")
-print(f"RMSE Relativo: {rmse_relativo:.2f}%")
-```
-
-| Métrica | Valor Obtenido | Interpretación |
+| Componente | Estado | Resultado esperado |
 |---|---|---|
-| **R² (Coef. de Determinación)** | `[PENDIENTE]` | `[PENDIENTE]` |
-| **MAE (Error Absoluto Medio)** | `[PENDIENTE]` COP | `[PENDIENTE]` |
-| **MAPE** | `[PENDIENTE]`% | `[PENDIENTE]` |
-| **RMSE** | `[PENDIENTE]` COP | `[PENDIENTE]` |
-| **RMSE Relativo** | `[PENDIENTE]`% | `[PENDIENTE]` |
-
-### 2.2 Validación Cruzada (Estabilidad del Modelo)
-
-```python
-from sklearn.model_selection import cross_val_score
-
-scores = cross_val_score(pipeline_rf, X, y, cv=5, scoring='r2', n_jobs=-1)
-print(f"R² por partición: {scores}")
-print(f"R² Promedio: {scores.mean():.4f} +/- {scores.std():.4f}")
-```
-
-**R² por partición (5-Fold CV):** `[PENDIENTE]`  
-**R² Promedio:** `[PENDIENTE]` ± `[PENDIENTE]`
-
-### 2.3 Curva de Aprendizaje
-
-```python
-import matplotlib.pyplot as plt
-from sklearn.model_selection import learning_curve
-
-train_sizes, train_scores, test_scores = learning_curve(
-    pipeline_rf, X, y, train_sizes=np.linspace(0.1, 1.0, 5),
-    cv=3, scoring='r2', n_jobs=-1, random_state=42
-)
-
-plt.figure(figsize=(8, 4))
-plt.plot(train_sizes, np.mean(train_scores, axis=1), 'o-', color="r", label="Entrenamiento")
-plt.plot(train_sizes, np.mean(test_scores, axis=1), 'o-', color="g", label="Validación")
-plt.title("Curva de Aprendizaje - Random Forest Regressor")
-plt.xlabel("Tamaño del Conjunto de Entrenamiento")
-plt.ylabel("R²")
-plt.legend()
-plt.grid(True, alpha=0.3)
-plt.tight_layout()
-plt.savefig("docs/figures/10_curva_aprendizaje.png", dpi=150)
-plt.close()
-```
-
-**Figura generada:** `docs/figures/10_curva_aprendizaje.png` `[PENDIENTE]`  
-**Interpretación (sobreajuste / underfitting):** `[PENDIENTE — completar tras ejecutar]`
+| Evaluación de regresión | `[PENDIENTE]` | R2, MAE, RMSE, RMSE relativo, MAPE. |
+| Evaluación de clustering | `[PENDIENTE]` | Silueta, Davies-Bouldin, perfiles de clusters. |
+| Validación de criterios Fase 1 | `[PENDIENTE]` | Tabla umbral vs valor obtenido. |
+| Respuesta a P1-P4 | `[PENDIENTE]` | Respuestas con tablas y figuras reales. |
+| Recomendación de despliegue | `[PENDIENTE]` | Aprobado, condicionado o rechazado. |
 
 ---
 
-## 3. Evaluación del Modelo de Clustering
+## Actividades por Realizar
 
-### 3.1 Métricas de Cohesión y Separabilidad
-
-```python
-import pandas as pd
-from sklearn.preprocessing import StandardScaler
-from sklearn.metrics import silhouette_score, davies_bouldin_score, calinski_harabasz_score
-
-df_sub = pd.read_csv("data/processed/segmentos_mercado.csv")
-VARS_CLUSTER = ['precio_mediano', 'IAH_promedio', 'ratio_cuota_promedio',
-                'precio_m2_mediano', 'tasa_desempleo']
-
-scaler = StandardScaler()
-X_c = scaler.fit_transform(df_sub[VARS_CLUSTER])
-labels = df_sub['cluster']
-
-sil_global = silhouette_score(X_c, labels)
-db_global = davies_bouldin_score(X_c, labels)
-ch_global = calinski_harabasz_score(X_c, labels)
-
-print(f"Coeficiente de Silueta Global: {sil_global:.4f}")
-print(f"Índice Davies-Bouldin:         {db_global:.4f}")
-print(f"Índice Calinski-Harabasz:      {ch_global:.4f}")
-```
-
-**Coeficiente de Silueta:** `[PENDIENTE]`  
-**Índice Davies-Bouldin:** `[PENDIENTE]`  
-**Índice Calinski-Harabasz:** `[PENDIENTE]`
-
-> **Umbrales de aceptación:** Silueta ≥ 0.45 y Davies-Bouldin < 1.0 confirmarán estructura de agrupación válida.
-
-### 3.2 Prueba Estadística de Separabilidad de Grupos (Kruskal-Wallis)
-
-```python
-import scipy.stats as stats
-
-# Obtener los nombres reales de los segmentos una vez ejecutado el clustering
-segmentos = df_sub['segmento'].unique().tolist()  # [PENDIENTE — nombres reales]
-grupos_iah = [df_sub[df_sub['segmento'] == s]['IAH_promedio'] for s in segmentos]
-h_stat, p_value = stats.kruskal(*grupos_iah)
-print(f"Estadístico H de Kruskal-Wallis: {h_stat:.2f} | p-valor: {p_value:.3e}")
-```
-
-**Estadístico H:** `[PENDIENTE]`  
-**p-valor:** `[PENDIENTE]`  
-**Conclusión:** `[PENDIENTE — completar tras ejecutar prueba]`
+1. Cargar dataset saneado y artefactos de Fase 4.
+2. Reproducir la evaluación sobre el mismo conjunto de prueba.
+3. Calcular métricas finales de regresión.
+4. Analizar residuos y sesgos por ciudad.
+5. Evaluar estabilidad del modelo.
+6. Revisar importancia de variables.
+7. Evaluar separación e interpretabilidad de clusters.
+8. Verificar cada criterio de éxito de Fase 1.
+9. Responder P1-P4 con evidencia cuantitativa.
+10. Documentar limitaciones y decisión de despliegue.
 
 ---
 
-## 4. Interpretación del Modelo con Importancia de Variables
+## Correspondencia con GUIA_FASE_5.md
 
-```python
-# Extraer feature_importances_ del pipeline cargado
-rf_step = pipeline_rf.named_steps['regressor']
-prep_step = pipeline_rf.named_steps['preprocessor']
-cat_encoder = prep_step.named_transformers_['cat'].named_steps['onehot']
-cat_cols = list(cat_encoder.get_feature_names_out(FEATURES_CAT))
-all_features = FEATURES_NUM + cat_cols
-
-importances = rf_step.feature_importances_
-ranking = sorted(zip(all_features, importances), key=lambda x: x[1], reverse=True)
-for i, (feat, imp) in enumerate(ranking, 1):
-    print(f"{i}. {feat}: {imp:.4f} ({imp*100:.1f}%)")
-```
-
-**Ranking completo de importancia de variables:** `[PENDIENTE — completar tras ejecutar]`
-
-**Variable física con mayor poder predictivo:** `[PENDIENTE]`  
-**Variable macroeconómica con mayor impacto:** `[PENDIENTE]`
-
----
-
-## 5. Respuesta a las Preguntas de Investigación
-
-> ⚠️ Las respuestas cuantitativas se completan **después de ejecutar las fases 3 y 4** con datos reales. No completar con estimaciones.
-
-### 5.1 Pregunta 1: ¿Cuántos años de salario mínimo cuesta una vivienda mediana en Colombia y cómo varía por ciudad?
-
-**Respuesta:** `[PENDIENTE — calcular con dataset corregido de Fase 3]`
-
-| Ciudad | IAH Mediano `[AÑO MÁS RECIENTE]` (Años de Salario) | Clasificación de Accesibilidad (OCDE) |
+| Actividad planificada | Estado | Evidencia requerida |
 |---|---|---|
-| Bogotá | `[PENDIENTE]` | `[PENDIENTE]` |
-| Medellín | `[PENDIENTE]` | `[PENDIENTE]` |
-| Cali | `[PENDIENTE]` | `[PENDIENTE]` |
-| Barranquilla | `[PENDIENTE]` | `[PENDIENTE]` |
-| Cartagena | `[PENDIENTE]` | `[PENDIENTE]` |
-| Bucaramanga | `[PENDIENTE]` | `[PENDIENTE]` |
-| Manizales | `[PENDIENTE]` | `[PENDIENTE]` |
-| Pereira | `[PENDIENTE]` | `[PENDIENTE]` |
-| Armenia | `[PENDIENTE]` | `[PENDIENTE]` |
-| Ibagué | `[PENDIENTE]` | `[PENDIENTE]` |
-| Cúcuta | `[PENDIENTE]` | `[PENDIENTE]` |
-| Villavicencio | `[PENDIENTE]` | `[PENDIENTE]` |
-
-*Clasificación OCDE: Accesible (IAH ≤ 5) | Moderado (5–10) | Elevado (10–20) | Crítico (> 20)*
-
-**Conclusión:** `[PENDIENTE]`
+| Carga de recursos | ⏳ Pendiente | Dataset y modelos cargados sin errores. |
+| Verificación de criterios de éxito | ⏳ Pendiente | Tabla con valores reales. |
+| Evaluación del modelo de regresión | ⏳ Pendiente | Métricas y análisis de residuos. |
+| Evaluación del clustering | ⏳ Pendiente | Métricas de separación y perfiles. |
+| Respuesta a preguntas de investigación | ⏳ Pendiente | Respuestas con tablas/figuras reales. |
+| Análisis complementario del IAH | ⏳ Pendiente | Distribuciones por ciudad/año. |
+| Validación final del proyecto | ⏳ Pendiente | Decisión de pasar o no a despliegue. |
+| Guardado de outputs | ⏳ Pendiente | CSVs y figuras finales. |
 
 ---
 
-### 5.2 Pregunta 2: ¿Qué variables del inmueble y del entorno macroeconómico tienen el mayor poder explicativo sobre el precio?
+## Metodología a Aplicar
 
-**Variable inmobiliaria más importante:** `[PENDIENTE — ver importancia de variables, sección 4]`  
-**Variable macroeconómica más importante:** `[PENDIENTE]`
+### Evaluación técnica
 
-*Evidencia cuantitativa (feature_importances_):*
+| Criterio | Fuente | Umbral |
+|---|---|---:|
+| R2 en test | Fase 1 | >= 0,75 |
+| RMSE relativo | Fase 1 | < 15% |
+| Coeficiente de silueta | Fase 1 | >= 0,45 |
+| Segmentos diferenciables | Fase 1 | >= 3 |
+| Cobertura geográfica | Fase 1 | >= 8 ciudades con análisis completo |
 
-| Rango | Variable | Importancia (%) |
-|---|---|---|
-| 1 | `[PENDIENTE]` | `[PENDIENTE]` |
-| 2 | `[PENDIENTE]` | `[PENDIENTE]` |
-| 3 | `[PENDIENTE]` | `[PENDIENTE]` |
-| 4 | `[PENDIENTE]` | `[PENDIENTE]` |
-| 5 | `[PENDIENTE]` | `[PENDIENTE]` |
+### Evaluación de negocio
 
-**Conclusión:** `[PENDIENTE]`
+La evaluación debe responder con evidencia las cuatro preguntas definidas en Fase 1:
 
----
-
-### 5.3 Pregunta 3: ¿Es posible identificar y segmentar submercados urbanos homogéneos según accesibilidad?
-
-**Respuesta:** `[PENDIENTE — depende de K óptimo y clustering ejecutado en Fase 4]`
-
-*Número de segmentos identificados:* `[PENDIENTE]`  
-*Validación (Silueta / Davies-Bouldin):* `[PENDIENTE]`
-
-**Conclusión:** `[PENDIENTE]`
+| Pregunta | Estado |
+|---|---|
+| P1 — Evolución del IAH por ciudad y año | `[PENDIENTE]` |
+| P2 — Variables con mayor poder predictivo sobre precio | `[PENDIENTE]` |
+| P3 — Segmentación objetiva de mercados urbanos | `[PENDIENTE]` |
+| P4 — Ratio cuota/salario frente al umbral del 30% | `[PENDIENTE]` |
 
 ---
 
-### 5.4 Pregunta 4: ¿En qué ciudades de Colombia la cuota hipotecaria promedio supera el 30% del salario mínimo mensual?
+## Resultados Obtenidos
 
-```python
-# Calcular por ciudad el porcentaje de propiedades con ratio_cuota_salario > 0.30
-df_inviable = df.groupby('city').apply(
-    lambda x: (x['ratio_cuota_salario'] > 0.30).mean() * 100
-).reset_index()
-df_inviable.columns = ['city', 'pct_inviable']
-print(df_inviable.sort_values('pct_inviable', ascending=False).round(1))
-```
-
-**Porcentaje de oferta inviable (cuota > 30% salario mínimo) por ciudad:** `[PENDIENTE]`
-
-**Conclusión:** `[PENDIENTE]`
-
----
-
-## 6. Conclusiones en Lenguaje de Negocio
-
-> ⚠️ Las conclusiones se redactarán con base en los resultados reales obtenidos en las secciones anteriores. Los siguientes ítems representan el marco de análisis; el contenido específico se completa tras la ejecución.
-
-1. **Viabilidad del crédito hipotecario para el salario mínimo:** `[PENDIENTE — redactar con porcentajes reales de ratio cuota/salario]`
-2. **Brecha entre precios de oferta y capacidad de pago real:** `[PENDIENTE]`
-3. **Impacto de las tasas de interés en la accesibilidad:** `[PENDIENTE — cuantificar con datos del período 2020–2024]`
-4. **Dinámicas de mercado específicas por ciudad:** `[PENDIENTE — completar con hallazgos del clustering]`
-5. **Recomendación de política pública:** `[PENDIENTE — derivar de los segmentos identificados]`
+| Resultado | Valor |
+|---|---|
+| Modelo evaluado | `[PENDIENTE]` |
+| Dataset de test usado | `[PENDIENTE]` |
+| R2 | `[PENDIENTE]` |
+| MAE | `[PENDIENTE]` |
+| RMSE | `[PENDIENTE]` |
+| RMSE relativo | `[PENDIENTE]` |
+| MAPE | `[PENDIENTE]` |
+| Silueta clustering | `[PENDIENTE]` |
+| Davies-Bouldin | `[PENDIENTE]` |
+| Preguntas respondidas | `[PENDIENTE]` |
 
 ---
 
-## 7. Limitaciones Identificadas
+## Métricas y Estadísticas Relevantes
 
-> Las siguientes limitaciones son inherentes al diseño del proyecto y son conocidas antes de la ejecución. Los detalles cuantitativos se completarán con datos reales.
-
-- **Sesgo de formalidad:** El dataset representa únicamente la oferta publicada en portales digitales. No incluye vivienda informal ni mercado de segunda mano fuera de internet.
-- **Ausencia del mercado de arriendos:** El estudio se centra en el acceso a la compra. La mayoría de los hogares de salario mínimo recurre al arrendamiento.
-- **Cobertura desigual entre ciudades:** Bogotá y Medellín tendrán mayor volumen de registros que ciudades intermedias como Villavicencio o Armenia. El impacto exacto en las métricas se evaluará tras la ejecución.
-- **Período con alta variabilidad macroeconómica:** El período 2020–2024 incluye la pandemia y el ciclo de tasas de interés más agresivo en décadas, lo que puede introducir ruido en las relaciones precio–características físicas.
+| Criterio de éxito | Umbral | Valor obtenido | Cumple |
+|---|---:|---:|---|
+| R2 regresión | >= 0,75 | `[PENDIENTE]` | `[PENDIENTE]` |
+| RMSE relativo | < 15% | `[PENDIENTE]` | `[PENDIENTE]` |
+| Silueta clustering | >= 0,45 | `[PENDIENTE]` | `[PENDIENTE]` |
+| Segmentos diferenciables | >= 3 | `[PENDIENTE]` | `[PENDIENTE]` |
+| Ciudades con análisis completo | >= 8 | `[PENDIENTE]` | `[PENDIENTE]` |
+| Preguntas respondidas | 4 de 4 | `[PENDIENTE]` | `[PENDIENTE]` |
 
 ---
 
-## 8. Hallazgos de la Fase 5
+## Plantilla de Respuesta a Preguntas de Investigación
 
-> ⚠️ Esta sección se completa **únicamente después de ejecutar la fase** con datos reales.
+### P1 — Evolución del IAH
 
-| ID | Hallazgo Clave | Evidencia Numérica | Relevancia para Fase 6 |
+**Respuesta:** `[PENDIENTE — calcular IAH mediano nacional y por ciudad para 2020-2024]`
+
+| Ciudad | IAH inicial | IAH final | Cambio | Interpretación |
+|---|---:|---:|---:|---|
+| Bogotá | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` |
+| Medellín | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` |
+| Cali | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` |
+| Demás ciudades focales | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` |
+
+### P2 — Variables con mayor poder predictivo
+
+**Respuesta:** `[PENDIENTE — extraer importancia de variables del modelo final]`
+
+| Variable | Importancia | Interpretación |
+|---|---:|---|
+| `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` |
+
+### P3 — Segmentación de mercados
+
+**Respuesta:** `[PENDIENTE — completar con clusters reales y métricas de separación]`
+
+| Segmento | Ciudades/años | Perfil | Evidencia |
 |---|---|---|---|
-| **H5.1** | Cumplimiento umbral R² | `[PENDIENTE]` | `[PENDIENTE]` |
-| **H5.2** | MAPE vs umbral del 15% | `[PENDIENTE]` | `[PENDIENTE]` |
-| **H5.3** | Estabilidad de validación cruzada | σ CV R² = `[PENDIENTE]` | `[PENDIENTE]` |
-| **H5.4** | Validación estadística de clústeres | p-valor Kruskal-Wallis = `[PENDIENTE]` | `[PENDIENTE]` |
-| **H5.5** | IAH en ciudad con mayor inaccesibilidad | `[PENDIENTE]` años | `[PENDIENTE]` |
-| **H5.6** | IAH en ciudad con menor inaccesibilidad | `[PENDIENTE]` años | `[PENDIENTE]` |
-| **H5.7** | Ciudad(es) con mercado atípico detectado por DBSCAN | `[PENDIENTE]` | `[PENDIENTE]` |
+| `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` |
+
+### P4 — Ratio cuota/salario
+
+**Respuesta:** `[PENDIENTE — calcular ratio mediano y porcentaje de registros sobre 30%]`
+
+| Ciudad | Ratio cuota/salario | Estado frente a 30% | Interpretación |
+|---|---:|---|---|
+| `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` | `[PENDIENTE]` |
 
 ---
 
-## 9. Entregables de la Fase 5
+## Hallazgos Clave
 
-| Archivo | Ruta | Estado |
-|---------|------|--------|
-| Notebook | `notebooks/04_evaluacion.ipynb` | ⏳ Pendiente de ejecución |
-| Tabla métricas finales | `docs/tabla_metricas_finales.csv` | ⏳ Pendiente de generación |
-| Figura curva de aprendizaje | `docs/figures/10_curva_aprendizaje.png` | ⏳ Pendiente |
+| Hallazgo | Evidencia |
+|---|---|
+| `[PENDIENTE]` | `[PENDIENTE — completar solo con resultados reales]` |
 
 ---
 
-## 10. Checklist — Fase 5
+## Problemas Encontrados y Resolución
 
-- [ ] Ejecutar Fase 4 y verificar que todos sus entregables existen
-- [ ] Cargar modelo entrenado y reproducir métricas en test set
-- [ ] Ejecutar validación cruzada 5-Fold y graficar curva de aprendizaje
-- [ ] Calcular métricas de clustering (Silueta, Davies-Bouldin, Calinski-Harabasz)
-- [ ] Ejecutar prueba Kruskal-Wallis sobre IAH por segmento
-- [ ] Completar tabla de verificación de criterios de aceptación
-- [ ] Extraer y documentar importancia de variables del modelo
-- [ ] Calcular IAH mediano por ciudad para el período más reciente disponible
-- [ ] Calcular porcentaje de oferta con cuota > 30% salario mínimo por ciudad
-- [ ] Redactar conclusiones de negocio con datos reales
-- [ ] Completar sección de hallazgos con datos reales obtenidos
-- [ ] Actualizar estado del documento de "Pendiente" a "Completa"
+| Problema | Estado | Resolución esperada |
+|---|---|---|
+| No existen modelos entrenados | ⏳ Pendiente | Ejecutar Fase 4. |
+| No existen métricas finales | ⏳ Pendiente | Calcular en Fase 5. |
+| No existe decisión de despliegue | ⏳ Pendiente | Tomar decisión tras verificar criterios de Fase 1. |
 
 ---
 
-## 11. Notas para el Equipo
+## Validaciones Realizadas
 
-- **Para Kukis (Fase 6):** El dashboard usará directamente las métricas y segmentos validados en esta fase. El semáforo de accesibilidad se calibrará con los umbrales confirmados aquí (IAH y ratio cuota/salario reales).
-- **Criterio de aceptación del modelo para producción:** Si R² < 0.75 o Silueta < 0.45, no se debe desplegar el dashboard con esos modelos; se deben revisar el pipeline de datos o explorar modelos alternativos.
+| Validación | Estado |
+|---|---|
+| Carga del modelo de regresión | `[PENDIENTE]` |
+| Carga del modelo de clustering | `[PENDIENTE]` |
+| Reproducción de partición test | `[PENDIENTE]` |
+| Métricas finales calculadas | `[PENDIENTE]` |
+| Preguntas de investigación respondidas | `[PENDIENTE]` |
+| Recomendación de despliegue documentada | `[PENDIENTE]` |
 
 ---
 
-*Documento de Fase 5 · CRISP-DM 2026-I · Proyecto Accesibilidad Habitacional Colombia*  
-*Estado: PLANTILLA — completar con datos reales tras ejecutar la fase*
+## Entregables Esperados
 
+| Entregable | Ruta esperada | Estado |
+|---|---|---|
+| Notebook de evaluación | `notebooks/04_evaluacion.ipynb` | ⏳ Pendiente |
+| Tabla de métricas finales | `docs/tabla_metricas_finales.csv` | ⏳ Pendiente |
+| Tabla de criterios de éxito | `docs/tabla_criterios_exito.csv` | ⏳ Pendiente |
+| Tabla de respuestas | `docs/respuestas_preguntas.csv` | ⏳ Pendiente |
+| Figuras finales | `docs/figures/` | ⏳ Pendiente |
+| Reporte de Fase 5 completado | `docs/FASE_5_COMPLETA.md` | ⏳ Pendiente |
+
+---
+
+## Riesgos o Limitaciones Detectadas
+
+1. Si Fase 4 no cumple criterios técnicos, Fase 6 no debe presentar el predictor como producción.
+2. Si alguna pregunta de investigación no puede responderse con evidencia, debe marcarse explícitamente como no resuelta.
+3. Las recomendaciones de política pública deben derivarse de resultados reales, no de hipótesis previas.
+
+---
+
+## Conclusiones
+
+`[PENDIENTE — redactar únicamente después de ejecutar la evaluación y responder P1-P4 con evidencia]`
+
+---
+
+## Preparación para la Siguiente Fase
+
+Fase 6 solo puede iniciar si Fase 5 determina que:
+
+1. Los modelos cumplen o documentan adecuadamente sus desviaciones frente a los criterios de Fase 1.
+2. Las cuatro preguntas de investigación tienen respuesta cuantitativa o limitación explícita.
+3. Los artefactos de modelo y tablas requeridos por la app existen y son cargables.
+4. Las limitaciones del predictor y del dashboard están documentadas.
+
+---
+
+*Plantilla de Fase 5 · CRISP-DM 2026-I · Accesibilidad Habitacional Colombia*

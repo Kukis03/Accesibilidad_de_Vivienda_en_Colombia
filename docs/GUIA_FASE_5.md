@@ -25,7 +25,7 @@
 - [ ] Calcular desviación estándar del R² en validación cruzada 5-fold
 - [ ] Cargar coeficiente de silueta calculado en Fase 4
 - [ ] Contar ciudades incluidas en el análisis final (esperado ≥ 8)
-- [ ] Confirmar rango temporal del dataset (2019–2024)
+- [ ] Confirmar rango temporal del dataset (2020–2024)
 - [ ] Construir tabla con 7 filas: criterio | umbral Fase 1 | valor obtenido | ¿cumple?
 - [ ] Documentar en celda Markdown cualquier criterio marginal con justificación
 
@@ -76,7 +76,7 @@
 - [ ] Asignar nombre cualitativo a cada cluster (ej. "Mercado Inaccesible", "Accesible Relativo")
 - [ ] Identificar qué ciudades pertenecen a qué cluster en 2024
 - [ ] Crear heatmap ciudad × año con color del cluster asignado
-- [ ] Documentar transiciones de cluster entre 2019 y 2024 (¿alguna ciudad empeoró?)
+- [ ] Documentar transiciones de cluster entre 2020 y 2024 (¿alguna ciudad empeoró?)
 
 ---
 
@@ -84,9 +84,9 @@
 **Celdas 49–75: Evidencia cuantitativa por pregunta**
 
 ### Pregunta 1 — ¿Cuántos años de salario mínimo equivale el precio mediano de vivienda?
-- [ ] Calcular IAH mediano nacional por año (2019–2024)
+- [ ] Calcular IAH mediano nacional por año (2020–2024)
 - [ ] Calcular IAH mediano por ciudad focal por año
-- [ ] Crear tabla: ciudad | IAH 2019 | IAH 2021 | IAH 2024 | variación (%)
+- [ ] Crear tabla: ciudad | IAH 2020 | IAH 2022 | IAH 2024 | variación (%)
 - [ ] Crear gráfico de líneas: evolución del IAH por ciudad con líneas de referencia OCDE (5 y 10 años)
 - [ ] Redactar hallazgo principal: ¿qué ciudad es la más y menos accesible en 2024?
 
@@ -118,7 +118,7 @@
 - [ ] Calcular distribución de `nivel_accesibilidad` por ciudad
 - [ ] Crear gráfico de barras apiladas: ciudad vs composición de niveles de accesibilidad
 - [ ] Calcular % de vivienda "Crítica" (IAH > 20) por ciudad en 2024
-- [ ] Calcular evolución del % de vivienda "Accesible" (IAH ≤ 5) entre 2019 y 2024
+- [ ] Calcular evolución del % de vivienda "Accesible" (IAH ≤ 5) entre 2020 y 2024
 - [ ] Calcular precio real (ajustado por inflación) mediano por ciudad y año — ¿creció el precio en términos reales?
 - [ ] Crear gráfico comparativo: precio nominal vs precio real por año
 
